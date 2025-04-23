@@ -28,6 +28,8 @@
     },
     {
       "src": "/(.*)",
+      "status": 200,
+      "headers": { "Content-Type": "text/html; charset=utf-8" },
       "dest": "client/dist/index.html"
     }
   ]

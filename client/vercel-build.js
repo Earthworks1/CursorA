@@ -17,7 +17,7 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Copier _redirects dans le dossier de build
+// Copier les fichiers de configuration
 console.log('Copie des fichiers de configuration...');
 
 // Liste des fichiers à copier
@@ -25,7 +25,8 @@ const filesToCopy = [
   { src: '_redirects', dest: '_redirects' },
   { src: '.htaccess', dest: '.htaccess' },
   { src: 'public/routes.json', dest: 'routes.json' },
-  { src: 'public/200.html', dest: '200.html' }
+  { src: 'public/200.html', dest: '200.html' },
+  { src: 'vercel.json', dest: 'vercel.json' }
 ];
 
 // Copier tous les fichiers
@@ -43,6 +44,43 @@ for (const file of filesToCopy) {
   } catch (err) {
     console.error(`Erreur lors de la copie du fichier ${file.src}:`, err);
   }
+}
+
+// Créer un index.html spécial qui assure le routage SPA
+try {
+  const indexContent = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Spiess Planning</title>
+    <base href="/" />
+    <meta name="description" content="Application de gestion de planification pour Spiess SA" />
+    <script>
+      // Ce script aide à résoudre les problèmes de routage en SPA
+      (function() {
+        // Redirection vers l'index pour les routes non trouvées
+        if (window.location.pathname !== '/' && !window.location.pathname.match(/\\.(css|js|jpg|png|gif|svg|ico)$/)) {
+          var segments = window.location.pathname.split('/');
+          var route = segments[1];
+          if (route && !document.getElementById('root')) {
+            window.history.replaceState(null, null, '/');
+            window.initialRoute = window.location.pathname;
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`;
+
+  fs.writeFileSync(path.join(distDir, 'index.html'), indexContent);
+  console.log('index.html personnalisé créé avec script de routage SPA.');
+} catch (err) {
+  console.error('Erreur lors de la création de index.html personnalisé:', err);
 }
 
 // Créer aussi un index.html à la racine si nécessaire
