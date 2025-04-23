@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Spiess Planning</title>
+    <base href="/" />
+    <meta name="description" content="Application de gestion de planification pour Spiess SA" />
+    <script>
+      // Script pour le routage SPA
+      (function() {
+        // Redirection vers l'index pour les routes non trouvées
+        if (window.location.pathname !== '/' && !window.location.pathname.match(/\.(css|js|jpg|png|gif|svg|ico)$/)) {
+          var segments = window.location.pathname.split('/');
+          var route = segments[1];
+          if (route && !document.getElementById('root')) {
+            window.history.replaceState(null, null, '/');
+            window.initialRoute = window.location.pathname;
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./client/src/main.tsx"></script>
+    <!-- En cas d'erreur, essayer les chemins alternatifs -->
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'SCRIPT' && e.target.src.includes('main.tsx')) {
+          console.log('Tentative de chargement alternatif...');
+          var newScript = document.createElement('script');
+          newScript.type = 'module';
+          newScript.src = '/assets/index-ed4df9f9.js'; // Utiliser le nom exact du fichier généré
+          document.body.appendChild(newScript);
+        }
+      }, true);
+    </script>
+  </body>
+</html> 

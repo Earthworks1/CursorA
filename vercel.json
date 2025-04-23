@@ -2,14 +2,21 @@
   "version": 2,
   "routes": [
     {
+      "src": "^/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "^/api/(.*)",
+      "dest": "/server/index.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
       "status": 200,
-      "headers": { "Content-Type": "text/html; charset=utf-8" },
-      "dest": "client/dist/index.html"
+      "dest": "/index.html"
     }
   ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/server/index.ts" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "buildCommand": "cd client && npm run vercel-build"
 } 
