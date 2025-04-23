@@ -18,12 +18,44 @@ if (!fs.existsSync(distDir)) {
 }
 
 // Copier _redirects dans le dossier de build
-console.log('Copie du fichier _redirects...');
+console.log('Copie des fichiers de configuration...');
+
+// Liste des fichiers à copier
+const filesToCopy = [
+  { src: '_redirects', dest: '_redirects' },
+  { src: '.htaccess', dest: '.htaccess' },
+  { src: 'public/routes.json', dest: 'routes.json' },
+  { src: 'public/200.html', dest: '200.html' }
+];
+
+// Copier tous les fichiers
+for (const file of filesToCopy) {
+  try {
+    const srcPath = path.join(__dirname, file.src);
+    const destPath = path.join(distDir, file.dest);
+    
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`Fichier ${file.src} copié avec succès.`);
+    } else {
+      console.warn(`Fichier ${file.src} introuvable, ignoré.`);
+    }
+  } catch (err) {
+    console.error(`Erreur lors de la copie du fichier ${file.src}:`, err);
+  }
+}
+
+// Créer aussi un index.html à la racine si nécessaire
 try {
-  fs.copyFileSync(path.join(__dirname, '_redirects'), path.join(distDir, '_redirects'));
-  console.log('Fichier _redirects copié avec succès.');
+  const indexPath = path.join(distDir, 'index.html');
+  const destPath = path.join(path.dirname(distDir), 'index.html');
+  
+  if (fs.existsSync(indexPath) && !fs.existsSync(destPath)) {
+    fs.copyFileSync(indexPath, destPath);
+    console.log('index.html copié au niveau racine pour meilleure compatibilité.');
+  }
 } catch (err) {
-  console.error('Erreur lors de la copie du fichier _redirects:', err);
+  console.error('Erreur lors de la copie de index.html au niveau racine:', err);
 }
 
 console.log('Build terminé avec succès!'); 
