@@ -28,7 +28,7 @@ const standardNavItems = [
   { label: 'Tâches', href: '/taches', icon: <ClipboardList className="h-5 w-5" /> },
   { label: 'Équipes', href: '/equipes', icon: <Users className="h-5 w-5" /> },
   { label: 'Ressources', href: '/ressources', icon: <Package className="h-5 w-5" /> },
-  { label: 'Planning', href: '/ressources/planning', icon: <Calendar className="h-5 w-5" /> },
+  { label: 'Planning', href: '/planning', icon: <Calendar className="h-5 w-5" /> },
   { label: 'Rapports', href: '/rapports', icon: <FileText className="h-5 w-5" /> },
   { label: 'Configuration', href: '/configuration', icon: <Settings className="h-5 w-5" /> },
 ];
