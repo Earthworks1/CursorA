@@ -50,4 +50,49 @@ export const TypeTache = {
   IMPLANTATION: 'implantation',
   RECOLEMENT: 'recolement',
   AUTRE: 'autre'
+} as const;
+
+export const TypeLot = {
+  VOIRIE: 'voirie',
+  RESEAUX_SECS: 'reseaux_secs',
+  RESEAUX_HUMIDES: 'reseaux_humides',
+  BATIMENT: 'batiment',
+  ESPACES_VERTS: 'espaces_verts',
+  SIGNALISATION: 'signalisation',
+  AUTRE: 'autre'
+} as const;
+
+export const TypeActivite = {
+  CREATION: 'creation',
+  MODIFICATION: 'modification',
+  VALIDATION: 'validation',
+  REVISION: 'revision',
+  RETARD: 'retard',
+  ASSIGNATION: 'assignation'
+} as const;
+
+export const TypeRessource = {
+  PERSONNEL: 'personnel',
+  EQUIPEMENT: 'equipement',
+  VEHICULE: 'vehicule',
+  MATERIAU: 'materiau',
+  OUTIL: 'outil',
+  AUTRE: 'autre'
+} as const;
+
+export const StatutRessource = {
+  DISPONIBLE: 'disponible',
+  ASSIGNE: 'assigne',
+  INDISPONIBLE: 'indisponible',
+  EN_MAINTENANCE: 'en_maintenance'
+} as const;
+
+export const RoleUtilisateur = {
+  RESPONSABLE_TRAVAUX: "responsable_travaux",
+  CONDUCTEUR_TRAVAUX: "conducteur_travaux",
+  RESPONSABLE_ETUDE: "responsable_etude",
+  DIRECTEUR: "directeur",
+  SERVICE_INTERNE: "service_interne",
+  ASSISTANTE_CONDUCTRICE: "assistante_conductrice",
+  GEOMETRE_PROJETEUR: "geometre_projeteur"
 } as const; 
