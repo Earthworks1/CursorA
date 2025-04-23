@@ -6,11 +6,119 @@
     <title>Spiess Planning</title>
     <base href="/" />
     <meta name="description" content="Application de gestion de planification pour Spiess SA" />
+    <script>
+      // Script de débogage
+      console.log("Chargement de l'application...");
+      
+      // Gestion des routes SPA pour les rechargements de page
+      (function() {
+        if (typeof window !== 'undefined') {
+          // Stockage du chemin initial pour le routeur
+          const path = window.location.pathname;
+          if (path !== '/' && !path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico)$/)) {
+            console.log("Chargement avec chemin:", path);
+            window.initialPath = path;
+          }
+        }
+      })();
+
+      // Capture des erreurs
+      window.addEventListener('error', function(e) {
+        console.error('Erreur détectée:', e.message, 'à', e.filename, 'ligne', e.lineno);
+        document.getElementById('error-display').innerHTML = '<strong>Erreur:</strong> ' + e.message;
+        document.getElementById('error-display').style.display = 'block';
+      });
+    </script>
+    <style>
+      /* Styles pour l'affichage des erreurs et le chargement */
+      #error-display {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #f44336;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        z-index: 9999;
+      }
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #f5f5f5;
+        z-index: 1000;
+      }
+      .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #09f;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
+    <div id="error-display"></div>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>Chargement de Spiess Planning...</p>
+    </div>
     <div id="root"></div>
+    <script>
+      console.log("Chargement de l'application...");
+      
+      // Vérification des ressources
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM chargé");
+        
+        // Vérifier si les scripts sont chargés correctement
+        const scripts = document.querySelectorAll('script');
+        console.log("Scripts chargés:", scripts.length);
+        
+        // Vérifier si les styles sont chargés correctement
+        const styles = document.querySelectorAll('link[rel="stylesheet"]');
+        console.log("Styles chargés:", styles.length);
+      });
+      
+      // Supprimer l'écran de chargement après un délai
+      setTimeout(function() {
+        console.log("Suppression de l'écran de chargement");
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) {
+          loadingElement.style.display = 'none';
+        }
+        
+        // Si aucun contenu n'est chargé dans #root, afficher un message
+        const rootElement = document.getElementById('root');
+        if (rootElement && (!rootElement.children || rootElement.children.length === 0)) {
+          const errorEl = document.createElement('div');
+          errorEl.style.padding = '20px';
+          errorEl.style.textAlign = 'center';
+          errorEl.innerHTML = '<h1>Problème de chargement</h1><p>L\'application n\'a pas pu se charger correctement. Veuillez vérifier la console pour plus de détails.</p>';
+          rootElement.appendChild(errorEl);
+        }
+      }, 3000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+    <script>
+      // Vérification après le chargement complet
+      window.addEventListener('load', function() {
+        console.log("Application complètement chargée");
+      });
+    </script>
   </body>
 </html>

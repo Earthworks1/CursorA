@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,8 +15,56 @@ import Configuration from "@/pages/configuration/index";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import Dynamic from "@/components/ui/dynamic";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
+
+// Créer une version de wouter qui fonctionne avec les déploiements statiques
+function useHashLocation(): [string, (to: string) => void] {
+  // Obtenir le chemin actuel en enlevant le hash
+  const getHashPath = () => {
+    // Si nous avons un chemin initial stocké (pour la première navigation), utilisez-le
+    if (window.initialPath) {
+      const path = window.initialPath;
+      console.log("Utilisation du chemin initial:", path);
+      // Effacer pour ne pas le réutiliser
+      window.initialPath = undefined;
+      return path;
+    }
+    
+    const path = window.location.hash.replace("#", "") || "/";
+    console.log("Chemin hash actuel:", path);
+    return path;
+  };
+
+  const [path, setPath] = useState(getHashPath());
+
+  const navigate = (to: string) => {
+    console.log("Navigation vers:", to);
+    window.location.hash = to;
+  };
+
+  useEffect(() => {
+    // Mettre à jour le chemin quand le hash change
+    const handleHashChange = () => {
+      console.log("Hash a changé, mise à jour du chemin");
+      setPath(getHashPath());
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    
+    // Si nous n'avons pas de hash mais un chemin, initialiser le hash
+    if (window.location.hash === "" && window.location.pathname !== "/") {
+      console.log("Initialisation du hash avec le pathname:", window.location.pathname);
+      window.location.hash = window.location.pathname;
+    }
+    
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  return [path, navigate];
+}
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,21 +92,28 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  console.log("Router component initializing");
   return (
-    <Switch>
+    <Switch hook={useHashLocation}>
       <Route path="/">
-        {() => (
-          <Layout>
-            <Dashboard />
-          </Layout>
-        )}
+        {() => {
+          console.log("Rendering dashboard route");
+          return (
+            <Layout>
+              <Dashboard />
+            </Layout>
+          );
+        }}
       </Route>
       <Route path="/chantiers">
-        {() => (
-          <Layout>
-            <Chantiers />
-          </Layout>
-        )}
+        {() => {
+          console.log("Rendering /chantiers route");
+          return (
+            <Layout>
+              <Chantiers />
+            </Layout>
+          );
+        }}
       </Route>
       <Route path="/chantiers/new">
         {() => (
@@ -237,12 +292,43 @@ function Router() {
         )}
       </Route>
 
-      <Route component={NotFound} />
+      <Route>
+        {(params) => {
+          console.log("Route not found, path:", window.location.pathname);
+          return <NotFound />;
+        }}
+      </Route>
     </Switch>
   );
 }
 
 function App() {
+  console.log("App component initializing");
+  
+  useEffect(() => {
+    console.log("App mounted");
+    
+    // Vérifier si les scripts et styles sont chargés correctement
+    const checkResources = () => {
+      const scripts = document.querySelectorAll('script');
+      const styles = document.querySelectorAll('link[rel="stylesheet"]');
+      
+      console.log(`Resources loaded: ${scripts.length} scripts, ${styles.length} stylesheets`);
+    };
+    
+    checkResources();
+    
+    // Supprimer l'écran de chargement après un délai
+    const timeout = setTimeout(() => {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.display = 'none';
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timeout);
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
