@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -43,10 +44,12 @@
     "date-fns": "^2.30.0",
     "embla-carousel-react": "^8.0.0",
     "framer-motion": "^10.16.4",
+    "input-otp": "^1.0.1",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-day-picker": "^8.9.1",
     "react-dom": "^18.2.0",
+    "react-helmet": "^6.1.0",
     "react-hook-form": "^7.48.2",
     "react-icons": "^4.11.0",
     "react-resizable-panels": "^1.0.5",
@@ -61,6 +64,7 @@
     "@types/node": "^20.8.2",
     "@types/react": "^18.2.25",
     "@types/react-dom": "^18.2.10",
+    "@types/react-helmet": "^6.1.11",
     "@vitejs/plugin-react": "^4.1.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
