@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="tache-1.pdf"
+Content-Length: 3040
+ETag: W/"be0-4nGY7oFXWL2+ZRkeGvXRoA483xQ"
+Date: Sat, 12 Apr 2025 21:52:48 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

@@ -1,0 +1,44 @@
+@import "./styles/modern-theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  
+  /* Appliquer les variables de densité aux composants */
+  .btn, .button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+  
+  .btn-sm, .button-sm {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+  }
+  
+  .btn-lg, .button-lg {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+  }
+  
+  .card {
+    padding: var(--spacing-lg);
+  }
+  
+  .input, .textarea, .select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+  }
+}
