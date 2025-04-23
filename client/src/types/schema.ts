@@ -24,4 +24,30 @@ export type Tool = {
   type: string;
   cout_horaire?: number;
   statut: string;
-}; 
+};
+
+// Enums pour faciliter la validation
+export const StatutTache = {
+  A_FAIRE: 'a_faire',
+  EN_COURS: 'en_cours',
+  EN_VALIDATION: 'en_validation',
+  TERMINE: 'termine',
+  EN_RETARD: 'en_retard',
+  EN_REVISION: 'en_revision'
+} as const;
+
+export const PrioriteTache = {
+  BASSE: 'basse',
+  NORMALE: 'normale',
+  HAUTE: 'haute',
+  URGENTE: 'urgente'
+} as const;
+
+export const TypeTache = {
+  ETUDE: 'etude',
+  CONCEPTION: 'conception',
+  LEVE: 'leve',
+  IMPLANTATION: 'implantation',
+  RECOLEMENT: 'recolement',
+  AUTRE: 'autre'
+} as const; 
