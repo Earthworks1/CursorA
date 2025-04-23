@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { checkEnvironmentVariables } from "./utils/checkEnv";
 
 // --- Importation pour la librairie pg ---
 import { Client } from 'pg';
@@ -56,6 +57,10 @@ app.use((req, res, next) => {
 
 // --- Fonction asynchrone principale pour démarrer l'application ---
 (async () => {
+  // Vérifier les variables d'environnement
+  if (!checkEnvironmentVariables()) {
+    process.exit(1);
+  }
 
   // 1. Récupérer la DATABASE_URL
   const dbUrl = process.env.DATABASE_URL;
