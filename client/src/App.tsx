@@ -245,13 +245,3 @@ function App() {
 }
 
 export default App;
-
-import PlanChargePage from "@/pages/plan-charge/index";
-
-<Route path="/plan-charge">
-  {() => (
-    <Layout>
-      <PlanChargePage />
-    </Layout>
-  )}
-</Route>
