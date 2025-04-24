@@ -33,9 +33,9 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// Créneaux horaires de 8h à 18h
+// Créneaux horaires de 7h à 18h
 const minTime = new Date();
-minTime.setHours(8, 0, 0);
+minTime.setHours(7, 0, 0);
 
 const maxTime = new Date();
 maxTime.setHours(18, 0, 0);
@@ -141,6 +141,28 @@ const DroppableTimeSlotWrapper: React.FC<TimeSlotWrapperProps & { isDroppable?: 
   );
 };
 
+// --- Composant CustomDateHeader --- START ---
+interface CustomDateHeaderProps {
+  date: Date;
+  label: string; // Le label par défaut (ex: "Lundi 21")
+  localizer: any; // Le localizer pour le formatage
+}
+
+const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date, localizer }) => {
+  // Formatter le nom du jour abrégé (ex: "Lun.")
+  const dayName = format(date, 'EEE', { locale: fr }); // Utilise 'EEE' pour le nom abrégé
+  // Formatter le numéro du jour (ex: "21")
+  const dayNumber = format(date, 'd', { locale: fr });
+
+  return (
+    <div className="flex flex-col items-center p-1"> {/* Centre le contenu */}
+      <span className="text-xs font-medium text-gray-600 uppercase">{dayName}.</span> {/* Nom du jour */} 
+      <span className="text-xl font-bold">{dayNumber}</span> {/* Numéro du jour */}
+    </div>
+  );
+};
+// --- Composant CustomDateHeader --- END ---
+
 const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSelectSlot, isDroppable = false }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -223,6 +245,8 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
     timeSlotWrapper: (props: TimeSlotWrapperProps) => (
       <DroppableTimeSlotWrapper {...props} isDroppable={isDroppable} />
     ),
+    // Utiliser notre composant personnalisé pour l'en-tête de date
+    dateHeader: CustomDateHeader,
   }), [isDroppable]); // Recréer si isDroppable change
 
   if (isLoadingTasks || isLoadingUsers || isLoadingSites) {
@@ -250,28 +274,22 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
           events={events}
           startAccessor="start"
           endAccessor="end"
-          defaultView={Views.WEEK} // Utiliser WEEK, les jours weekend seront masqués par CSS ou style si besoin
-          views={{'week': true}} // Forcer la vue semaine
-          date={currentDate}
-          onNavigate={(date) => setCurrentDate(date)}
-          step={60} // Créneaux de 60 minutes
-          timeslots={1} // 1 créneau par step
-          min={minTime}
-          max={maxTime}
-          culture='fr'
-          resources={resourceMap}        // <-- Ajout des ressources (utilisateurs)
+          defaultView={Views.WEEK}
+          views={availableViews} // Seulement la vue semaine
+          date={currentDate} // Contrôler la date affichée
+          onNavigate={() => {}} // Désactiver la navigation interne car on la gère
+          onSelectEvent={onSelectEvent}
+          onSelectSlot={onSelectSlot}
+          selectable // Permettre la sélection de créneaux
+          resources={resourceMap} // Fournir les utilisateurs comme ressources
           resourceIdAccessor="resourceId"
           resourceTitleAccessor="resourceTitle"
-          eventPropGetter={eventPropGetter} // <-- Style des événements
-          style={{ height: '100%' }}
-          selectable={true} // <-- Permettre la sélection de créneaux
-          onSelectSlot={onSelectSlot} // <-- Gérer le clic sur un créneau vide
-          onSelectEvent={onSelectEvent} // <-- Gérer le clic sur un événement existant
-          components={components} // <-- Utiliser notre wrapper pour les créneaux horaires DND
-          // Pour masquer Sam/Dim, une approche CSS est souvent plus simple:
-          // .rbc-time-header-cell:nth-child(6), .rbc-time-header-cell:nth-child(7),
-          // .rbc-day-slot .rbc-time-slot:nth-child(6), .rbc-day-slot .rbc-time-slot:nth-child(7) { display: none; }
-          // Ou utiliser dayPropGetter pour ajouter une classe spécifique aux weekends
+          min={minTime}
+          max={maxTime}
+          eventPropGetter={eventPropGetter}
+          components={components} // Utiliser les composants personnalisés
+          culture='fr' // Spécifier la culture française
+          style={{ flex: '1' }} // Assurer que le calendrier prend l'espace disponible
         />
       </div>
     </div>
