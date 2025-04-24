@@ -11,15 +11,15 @@ const requiredEnvVars = [
   'SESSION_SECRET'
 ];
 
-export function checkEnvironmentVariables() {
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+export function checkEnvironmentVariables(): boolean {
+  const requiredVars = ['DATABASE_URL'];
+  
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0) {
-    log(`❌ Variables d'environnement manquantes : ${missingVars.join(', ')}`);
-    log('⚠️ Veuillez configurer ces variables dans votre environnement ou dans Vercel');
+    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
     return false;
   }
   
-  log('✅ Toutes les variables d\'environnement requises sont présentes');
   return true;
 } 

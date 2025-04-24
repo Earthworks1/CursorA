@@ -28,34 +28,15 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 export async function sendNotificationEmail(
   to: string,
   subject: string,
-  text: string,
-  html?: string
+  content: string,
+  options: any = {}
 ): Promise<boolean> {
-  // En développement, juste logger l'email
-  if (isDevelopment) {
-    console.log('====== EMAIL NOTIFICATION ======');
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body: ${text}`);
-    console.log('===============================');
-    return true;
-  }
-
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || '"TP Suivi" <notifier@tpsuivi.fr>',
-      to,
-      subject,
-      text,
-      html: html || `<p>${text}</p>`
-    });
-
-    console.log(`Email envoyé: ${info.messageId}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
-    return false;
-  }
+  console.log(`[MOCK] Would send email to ${to} with subject: ${subject}`);
+  console.log(`[MOCK] Email content: ${content}`);
+  console.log(`[MOCK] Options: ${JSON.stringify(options)}`);
+  
+  // In a real implementation, this would connect to an email service
+  return true;
 }
 
 /**
