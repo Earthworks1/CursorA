@@ -10,35 +10,35 @@ import ProgressWithText from '@/components/ui/progress-with-text';
 import { formatDate, isDatePassed } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 
-type Tache = {
+type Task = {
   id: number;
-  titre: string;
-  chantierNom: string;
-  statut: string;
-  dateLimite: string;
-  progression: number;
+  title: string;
+  projectName: string;
+  status: string;
+  dueDate: string;
+  progress: number;
 };
 
 const RecentTasks = () => {
-  const { data: taches, isLoading } = useQuery<Tache[]>({
-    queryKey: ['/api/taches/recent'],
+  const { data: tasks, isLoading } = useQuery<Task[]>({
+    queryKey: ['/api/workload/tasks'],
   });
 
-  const [selectedChantier, setSelectedChantier] = React.useState('tous');
+  const [selectedProject, setSelectedProject] = React.useState('tous');
 
-  // Filtrer les tâches par chantier si nécessaire
-  const filteredTaches = React.useMemo(() => {
-    if (!taches) return [];
-    if (selectedChantier === 'tous') return taches;
-    return taches.filter(tache => tache.chantierNom === selectedChantier);
-  }, [taches, selectedChantier]);
+  // Filtrer les tâches par projet si nécessaire
+  const filteredTasks = React.useMemo(() => {
+    if (!tasks) return [];
+    if (selectedProject === 'tous') return tasks;
+    return tasks.filter(task => task.projectName === selectedProject);
+  }, [tasks, selectedProject]);
 
-  // Liste des chantiers uniques pour le sélecteur
-  const chantiers = React.useMemo(() => {
-    if (!taches) return [];
-    const chantiersSet = new Set(taches.map(tache => tache.chantierNom));
-    return Array.from(chantiersSet);
-  }, [taches]);
+  // Liste des projets uniques pour le sélecteur
+  const projects = React.useMemo(() => {
+    if (!tasks) return [];
+    const projectsSet = new Set(tasks.map(task => task.projectName));
+    return Array.from(projectsSet);
+  }, [tasks]);
 
   return (
     <Card className="lg:col-span-2 border border-gray-100">
@@ -46,15 +46,15 @@ const RecentTasks = () => {
         <CardTitle className="font-semibold text-gray-800">Tâches récentes</CardTitle>
         <div className="flex items-center">
           <div className="relative mr-2">
-            <Select value={selectedChantier} onValueChange={setSelectedChantier}>
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
               <SelectTrigger className="bg-gray-50 border border-gray-200 text-sm h-9 w-48">
-                <SelectValue placeholder="Tous les chantiers" />
+                <SelectValue placeholder="Tous les projets" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tous">Tous les chantiers</SelectItem>
-                {chantiers.map(chantier => (
-                  <SelectItem key={chantier} value={chantier}>
-                    {chantier}
+                <SelectItem value="tous">Tous les projets</SelectItem>
+                {projects.map(project => (
+                  <SelectItem key={project} value={project}>
+                    {project}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -67,16 +67,15 @@ const RecentTasks = () => {
           </Link>
         </div>
       </CardHeader>
-      
-      <div className="overflow-x-auto">
+      <CardContent className="p-0">
         <Table>
-          <TableHeader className="bg-gray-50">
-            <TableRow>
-              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider">Tâche</TableHead>
-              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider">Chantier</TableHead>
-              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</TableHead>
-              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider">Échéance</TableHead>
-              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wider">Progression</TableHead>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[40%]">Titre</TableHead>
+              <TableHead>Projet</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead>Échéance</TableHead>
+              <TableHead>Progression</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -86,57 +85,49 @@ const RecentTasks = () => {
                   Chargement des tâches...
                 </TableCell>
               </TableRow>
-            ) : filteredTaches.length === 0 ? (
+            ) : filteredTasks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-4 text-gray-500">
                   Aucune tâche à afficher
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTaches.map((tache) => (
-                <TableRow key={tache.id} className="hover:bg-gray-50">
+              filteredTasks.map((task) => (
+                <TableRow key={task.id} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="text-sm font-medium text-gray-900">
-                        <Link href={`/taches/${tache.id}`} className="hover:text-primary-600">
-                          {tache.titre}
+                        <Link href={`/taches/${task.id}`} className="hover:text-primary-600">
+                          {task.title}
                         </Link>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{tache.chantierNom}</div>
+                    <div className="text-sm text-gray-900">{task.projectName}</div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <StatusBadge status={tache.statut} />
+                    <StatusBadge status={task.status} />
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                    {isDatePassed(tache.dateLimite) ? (
+                    {isDatePassed(task.dueDate) ? (
                       <div className="flex items-center">
                         <Clock size={14} className="mr-1 text-red-500" />
-                        <span className="text-red-600 font-medium">{formatDate(tache.dateLimite)}</span>
+                        <span className="text-red-600 font-medium">{formatDate(task.dueDate)}</span>
                       </div>
                     ) : (
-                      <span>{formatDate(tache.dateLimite)}</span>
+                      <span>{formatDate(task.dueDate)}</span>
                     )}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                    <ProgressWithText value={tache.progression} status={tache.statut} />
+                  <TableCell className="whitespace-nowrap">
+                    <ProgressWithText value={task.progress} />
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
-      </div>
-      
-      <CardFooter className="px-5 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
-        <Link href="/taches/new">
-          <Button className="bg-primary-800 hover:bg-primary-700">
-            Nouvelle tâche
-          </Button>
-        </Link>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 };
