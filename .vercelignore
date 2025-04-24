@@ -4,4 +4,6 @@ node_modules
 .env.local
 *.log
 server
-setup-database.js 
+setup-database.js
+# Ignorer le dossier temporaire de l'API
+api/temp/ 
