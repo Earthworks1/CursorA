@@ -2,4 +2,12 @@ node_modules
 .env
 .env.local
 .env.development.local
-*.log 
+*.log
+# Ignore tous les fichiers TypeScript
+*.ts
+# Ignore les dossiers services et utils
+services/
+utils/
+# Ignore tous les fichiers sauf index.js
+*
+!index.js 
