@@ -20,7 +20,7 @@ type DashboardStats = {
 
 const Dashboard: React.FC = () => {
   const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ['/api/workload/stats'],
+    queryKey: ['/api/charge de travail/statistiques'],
   });
 
   return (

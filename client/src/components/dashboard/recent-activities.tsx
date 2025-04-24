@@ -21,7 +21,7 @@ type Activity = {
 
 const RecentActivities: React.FC = () => {
   const { data: activities, isLoading } = useQuery<Activity[]>({
-    queryKey: ['/api/workload/activities'],
+    queryKey: ['/api/charge de travail/activites'],
   });
 
   if (isLoading) {
