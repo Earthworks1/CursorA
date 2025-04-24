@@ -3,12 +3,14 @@
   "buildCommand": "cd client && npm run vercel-build",
   "outputDirectory": "client/dist",
   "functions": {
-    "api/vercel.js": {
+    "api/index.js": {
       "memory": 1024,
       "maxDuration": 10
     }
   },
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api" }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 } 
