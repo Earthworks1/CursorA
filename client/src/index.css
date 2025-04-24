@@ -77,3 +77,44 @@ div[style*="backdrop-filter"] {
   background-color: hsl(var(--background)) !important;
   backdrop-filter: none !important;
 }
+
+@layer components {
+  /* Forcer l'opacité complète pour tous les menus et popups Radix UI */
+  .DropdownMenuContent, 
+  .SelectContent, 
+  .PopoverContent,
+  .ContextMenuContent,
+  .TooltipContent {
+    background-color: hsl(var(--background)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    opacity: 1 !important;
+    /* Ajouter une couleur de fond de secours au cas où la variable échoue */
+    background-color: white !important; /* Mode clair par défaut */
+  }
+
+  .dark .DropdownMenuContent,
+  .dark .SelectContent,
+  .dark .PopoverContent,
+  .dark .ContextMenuContent,
+  .dark .TooltipContent {
+    background-color: hsl(var(--background)) !important; /* Devrait être sombre ici */
+    /* Couleur de secours sombre */
+    background-color: #18181b !important; /* Zinc 900 par exemple */
+  }
+
+  /* Cibler plus spécifiquement les wrappers de contenu Radix */
+  div[data-radix-popper-content-wrapper] > div,
+  div[data-radix-portal] > div[role="dialog"],
+  div[data-radix-portal] > div[data-state="open"] {
+    background-color: hsl(var(--background)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    opacity: 1 !important;
+  }
+  
+  /* Annuler explicitement toute opacité Tailwind */
+  .bg-opacity-70, .bg-opacity-90 {
+    --tw-bg-opacity: 1 !important;
+  }
+}
