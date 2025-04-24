@@ -180,6 +180,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
+  // ====== ROUTE HEALTH CHECK (AJOUTÉE) ======
+  app.get("/api/health", (req, res) => {
+    console.log("[Health Check] Received request for /api/health");
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+  // =========================================
+
   // ====== ROUTES API ======
 
   // Récupérer les statistiques pour le dashboard
@@ -199,6 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // GET /api/workload/tasks - Liste les tâches avec filtres
   app.get("/api/workload/tasks", async (req, res) => {
+    console.log("[API Request] Received GET /api/workload/tasks"); // Log au début de la route
     try {
       const { week, userId, status } = req.query;
       const db = await readDatabase();
