@@ -7,6 +7,33 @@
     <base href="/" />
     <meta name="description" content="Application de gestion de planification pour Spiess SA" />
     <script>
+      // Gestion d'erreurs globale
+      window.addEventListener('error', function(e) {
+        console.error('Erreur globale:', e.message, e.filename, e.lineno);
+        
+        // Afficher un message d'erreur uniquement si c'est une erreur liée à removeChild
+        if (e.message && e.message.includes('removeChild')) {
+          console.warn('Erreur de DOM détectée. Recharge de la page...');
+          
+          // Créer une bannière d'erreur si elle n'existe pas déjà
+          if (!document.querySelector('.error-notification')) {
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'error-notification';
+            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 8px 16px; z-index: 9999; text-align: center;';
+            errorDiv.innerHTML = 'Mise à jour de la page en cours...';
+            document.body.prepend(errorDiv);
+          }
+          
+          // Recharger la page après un court délai pour permettre l'affichage du message
+          setTimeout(function() {
+            window.location.reload();
+          }, 500);
+          
+          // Empêcher l'erreur de s'afficher dans la console
+          e.preventDefault();
+        }
+      }, true);
+      
       // Script pour le routage SPA
       (function() {
         // Redirection vers l'index pour les routes non trouvées
@@ -23,6 +50,9 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Élément pour afficher les erreurs de chargement -->
+    <div id="error-display" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 10px; z-index: 9999; text-align: center;"></div>
+    
     <script type="module" src="./client/src/main.tsx"></script>
     <!-- En cas d'erreur, essayer les chemins alternatifs -->
     <script>

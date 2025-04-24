@@ -10,6 +10,27 @@ const fontConfig = {
   className: "font-sans",
 };
 
+// Fonction pour gérer le nettoyage lors des rechargements de page
+function handleBeforeUnload() {
+  // Nettoyer les nœuds DOM potentiellement problématiques
+  const root = document.getElementById("root");
+  if (root) {
+    // Essayer de nettoyer le contenu si nécessaire
+    try {
+      // Nettoyer les effets React d'abord
+      if (window.__REACT_ROOT_INSTANCE) {
+        // @ts-ignore - Propriété interne de React
+        window.__REACT_ROOT_INSTANCE.unmount();
+      }
+    } catch (e) {
+      console.warn("Erreur lors du nettoyage React:", e);
+    }
+  }
+}
+
+// Écouter les événements de navigation
+window.addEventListener("beforeunload", handleBeforeUnload);
+
 try {
   const root = document.getElementById("root");
   if (!root) {
@@ -17,8 +38,17 @@ try {
     throw new Error("Élément racine non trouvé");
   }
   
+  // Nettoyer le contenu existant pour éviter les problèmes de cache DOM
+  root.innerHTML = '';
+  
   console.log("Rendu de l'application...");
-  createRoot(root).render(
+  const rootInstance = createRoot(root);
+  
+  // Stocker l'instance pour un nettoyage potentiel
+  // @ts-ignore
+  window.__REACT_ROOT_INSTANCE = rootInstance;
+  
+  rootInstance.render(
     <div className={fontConfig.className}>
       <App />
     </div>
@@ -27,9 +57,12 @@ try {
 } catch (error) {
   console.error("Erreur lors du rendu de l'application:", error);
   // Afficher l'erreur à l'utilisateur
-  const errorDisplay = document.getElementById("error-display");
-  if (errorDisplay) {
-    errorDisplay.textContent = `Erreur de rendu: ${error instanceof Error ? error.message : String(error)}`;
-    errorDisplay.style.display = "block";
+  const errorDisplay = document.getElementById("error-display") || document.createElement("div");
+  errorDisplay.id = "error-display";
+  errorDisplay.style.cssText = "position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 10px; z-index: 9999; text-align: center;";
+  errorDisplay.textContent = `Erreur de rendu: ${error instanceof Error ? error.message : String(error)}`;
+  
+  if (!document.getElementById("error-display")) {
+    document.body.prepend(errorDisplay);
   }
 }

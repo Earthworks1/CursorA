@@ -39,15 +39,27 @@ function useHashLocation(): [string, (to: string) => void] {
   const [path, setPath] = useState(getHashPath());
 
   const navigate = (to: string) => {
+    // Prévenir les navigations multiples rapprochées qui peuvent causer des problèmes DOM
+    if (to === path) {
+      console.log("Navigation évitée: déjà à la destination", to);
+      return;
+    }
+    
     console.log("Navigation vers:", to);
-    window.location.hash = to;
+    // Petit délai pour permettre le nettoyage des composants
+    setTimeout(() => {
+      window.location.hash = to;
+    }, 0);
   };
 
   useEffect(() => {
     // Mettre à jour le chemin quand le hash change
     const handleHashChange = () => {
       console.log("Hash a changé, mise à jour du chemin");
-      setPath(getHashPath());
+      const newPath = getHashPath();
+      if (newPath !== path) {
+        setPath(newPath);
+      }
     };
 
     window.addEventListener("hashchange", handleHashChange);
@@ -61,7 +73,7 @@ function useHashLocation(): [string, (to: string) => void] {
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
-  }, []);
+  }, [path]);
 
   return [path, navigate];
 }
@@ -93,6 +105,26 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function Router() {
   console.log("Router component initializing");
+  
+  // Utilisation du crochet useLocation personnalisé
+  const [location] = useHashLocation();
+  
+  // Effet pour gérer le nettoyage lors des changements de route
+  useEffect(() => {
+    console.log("Changement de route détecté:", location);
+    
+    // Nettoyer les erreurs visibles
+    const errorBanner = document.querySelector('.error-banner');
+    if (errorBanner) {
+      errorBanner.remove();
+    }
+    
+    return () => {
+      // Nettoyage avant de changer de route
+      console.log("Nettoyage de la route précédente");
+    };
+  }, [location]);
+  
   return (
     <Switch hook={useHashLocation}>
       <Route path="/">
