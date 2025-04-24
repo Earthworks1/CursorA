@@ -186,26 +186,37 @@ async function handleGetTaskById(req: VercelRequest, res: VercelResponse, taskId
 }
 
 async function handleCreateTask(req: VercelRequest, res: VercelResponse) {
+  console.log('Creating task with data:', req.body);
+  
   const taskData = req.body;
   
   // Validation de base
   if (!taskData || !taskData.description || !taskData.type || !taskData.status) {
+    console.error('Invalid task data:', taskData);
     return res.status(400).json({ message: 'Données incomplètes' });
   }
   
-  const newTask: Task = {
-    ...taskData,
-    id: crypto.randomUUID(),
-    createdAt: new Date(),
-    startTime: taskData.startTime ? new Date(taskData.startTime) : new Date(),
-    endTime: taskData.endTime ? new Date(taskData.endTime) : new Date(),
-  };
-  
-  const db = await readDatabase();
-  db.tasks.push(newTask);
-  await writeDatabase(db);
-  
-  res.status(201).json(newTask);
+  try {
+    const newTask: Task = {
+      ...taskData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      startTime: taskData.startTime ? parseISO(taskData.startTime) : new Date(),
+      endTime: taskData.endTime ? parseISO(taskData.endTime) : new Date(),
+    };
+    
+    console.log('Processed new task:', newTask);
+    
+    const db = await readDatabase();
+    db.tasks.push(newTask);
+    await writeDatabase(db);
+    
+    console.log('Task created successfully:', newTask.id);
+    res.status(201).json(newTask);
+  } catch (error) {
+    console.error('Error creating task:', error);
+    res.status(500).json({ message: 'Erreur lors de la création de la tâche', error: error.message });
+  }
 }
 
 async function handleUpdateTask(req: VercelRequest, res: VercelResponse, taskId?: string) {

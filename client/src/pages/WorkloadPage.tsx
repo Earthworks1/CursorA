@@ -91,13 +91,24 @@ const WorkloadPage: React.FC = () => {
 
   // Gérer la sauvegarde depuis le formulaire
   const handleSaveTask = (formData: Omit<Task, 'id' | 'createdAt'> | Partial<Omit<Task, 'id' | 'createdAt'>>) => {
+    console.log('Saving task with data:', formData);
+    
     if (selectedTask && selectedTask.id) {
       // Mode édition
+      console.log('Updating existing task:', selectedTask.id);
       updateTaskMutation.mutate({ taskId: selectedTask.id, data: formData });
     } else {
       // Mode création
-      // Assurer que formData a toutes les props requises pour la création
-      createTaskMutation.mutate(formData as Omit<Task, 'id' | 'createdAt'>);
+      // S'assurer que toutes les propriétés requises sont présentes
+      const newTaskData = {
+        ...formData,
+        status: formData.status || 'a_planifier',
+        startTime: formData.startTime || new Date(),
+        endTime: formData.endTime || new Date(),
+      } as Omit<Task, 'id' | 'createdAt'>;
+      
+      console.log('Creating new task with data:', newTaskData);
+      createTaskMutation.mutate(newTaskData);
     }
   };
 
@@ -118,14 +129,22 @@ const WorkloadPage: React.FC = () => {
   
   // Ouvrir la modale depuis un créneau vide du calendrier
   const handleSelectSlot = (slotInfo: { start: Date, end: Date, resourceId?: string }) => {
-      setSelectedTask({
-          // Pré-remplir dates et utilisateur
-          startTime: slotInfo.start,
-          endTime: slotInfo.end, 
-          assignedUserId: slotInfo.resourceId || null, // ID de la colonne ressource
-          status: 'planifie', // Statut par défaut si on clique sur le calendrier
-      });
-      setIsModalOpen(true);
+    console.log('Selected slot:', slotInfo);
+    
+    const newTask = {
+      startTime: slotInfo.start,
+      endTime: slotInfo.end,
+      assignedUserId: slotInfo.resourceId || null,
+      status: 'planifie',
+      type: 'leve', // Type par défaut
+      description: '', // À remplir dans le formulaire
+      siteId: null, // À sélectionner dans le formulaire
+      notes: null,
+    };
+    
+    console.log('Pre-filling task form with:', newTask);
+    setSelectedTask(newTask);
+    setIsModalOpen(true);
   };
 
   // Gérer la fin du drag & drop
