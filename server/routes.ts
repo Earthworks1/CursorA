@@ -19,11 +19,58 @@ import {
   insertEquipeMembreSchema,
   insertParametreSchema
 } from "@shared/schema";
+import { Task, User, Site } from "@shared/types/workload";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { generatePdf } from "./services/pdf";
 import { sendNotificationEmail } from "./services/notification";
 import { registerChatGptApi } from "./chatgpt-api";
+import { parse, startOfWeek, endOfWeek, isValid, parseISO } from 'date-fns';
+import crypto from 'crypto';
+
+// Chemin vers le fichier de base de données JSON
+const DB_PATH = path.join(process.cwd(), 'database.json');
+
+// Type pour la structure de la base de données JSON
+interface Database {
+  tasks: Task[];
+  users: User[];
+  sites: Site[];
+}
+
+// Helper pour lire la base de données JSON
+async function readDatabase(): Promise<Database> {
+  try {
+    const data = await fs.readFile(DB_PATH, 'utf-8');
+    // Convertir les chaînes de date en objets Date
+    const db: Database = JSON.parse(data, (key, value) => {
+      if ((key === 'startTime' || key === 'endTime' || key === 'createdAt') && typeof value === 'string') {
+        const date = new Date(value);
+        return isNaN(date.getTime()) ? value : date; // Retourner la chaîne si invalide
+      }
+      return value;
+    });
+    return db;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      // Le fichier n'existe pas, retourner une structure vide
+      console.warn('database.json not found, returning empty structure.');
+      return { tasks: [], users: [], sites: [] };
+    }
+    console.error("Erreur de lecture de database.json:", error);
+    throw new Error("Impossible de lire la base de données.");
+  }
+}
+
+// Helper pour écrire dans la base de données JSON
+async function writeDatabase(data: Database): Promise<void> {
+  try {
+    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.error("Erreur d'écriture de database.json:", error);
+    throw new Error("Impossible d'enregistrer les données.");
+  }
+}
 
 // Middleware pour vérifier les permissions administrateur
 const checkAdminPermission = (req: Request, res: Response, next: () => void) => {
@@ -79,6 +126,29 @@ interface CustomError extends Error {
   status?: number;
 }
 
+// == VALIDATION SCHEMA (pour les nouvelles tâches) ==
+// Créer un schéma Zod pour valider les données des tâches (optionnel mais recommandé)
+// Note: on pourrait être plus précis avec les types enum si besoin
+const baseTaskSchema = z.object({
+  description: z.string().min(1, "La description est requise"),
+  type: z.enum(['leve', 'conception', 'implantation', 'reunion', 'administratif']),
+  siteId: z.string().nullable(),
+  assignedUserId: z.string().nullable(),
+  startTime: z.string().transform((val) => parseISO(val)), // Convertir en Date
+  endTime: z.string().transform((val) => parseISO(val)), // Convertir en Date
+  status: z.enum(['a_planifier', 'planifie', 'en_cours', 'termine', 'bloque']),
+  notes: z.string().nullable(),
+}).refine(data => data.endTime >= data.startTime, {
+  message: "La date de fin doit être après la date de début",
+  path: ["endTime"],
+});
+
+// Schéma pour la création (tous les champs sauf id et createdAt)
+const createTaskSchema = baseTaskSchema;
+
+// Schéma pour la mise à jour (tous les champs sont optionnels)
+const updateTaskSchema = baseTaskSchema.partial();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Créer le serveur HTTP
   const httpServer = createServer(app);
@@ -101,6 +171,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       const err = error as Error;
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // ============================
+  // == ROUTES PLAN DE CHARGE ===
+  // ============================
+  
+  // GET /api/workload/tasks - Liste les tâches avec filtres
+  app.get("/api/workload/tasks", async (req, res) => {
+    try {
+      const { week, userId, status } = req.query;
+      const db = await readDatabase();
+      let filteredTasks = db.tasks;
+      
+      // Filtrer par semaine
+      if (typeof week === 'string') {
+        // Parse week string (YYYY-WNN)
+        const [yearStr, weekNumberStr] = week.split('-W');
+        const year = parseInt(yearStr);
+        const weekNumber = parseInt(weekNumberStr);
+        
+        if (!isNaN(year) && !isNaN(weekNumber) && weekNumber >= 1 && weekNumber <= 53) {
+          // Utiliser une approche pour obtenir le début de la semaine ISO
+          // Note: date-fns `parse` peut être délicat avec les numéros de semaine seuls
+          // Nous construisons une date au milieu de l'année et ajustons à la bonne semaine
+          const midYearDate = new Date(year, 6, 1); // 1er Juillet
+          const targetDate = parse(`${year}-W${weekNumber}-1`, 'YYYY-'W'II-i', new Date()); // Lundi de la semaine
+          
+          if (isValid(targetDate)) {
+            const weekStart = startOfWeek(targetDate, { weekStartsOn: 1 }); // Lundi
+            const weekEnd = endOfWeek(targetDate, { weekStartsOn: 1 });   // Dimanche 23:59:59.999
+            
+            console.log(`Filtrage semaine ${week}: Début=${weekStart.toISOString()}, Fin=${weekEnd.toISOString()}`);
+            
+            filteredTasks = filteredTasks.filter(task => {
+              if (task.startTime instanceof Date && !isNaN(task.startTime.getTime())) {
+                return task.startTime >= weekStart && task.startTime <= weekEnd;
+              } else {
+                console.warn(`Tâche ${task.id} a une startTime invalide:`, task.startTime);
+                return false;
+              }
+            });
+          } else {
+            return res.status(400).json({ message: `Format de semaine invalide: ${week}. Utilisez YYYY-WNN.` });
+          }
+        } else {
+          return res.status(400).json({ message: `Format de semaine invalide: ${week}. Utilisez YYYY-WNN.` });
+        }
+      }
+      
+      // Filtrer par utilisateur
+      if (typeof userId === 'string' && userId !== '') {
+        filteredTasks = filteredTasks.filter(task => task.assignedUserId === userId);
+      }
+      
+      // Filtrer par statut
+      if (typeof status === 'string' && status !== '') {
+        filteredTasks = filteredTasks.filter(task => task.status === status);
+      }
+      
+      res.json(filteredTasks);
+      
+    } catch (error) {
+      const err = error as Error;
+      console.error("Erreur GET /api/workload/tasks:", err);
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // POST /api/workload/tasks - Crée une nouvelle tâche
+  app.post("/api/workload/tasks", async (req, res) => {
+    try {
+      // Validation avec Zod (optionnel, mais recommandé)
+      let taskData;
+      try {
+        // Convertir les dates vides en null avant validation
+        const body = { ...req.body };
+        if (body.startTime === '') body.startTime = null;
+        if (body.endTime === '') body.endTime = null;
+        
+        taskData = createTaskSchema.parse(body);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return res.status(400).json({ message: fromZodError(error).toString() });
+        }
+        throw error; // Relancer les autres erreurs
+      }
+      
+      const db = await readDatabase();
+      const newTask: Task = {
+        ...taskData,
+        id: crypto.randomUUID(),
+        createdAt: new Date(),
+        // Assurer que les dates sont bien des objets Date
+        startTime: new Date(taskData.startTime),
+        endTime: new Date(taskData.endTime),
+      };
+      
+      db.tasks.push(newTask);
+      await writeDatabase(db);
+      
+      res.status(201).json(newTask);
+    } catch (error) {
+      const err = error as Error;
+      console.error("Erreur POST /api/workload/tasks:", err);
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // PUT /api/workload/tasks/:id - Met à jour une tâche
+  app.put("/api/workload/tasks/:id", async (req, res) => {
+    try {
+      const taskId = req.params.id;
+      
+      // Validation avec Zod (optionnel)
+      let updateData;
+      try {
+         // Convertir les dates vides en null avant validation
+        const body = { ...req.body };
+        if (body.startTime === '') body.startTime = null;
+        if (body.endTime === '') body.endTime = null;
+        
+        // Valider en partiel
+        updateData = updateTaskSchema.parse(body);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return res.status(400).json({ message: fromZodError(error).toString() });
+        }
+        throw error;
+      }
+      
+      const db = await readDatabase();
+      const taskIndex = db.tasks.findIndex(t => t.id === taskId);
+      
+      if (taskIndex === -1) {
+        return res.status(404).json({ message: "Tâche non trouvée" });
+      }
+      
+      // Préparer les données mises à jour, en s'assurant que les dates sont des objets Date
+      const updatedTaskData = { ...db.tasks[taskIndex] };
+      for (const key in updateData) {
+        if (updateData.hasOwnProperty(key)) {
+          if ((key === 'startTime' || key === 'endTime') && updateData[key]) {
+             updatedTaskData[key] = new Date(updateData[key]);
+          } else {
+             updatedTaskData[key] = updateData[key];
+          }
+        }
+      }
+      
+      // Vérifier à nouveau la cohérence des dates si les deux sont fournies
+      if (updatedTaskData.startTime && updatedTaskData.endTime && updatedTaskData.endTime < updatedTaskData.startTime) {
+        return res.status(400).json({ message: "La date de fin doit être après la date de début" });
+      }
+
+      db.tasks[taskIndex] = updatedTaskData as Task; // Assurer le type
+      
+      await writeDatabase(db);
+      res.json(db.tasks[taskIndex]);
+      
+    } catch (error) {
+      const err = error as Error;
+      console.error(`Erreur PUT /api/workload/tasks/${req.params.id}:`, err);
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // DELETE /api/workload/tasks/:id - Supprime une tâche
+  app.delete("/api/workload/tasks/:id", async (req, res) => {
+    try {
+      const taskId = req.params.id;
+      const db = await readDatabase();
+      const initialLength = db.tasks.length;
+      
+      db.tasks = db.tasks.filter(t => t.id !== taskId);
+      
+      if (db.tasks.length === initialLength) {
+        return res.status(404).json({ message: "Tâche non trouvée" });
+      }
+      
+      await writeDatabase(db);
+      res.status(204).send(); // No Content
+      
+    } catch (error) {
+      const err = error as Error;
+      console.error(`Erreur DELETE /api/workload/tasks/${req.params.id}:`, err);
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // GET /api/workload/users - Retourne la liste des utilisateurs
+  app.get("/api/workload/users", async (req, res) => {
+    try {
+      const db = await readDatabase();
+      res.json(db.users);
+    } catch (error) {
+      const err = error as Error;
+      console.error("Erreur GET /api/workload/users:", err);
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  // GET /api/workload/sites - Retourne la liste des sites
+  app.get("/api/workload/sites", async (req, res) => {
+    try {
+      const db = await readDatabase();
+      res.json(db.sites);
+    } catch (error) {
+      const err = error as Error;
+      console.error("Erreur GET /api/workload/sites:", err);
       res.status(500).json({ message: err.message });
     }
   });

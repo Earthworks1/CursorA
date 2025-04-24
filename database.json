@@ -1,0 +1,11 @@
+{
+  "tasks": [],
+  "users": [
+    { "id": "user-1", "name": "Antoine" },
+    { "id": "user-2", "name": "Lucie" }
+  ],
+  "sites": [
+    { "id": "site-1", "name": "HSP Potier", "address": "Quelque part" },
+    { "id": "site-2", "name": "Chantier XYZ", "address": "Ailleurs" }
+  ]
+} 

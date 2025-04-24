@@ -12,6 +12,7 @@ import Plans from "@/pages/plans/index";
 import Rapports from "@/pages/rapports/index";
 import MonCompte from "@/pages/mon-compte/index";
 import Configuration from "@/pages/configuration/index";
+import WorkloadPage from "@/pages/WorkloadPage";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import Dynamic from "@/components/ui/dynamic";
@@ -305,9 +306,7 @@ function Router() {
       <Route path="/planning">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/planning").then(mod => <mod.default />)}
-            </Dynamic>
+            <WorkloadPage />
           </Layout>
         )}
       </Route>
