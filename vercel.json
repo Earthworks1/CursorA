@@ -2,7 +2,7 @@
   "version": 2,
   "outputDirectory": "client/dist",
   "functions": {
-    "api/index.ts": {
+    "api/*.ts": {
       "memory": 1024,
       "maxDuration": 10
     }
@@ -13,8 +13,16 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "^/api/health",
+      "dest": "/api/health.ts"
+    },
+    {
+      "src": "^/api/workload/(.*)",
+      "dest": "/api/workload.ts"
+    },
+    {
       "src": "^/api/(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/vercel.ts"
     },
     {
       "handle": "filesystem"

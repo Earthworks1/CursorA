@@ -1,5 +1,20 @@
+// Logique de diagnostic pour comprendre le contexte d'exécution Vercel
+console.log(`[api/index.ts] Starting API server in ${process.env.NODE_ENV || 'development'} mode`);
+console.log(`[api/index.ts] Current working directory: ${process.cwd()}`);
+try {
+  const fs = require('fs');
+  if (fs.existsSync('./routes.ts')) {
+    console.log('[api/index.ts] routes.ts exists in current directory');
+  } else {
+    console.log('[api/index.ts] routes.ts NOT FOUND in current directory');
+    console.log('[api/index.ts] Files in current directory:', fs.readdirSync('.').join(', '));
+  }
+} catch (error) {
+  console.error('[api/index.ts] Error during diagnostics:', error);
+}
+
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes.ts";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkEnvironmentVariables } from "./utils/checkEnv";
 
