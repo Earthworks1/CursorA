@@ -45,8 +45,8 @@ maxTime.setHours(18, 0, 0);
 // Pour limiter aux jours 1-5 (Lun-Ven), on peut filtrer les jours dans les props du Calendar
 // Ou utiliser `formats` pour cacher les jours non désirés si la vue le permet.
 // react-big-calendar n'a pas de vue "work_week" par défaut qui exclut Sam/Dim aussi facilement.
-// On va utiliser la vue 'DAY' et afficher 5 jours.
-const availableViews = [Views.DAY];
+// On va utiliser la vue 'WEEK' et configurer pour n'afficher que du lundi au vendredi
+const availableViews = [Views.WEEK];
 
 // Fonctions de fetch API (à adapter selon votre client HTTP, ex: fetch, axios)
 const fetchTasks = async (week: string): Promise<Task[]> => {
@@ -163,6 +163,24 @@ const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date, localizer }) 
 };
 // --- Composant CustomDateHeader --- END ---
 
+// Composant personnalisé pour l'affichage des heures
+const CustomTimeGutterHeader: React.FC = () => {
+  return (
+    <div className="rbc-time-gutter-header">
+      <span className="text-xs font-medium text-gray-600">Heures</span>
+    </div>
+  );
+};
+
+// Composant personnalisé pour l'affichage des heures dans la colonne de gauche
+const CustomTimeGutter: React.FC<{ date: Date }> = ({ date }) => {
+  return (
+    <div className="rbc-time-gutter">
+      <span className="text-xs font-medium">{format(date, 'HH:mm')}</span>
+    </div>
+  );
+};
+
 const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSelectSlot, isDroppable = false }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -245,9 +263,10 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
     timeSlotWrapper: (props: TimeSlotWrapperProps) => (
       <DroppableTimeSlotWrapper {...props} isDroppable={isDroppable} />
     ),
-    // Utiliser notre composant personnalisé pour l'en-tête de date
     dateHeader: CustomDateHeader,
-  }), [isDroppable]); // Recréer si isDroppable change
+    timeGutterHeader: CustomTimeGutterHeader,
+    timeGutter: CustomTimeGutter,
+  }), [isDroppable]);
 
   if (isLoadingTasks || isLoadingUsers || isLoadingSites) {
     return <div>Chargement...</div>; // Ou un spinner
@@ -274,23 +293,36 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
           events={events}
           startAccessor="start"
           endAccessor="end"
-          defaultView={Views.DAY} // Changer la vue par défaut
-          views={availableViews} // Vue DAY uniquement
-          days={5} // Afficher 5 jours
-          date={currentDate} // Contrôler la date affichée
-          onNavigate={() => {}} // Désactiver la navigation interne car on la gère
+          defaultView={Views.WEEK}
+          views={availableViews}
+          date={currentDate}
+          onNavigate={() => {}}
           onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
-          selectable // Permettre la sélection de créneaux
-          resources={resourceMap} // Fournir les utilisateurs comme ressources
+          selectable
+          resources={resourceMap}
           resourceIdAccessor="resourceId"
           resourceTitleAccessor="resourceTitle"
           min={minTime}
           max={maxTime}
           eventPropGetter={eventPropGetter}
-          components={components} // Utiliser les composants personnalisés
-          culture='fr' // Spécifier la culture française
-          style={{ flex: '1' }} // Assurer que le calendrier prend l'espace disponible
+          components={components}
+          culture='fr'
+          style={{ flex: '1' }}
+          firstDay={1}
+          step={60}
+          timeslots={1}
+          formats={{
+            dayFormat: 'dddd D',
+            dayRangeHeaderFormat: ({ start, end }) => {
+              return `${start.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })} - ${end.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })}`;
+            }
+          }}
+          // Ajout des styles pour la colonne des heures
+          style={{
+            flex: '1',
+            '--rbc-time-gutter-width': '60px', // Largeur de la colonne des heures
+          }}
         />
       </div>
     </div>
