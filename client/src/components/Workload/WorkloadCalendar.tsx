@@ -280,7 +280,7 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
           timeslots={1}
           formats={{
             timeGutterFormat: 'HH:mm',
-            dayFormat: 'dddd D',
+            dayFormat: 'EEEE d',
             dayHeaderFormat: (date: Date) => format(date, 'EEEE d MMMM', { locale: fr }),
           }}
           className="custom-calendar"
