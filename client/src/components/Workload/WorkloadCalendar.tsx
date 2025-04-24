@@ -145,7 +145,7 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Format de semaine YYYY-WNN pour l'API
-  const currentWeek = format(currentDate, 'yyyy-\'W'II', { locale: fr, weekStartsOn: 1 });
+  const currentWeek = format(currentDate, 'yyyy-\'W\'II', { locale: fr, weekStartsOn: 1 });
 
   // --- Fetching des données avec React Query ---
   const { data: tasks, isLoading: isLoadingTasks, error: tasksError } = 
