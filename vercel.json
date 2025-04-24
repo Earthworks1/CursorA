@@ -2,7 +2,7 @@
   "version": 2,
   "outputDirectory": "client/dist",
   "functions": {
-    "server/index.ts": {
+    "api/index.ts": {
       "memory": 1024,
       "maxDuration": 10
     }
@@ -14,7 +14,7 @@
     },
     {
       "src": "^/api/(.*)",
-      "dest": "/server/index.ts"
+      "dest": "/api/index.ts"
     },
     {
       "handle": "filesystem"
