@@ -1,6 +1,12 @@
 {
   "version": 2,
   "outputDirectory": "client/dist",
+  "functions": {
+    "server/index.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "routes": [
     {
       "src": "^/assets/(.*)",
