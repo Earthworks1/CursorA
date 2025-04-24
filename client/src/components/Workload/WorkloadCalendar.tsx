@@ -14,6 +14,7 @@ import endOfWeek from 'date-fns/endOfWeek';
 import parseISO from 'date-fns/parseISO'; // Pour parser les dates de l'API
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import '@/styles/calendar.css'; // Import des styles personnalisés
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Task, User, Site } from '@shared/types/workload'; // Import des types
@@ -41,12 +42,7 @@ const maxTime = new Date();
 maxTime.setHours(18, 0, 0);
 
 // Définir les vues autorisées (semaine de travail)
-// On utilise la vue 'week' et on la filtre plus tard si besoin ou on utilise dayLayoutAlgorithm
-// Pour limiter aux jours 1-5 (Lun-Ven), on peut filtrer les jours dans les props du Calendar
-// Ou utiliser `formats` pour cacher les jours non désirés si la vue le permet.
-// react-big-calendar n'a pas de vue "work_week" par défaut qui exclut Sam/Dim aussi facilement.
-// On va utiliser la vue 'WEEK' et configurer pour n'afficher que du lundi au vendredi
-const availableViews = [Views.WEEK];
+const availableViews = [Views.WORK_WEEK];
 
 // Fonctions de fetch API (à adapter selon votre client HTTP, ex: fetch, axios)
 const fetchTasks = async (week: string): Promise<Task[]> => {
@@ -148,35 +144,36 @@ interface CustomDateHeaderProps {
   localizer: any; // Le localizer pour le formatage
 }
 
-const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date, localizer }) => {
-  // Formatter le nom du jour abrégé (ex: "Lun.")
-  const dayName = format(date, 'EEE', { locale: fr }); // Utilise 'EEE' pour le nom abrégé
-  // Formatter le numéro du jour (ex: "21")
-  const dayNumber = format(date, 'd', { locale: fr });
+const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date }) => {
+  // Formatter le nom du jour et la date
+  const dayName = format(date, 'EEEE', { locale: fr }); // Nom complet du jour
+  const dayNumber = format(date, 'd MMMM', { locale: fr }); // Jour et mois
 
   return (
-    <div className="flex flex-col items-center p-1"> {/* Centre le contenu */}
-      <span className="text-xs font-medium text-gray-600 uppercase">{dayName}.</span> {/* Nom du jour */} 
-      <span className="text-xl font-bold">{dayNumber}</span> {/* Numéro du jour */}
+    <div className="flex flex-col items-center p-2 border-b bg-gray-50">
+      <span className="text-sm font-semibold text-gray-900 capitalize">{dayName}</span>
+      <span className="text-xs text-gray-600">{dayNumber}</span>
     </div>
   );
 };
 // --- Composant CustomDateHeader --- END ---
 
 // Composant personnalisé pour l'affichage des heures
-const CustomTimeGutterHeader: React.FC = () => {
+const CustomTimeGutter: React.FC<{ date: Date }> = ({ date }) => {
   return (
-    <div className="rbc-time-gutter-header">
-      <span className="text-xs font-medium text-gray-600">Heures</span>
+    <div className="flex items-center justify-end pr-2 h-full">
+      <span className="text-xs font-medium text-gray-600">
+        {format(date, 'HH:mm')}
+      </span>
     </div>
   );
 };
 
-// Composant personnalisé pour l'affichage des heures dans la colonne de gauche
-const CustomTimeGutter: React.FC<{ date: Date }> = ({ date }) => {
+// Composant personnalisé pour l'en-tête de la colonne des heures
+const CustomTimeGutterHeader: React.FC = () => {
   return (
-    <div className="rbc-time-gutter">
-      <span className="text-xs font-medium">{format(date, 'HH:mm')}</span>
+    <div className="p-2 border-b bg-gray-50">
+      <span className="text-xs font-medium text-gray-600">Heures</span>
     </div>
   );
 };
@@ -194,35 +191,23 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
       queryFn: () => fetchTasks(currentWeek) 
     });
 
-  const { data: users, isLoading: isLoadingUsers, error: usersError } = 
-    useQuery<User[]>({ 
-      queryKey: ['workloadUsers'], 
-      queryFn: fetchUsers,
-      staleTime: Infinity, // Les utilisateurs changent rarement
-    });
-
   const { data: sites, isLoading: isLoadingSites, error: sitesError } = 
     useQuery<Site[]>({ 
       queryKey: ['workloadSites'], 
       queryFn: fetchSites,
-      staleTime: Infinity, // Les sites changent rarement
+      staleTime: Infinity,
     });
-  // ----------------------------------------------
 
-  const goToPreviousWeek = () => {
-    setCurrentDate(subWeeks(currentDate, 1));
-  };
-
-  const goToNextWeek = () => {
-    setCurrentDate(addWeeks(currentDate, 1));
-  };
+  // Navigation
+  const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
+  const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
 
   // Calculer les dates de début et de fin de la semaine affichée
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
 
   // Formatage du titre de la semaine
-  const weekLabel = `Semaine du ${format(weekStart, 'd MMMM', { locale: fr })} au ${format(weekEnd, 'd MMMM yyyy', { locale: fr })}`;
+  const weekLabel = `Semaine du ${format(weekStart, 'd')} au ${format(weekEnd, 'd MMMM yyyy', { locale: fr })}`;
 
   // Transformation des tâches en événements pour le calendrier
   const events = useMemo(() => {
@@ -231,59 +216,46 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
     return tasks.map(task => {
       const site = sites.find(s => s.id === task.siteId);
       const siteName = site ? site.name : 'N/A';
-      const title = `[${task.type.toUpperCase()}] ${siteName} - ${task.description}`;
-
       return {
-        title: title,
+        title: `${siteName} - ${task.description}`,
         start: task.startTime,
         end: task.endTime,
-        allDay: false, // Assumer que ce ne sont pas des événements sur toute la journée
-        resourceId: task.assignedUserId, // L'ID de l'utilisateur est la resource
-        rawTask: task, // Garder la tâche originale
+        allDay: false,
+        resource: task,
       };
     });
   }, [tasks, sites]);
 
-  // Préparer les utilisateurs comme ressources pour le calendrier
-  const resourceMap = useMemo(() => {
-    return users?.map(user => ({
-      resourceId: user.id,
-      resourceTitle: user.name,
-    })) || [];
-  }, [users]);
-
   // Style des événements basé sur le type
   const eventPropGetter = (event: any) => {
-    const backgroundColor = getTypeColor(event.rawTask.type);
-    return { style: { backgroundColor, color: 'white', border: 'none', borderRadius: '3px' } };
+    const backgroundColor = getTypeColor(event.resource.type);
+    return { 
+      style: { 
+        backgroundColor,
+        color: 'white',
+        border: 'none',
+        borderRadius: '2px',
+        fontSize: '0.875rem',
+      } 
+    };
   };
-  
-  // Définir les composants personnalisés
-  const components = useMemo(() => ({
-    timeSlotWrapper: (props: TimeSlotWrapperProps) => (
-      <DroppableTimeSlotWrapper {...props} isDroppable={isDroppable} />
-    ),
-    dateHeader: CustomDateHeader,
-    timeGutterHeader: CustomTimeGutterHeader,
-    timeGutter: CustomTimeGutter,
-  }), [isDroppable]);
 
-  if (isLoadingTasks || isLoadingUsers || isLoadingSites) {
-    return <div>Chargement...</div>; // Ou un spinner
+  if (isLoadingTasks || isLoadingSites) {
+    return <div>Chargement...</div>;
   }
 
-  if (tasksError || usersError || sitesError) {
-    return <div>Erreur: {(tasksError || usersError || sitesError)?.message}</div>;
+  if (tasksError || sitesError) {
+    return <div>Erreur: {(tasksError || sitesError)?.message}</div>;
   }
 
   return (
-    <div className="h-[80vh] flex flex-col"> {/* Hauteur ajustable */}
-      <div className="flex items-center justify-between mb-4 p-2 border-b">
-        <Button variant="outline" size="icon" onClick={goToPreviousWeek} disabled={isLoadingTasks}>
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white">
+      <div className="flex items-center justify-between p-4 border-b">
+        <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-lg font-semibold">{weekLabel}</h2>
-        <Button variant="outline" size="icon" onClick={goToNextWeek} disabled={isLoadingTasks}>
+        <Button variant="outline" size="icon" onClick={goToNextWeek}>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -293,36 +265,27 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
           events={events}
           startAccessor="start"
           endAccessor="end"
-          defaultView={Views.WEEK}
+          defaultView={Views.WORK_WEEK}
           views={availableViews}
           date={currentDate}
           onNavigate={() => {}}
           onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
           selectable
-          resources={resourceMap}
-          resourceIdAccessor="resourceId"
-          resourceTitleAccessor="resourceTitle"
           min={minTime}
           max={maxTime}
           eventPropGetter={eventPropGetter}
-          components={components}
           culture='fr'
-          style={{ flex: '1' }}
-          firstDay={1}
           step={60}
           timeslots={1}
           formats={{
+            timeGutterFormat: 'HH:mm',
             dayFormat: 'dddd D',
-            dayRangeHeaderFormat: ({ start, end }) => {
-              return `${start.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })} - ${end.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })}`;
-            }
+            dayHeaderFormat: (date: Date) => format(date, 'EEEE d MMMM', { locale: fr }),
           }}
-          // Ajout des styles pour la colonne des heures
-          style={{
-            flex: '1',
-            '--rbc-time-gutter-width': '60px', // Largeur de la colonne des heures
-          }}
+          className="custom-calendar"
+          style={{ height: '100%' }}
+          dayLayoutAlgorithm="no-overlap"
         />
       </div>
     </div>
