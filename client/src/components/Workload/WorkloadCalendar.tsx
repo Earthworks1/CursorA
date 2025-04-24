@@ -45,8 +45,8 @@ maxTime.setHours(18, 0, 0);
 // Pour limiter aux jours 1-5 (Lun-Ven), on peut filtrer les jours dans les props du Calendar
 // Ou utiliser `formats` pour cacher les jours non désirés si la vue le permet.
 // react-big-calendar n'a pas de vue "work_week" par défaut qui exclut Sam/Dim aussi facilement.
-// On va utiliser la vue 'week' et la gérer.
-const availableViews = [Views.WEEK];
+// On va utiliser la vue 'DAY' et afficher 5 jours.
+const availableViews = [Views.DAY];
 
 // Fonctions de fetch API (à adapter selon votre client HTTP, ex: fetch, axios)
 const fetchTasks = async (week: string): Promise<Task[]> => {
@@ -274,8 +274,9 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
           events={events}
           startAccessor="start"
           endAccessor="end"
-          defaultView={Views.WEEK}
-          views={availableViews} // Seulement la vue semaine
+          defaultView={Views.DAY} // Changer la vue par défaut
+          views={availableViews} // Vue DAY uniquement
+          days={5} // Afficher 5 jours
           date={currentDate} // Contrôler la date affichée
           onNavigate={() => {}} // Désactiver la navigation interne car on la gère
           onSelectEvent={onSelectEvent}
