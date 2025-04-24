@@ -6,35 +6,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const path = req.url?.split('/').filter(Boolean) || [];
-  const route = path[path.length - 1];
+  // Récupérer le chemin complet de la requête
+  const fullPath = decodeURIComponent(req.url || '');
+  console.log('Full path:', fullPath);
 
   try {
-    // Gérer les différentes routes
-    if (route === 'stats' || route === 'statistiques') {
+    // Route pour les statistiques
+    if (fullPath.includes('/statistiques') || fullPath.includes('/stats')) {
       const stats = await getWorkloadStats();
       return res.status(200).json(stats);
     }
     
-    if (route === 'activities' || route === 'activites' || route === 'activités') {
+    // Route pour les activités
+    if (fullPath.includes('/activites') || fullPath.includes('/activités') || fullPath.includes('/activities')) {
       const activities = await getRecentActivities();
       return res.status(200).json(activities);
     }
 
-    if (route === 'utilisateurs') {
+    // Route pour les utilisateurs
+    if (fullPath.includes('/utilisateurs')) {
       return res.status(200).json([]); // Pour l'instant retourne une liste vide
     }
 
-    if (route === 'sites') {
+    // Route pour les sites
+    if (fullPath.includes('/sites')) {
       return res.status(200).json([]); // Pour l'instant retourne une liste vide
     }
 
-    if (route === 'tâches' || route === 'taches') {
+    // Route pour les tâches
+    if (fullPath.includes('/taches') || fullPath.includes('/tâches')) {
       const tasks = await getRecentTasks();
       return res.status(200).json(tasks);
     }
 
-    return res.status(404).json({ message: 'Route not found' });
+    return res.status(404).json({ 
+      message: 'Route not found',
+      path: fullPath
+    });
   } catch (error) {
     console.error('Workload API Error:', error);
     return res.status(500).json({ message: 'Internal server error' });
