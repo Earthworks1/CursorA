@@ -1,0 +1,46 @@
+/* Styles personnalisés pour le calendrier */
+.custom-calendar.rbc-calendar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* En-têtes des jours */
+.custom-calendar .rbc-header {
+  padding: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+/* Colonne des heures */
+.custom-calendar .rbc-time-gutter {
+  border-right: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+/* Créneaux horaires */
+.custom-calendar .rbc-timeslot-group {
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 40px;
+}
+
+/* Lignes de la grille */
+.custom-calendar .rbc-time-column {
+  border-left: 1px solid #e5e7eb;
+}
+
+/* Événements */
+.custom-calendar .rbc-event {
+  border-radius: 3px;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover sur les créneaux */
+.custom-calendar .rbc-time-slot:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Style de la ligne "maintenant" */
+.custom-calendar .rbc-current-time-indicator {
+  background-color: #ef4444;
+  height: 2px;
+} 
