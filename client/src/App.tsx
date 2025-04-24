@@ -15,8 +15,12 @@ import Configuration from "@/pages/configuration/index";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import Dynamic from "@/components/ui/dynamic";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
+
+// Variables pour suivre l'état de la navigation
+let isNavigating = false;
+let pendingNavigation = null;
 
 // Créer une version de wouter qui fonctionne avec les déploiements statiques
 function useHashLocation(): [string, (to: string) => void] {
@@ -45,11 +49,36 @@ function useHashLocation(): [string, (to: string) => void] {
       return;
     }
     
+    // Si une navigation est déjà en cours, mémoriser la suivante
+    if (isNavigating) {
+      console.log("Navigation en cours, mise en file d'attente de:", to);
+      pendingNavigation = to;
+      return;
+    }
+    
+    isNavigating = true;
     console.log("Navigation vers:", to);
-    // Petit délai pour permettre le nettoyage des composants
+    
+    // Délai pour permettre le nettoyage des composants avant de changer de route
     setTimeout(() => {
-      window.location.hash = to;
-    }, 0);
+      try {
+        window.location.hash = to;
+      } catch (e) {
+        console.error("Erreur de navigation:", e);
+      }
+      
+      // Autoriser une nouvelle navigation après un délai pour éviter les problèmes DOM
+      setTimeout(() => {
+        isNavigating = false;
+        
+        // Traiter la navigation en attente s'il y en a une
+        if (pendingNavigation) {
+          const nextNav = pendingNavigation;
+          pendingNavigation = null;
+          navigate(nextNav);
+        }
+      }, 300);
+    }, 100);
   };
 
   useEffect(() => {
@@ -80,6 +109,26 @@ function useHashLocation(): [string, (to: string) => void] {
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Effet pour nettoyer le DOM lors des changements de contenu
+  useEffect(() => {
+    const cleanup = () => {
+      // Vérifier si le contenu est encore présent
+      if (contentRef.current) {
+        console.log("Nettoyage du contenu avant changement");
+        // Force le framework à recalculer le DOM
+        const fragment = document.createDocumentFragment();
+        while (contentRef.current.firstChild) {
+          fragment.appendChild(contentRef.current.firstChild);
+        }
+        // Réinitialiser proprement
+        contentRef.current.innerHTML = '';
+      }
+    };
+    
+    return cleanup;
+  }, [children]);
   
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
@@ -96,7 +145,9 @@ function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">
-          {children}
+          <div ref={contentRef} className="w-full h-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
@@ -114,7 +165,7 @@ function Router() {
     console.log("Changement de route détecté:", location);
     
     // Nettoyer les erreurs visibles
-    const errorBanner = document.querySelector('.error-banner');
+    const errorBanner = document.querySelector('.error-notification');
     if (errorBanner) {
       errorBanner.remove();
     }
@@ -122,6 +173,21 @@ function Router() {
     return () => {
       // Nettoyage avant de changer de route
       console.log("Nettoyage de la route précédente");
+      
+      // Nettoyer les nœuds DOM problématiques
+      const cleanupDOM = () => {
+        // Supprimer les éléments qui pourraient causer des problèmes
+        const portals = document.querySelectorAll('[data-radix-portal]');
+        portals.forEach(portal => {
+          try {
+            document.body.removeChild(portal);
+          } catch (e) {
+            console.warn("Impossible de supprimer un portal:", e);
+          }
+        });
+      };
+      
+      cleanupDOM();
     };
   }, [location]);
   

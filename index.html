@@ -7,59 +7,135 @@
     <base href="/" />
     <meta name="description" content="Application de gestion de planification pour Spiess SA" />
     <script>
-      // Gestion d'erreurs globale
+      // Indicateur pour suivre si nous avons déjà essayé de résoudre un problème
+      let isRecovering = false;
       let errorCount = 0;
       let lastErrorTime = 0;
+      let errorDebounceTimer = null;
       
+      // Fonction pour nettoyer le DOM et corriger les problèmes potentiels
+      function cleanupDOM() {
+        try {
+          console.log("Nettoyage du DOM pour prévenir les erreurs");
+          
+          // Nettoyer les portails Radix UI qui peuvent causer des problèmes
+          document.querySelectorAll('[data-radix-portal]').forEach(function(portal) {
+            try {
+              portal.parentNode.removeChild(portal);
+            } catch (e) {
+              console.warn("Impossible de supprimer un portail:", e);
+            }
+          });
+          
+          // Supprimer les éléments orphelins potentiels
+          document.querySelectorAll('*[aria-hidden="true"]').forEach(function(el) {
+            if (el.getAttribute('data-removed') !== 'true') {
+              el.setAttribute('data-removed', 'true');
+              try {
+                if (el.parentNode) {
+                  el.parentNode.removeChild(el);
+                }
+              } catch (e) {
+                console.warn("Impossible de supprimer un élément caché:", e);
+              }
+            }
+          });
+          
+          // Supprimer les modales potentiellement bloquées
+          document.querySelectorAll('.fixed, .absolute').forEach(function(el) {
+            if (el.getAttribute('role') === 'dialog' && el.getAttribute('data-removed') !== 'true') {
+              el.setAttribute('data-removed', 'true');
+              try {
+                if (el.parentNode) {
+                  el.parentNode.removeChild(el);
+                }
+              } catch (e) {
+                console.warn("Impossible de supprimer une modale:", e);
+              }
+            }
+          });
+          
+          return true;
+        } catch (e) {
+          console.error("Erreur lors du nettoyage du DOM:", e);
+          return false;
+        }
+      }
+      
+      // Gestion d'erreurs globale
       window.addEventListener('error', function(e) {
         const currentTime = new Date().getTime();
         
         // Réinitialiser le compteur d'erreurs si plus de 10 secondes se sont écoulées
         if (currentTime - lastErrorTime > 10000) {
           errorCount = 0;
+          isRecovering = false;
         }
         
         lastErrorTime = currentTime;
         
         console.error('Erreur globale:', e.message, e.filename, e.lineno);
         
-        // Afficher un message d'erreur uniquement si c'est une erreur liée à removeChild
+        // Gérer spécifiquement les erreurs de removeChild
         if (e.message && e.message.includes('removeChild')) {
           console.warn('Erreur de DOM détectée:', e.message);
           
           // Incrémenter le compteur d'erreurs
           errorCount++;
           
-          // Ne recharger la page que si nous n'avons pas eu trop d'erreurs dans un court laps de temps
-          if (errorCount <= 2) {
-            // Créer une bannière d'erreur si elle n'existe pas déjà
-            if (!document.querySelector('.error-notification')) {
-              var errorDiv = document.createElement('div');
-              errorDiv.className = 'error-notification';
-              errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 10px 16px; z-index: 9999; text-align: center; font-weight: bold;';
-              errorDiv.innerHTML = 'Erreur : ' + e.message;
-              document.body.prepend(errorDiv);
+          // Essayer de nettoyer le DOM en premier
+          if (!isRecovering) {
+            isRecovering = true;
+            
+            // Annuler tout timer de rechargement existant
+            if (errorDebounceTimer) {
+              clearTimeout(errorDebounceTimer);
             }
-          } else {
-            // Trop d'erreurs, afficher un message différent
-            var existingError = document.querySelector('.error-notification');
-            if (existingError) {
-              existingError.innerHTML = 'Plusieurs erreurs détectées. Veuillez essayer de rafraîchir la page manuellement.';
-              existingError.style.background = '#d32f2f';
+            
+            // Essayer de nettoyer le DOM d'abord
+            const cleaned = cleanupDOM();
+            
+            // Si le nettoyage a échoué ou si nous avons trop d'erreurs, recharger
+            if (!cleaned || errorCount > 2) {
+              // Créer une bannière d'erreur si elle n'existe pas déjà
+              if (!document.querySelector('.error-notification')) {
+                var errorDiv = document.createElement('div');
+                errorDiv.className = 'error-notification';
+                errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 10px 16px; z-index: 9999; text-align: center; font-weight: bold;';
+                errorDiv.innerHTML = 'Erreur : ' + e.message;
+                document.body.prepend(errorDiv);
+              }
+              
+              // Définir un délai avant de recharger
+              errorDebounceTimer = setTimeout(function() {
+                window.location.reload();
+              }, 3000);
+            } else {
+              // Réinitialiser l'indicateur de récupération après un court délai
+              setTimeout(function() {
+                isRecovering = false;
+              }, 2000);
             }
-            // Ne pas recharger automatiquement pour éviter une boucle
-            return;
           }
-          
-          // Permettre à l'utilisateur de voir l'erreur avant de recharger
-          setTimeout(function() {
-            window.location.reload();
-          }, 2000);
           
           // Empêcher l'erreur de s'afficher dans la console
           e.preventDefault();
         }
       }, true);
+      
+      // Nettoyer le DOM lorsque l'utilisateur navigue
+      window.addEventListener('hashchange', function() {
+        console.log('Navigation détectée, nettoyage préventif du DOM');
+        cleanupDOM();
+      });
+      
+      // Nettoyer périodiquement pour prévenir les problèmes
+      setInterval(function() {
+        if (!isRecovering && document.querySelectorAll('[data-radix-portal]').length > 0) {
+          console.log('Nettoyage périodique des portails');
+          cleanupDOM();
+        }
+      }, 30000);
       
       // Script pour le routage SPA
       (function() {
