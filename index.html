@@ -8,26 +8,53 @@
     <meta name="description" content="Application de gestion de planification pour Spiess SA" />
     <script>
       // Gestion d'erreurs globale
+      let errorCount = 0;
+      let lastErrorTime = 0;
+      
       window.addEventListener('error', function(e) {
+        const currentTime = new Date().getTime();
+        
+        // Réinitialiser le compteur d'erreurs si plus de 10 secondes se sont écoulées
+        if (currentTime - lastErrorTime > 10000) {
+          errorCount = 0;
+        }
+        
+        lastErrorTime = currentTime;
+        
         console.error('Erreur globale:', e.message, e.filename, e.lineno);
         
         // Afficher un message d'erreur uniquement si c'est une erreur liée à removeChild
         if (e.message && e.message.includes('removeChild')) {
-          console.warn('Erreur de DOM détectée. Recharge de la page...');
+          console.warn('Erreur de DOM détectée:', e.message);
           
-          // Créer une bannière d'erreur si elle n'existe pas déjà
-          if (!document.querySelector('.error-notification')) {
-            var errorDiv = document.createElement('div');
-            errorDiv.className = 'error-notification';
-            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 8px 16px; z-index: 9999; text-align: center;';
-            errorDiv.innerHTML = 'Mise à jour de la page en cours...';
-            document.body.prepend(errorDiv);
+          // Incrémenter le compteur d'erreurs
+          errorCount++;
+          
+          // Ne recharger la page que si nous n'avons pas eu trop d'erreurs dans un court laps de temps
+          if (errorCount <= 2) {
+            // Créer une bannière d'erreur si elle n'existe pas déjà
+            if (!document.querySelector('.error-notification')) {
+              var errorDiv = document.createElement('div');
+              errorDiv.className = 'error-notification';
+              errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #f44336; color: white; padding: 10px 16px; z-index: 9999; text-align: center; font-weight: bold;';
+              errorDiv.innerHTML = 'Erreur : ' + e.message;
+              document.body.prepend(errorDiv);
+            }
+          } else {
+            // Trop d'erreurs, afficher un message différent
+            var existingError = document.querySelector('.error-notification');
+            if (existingError) {
+              existingError.innerHTML = 'Plusieurs erreurs détectées. Veuillez essayer de rafraîchir la page manuellement.';
+              existingError.style.background = '#d32f2f';
+            }
+            // Ne pas recharger automatiquement pour éviter une boucle
+            return;
           }
           
-          // Recharger la page après un court délai pour permettre l'affichage du message
+          // Permettre à l'utilisateur de voir l'erreur avant de recharger
           setTimeout(function() {
             window.location.reload();
-          }, 500);
+          }, 2000);
           
           // Empêcher l'erreur de s'afficher dans la console
           e.preventDefault();

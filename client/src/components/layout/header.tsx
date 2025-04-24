@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Mail, Search, Menu, X, UserCircle2, Calendar, Settings } from 'lucide-react';
+import { Bell, Mail, Search, Menu, X, UserCircle2, Calendar, Settings, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ThemeSelector } from '@/components/ui/theme-selector';
 import { 
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -16,8 +17,43 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
-  const [notificationCount] = useState(3);
-  const [messageCount] = useState(2);
+  const [notificationCount, setNotificationCount] = useState(3);
+  const [messageCount, setMessageCount] = useState(2);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  
+  // Fonction pour marquer toutes les notifications comme lues
+  const markAllNotificationsAsRead = () => {
+    setNotificationCount(0);
+  };
+  
+  // Fonction pour marquer tous les messages comme lus
+  const markAllMessagesAsRead = () => {
+    setMessageCount(0);
+  };
+  
+  // Effets pour marquer automatiquement comme lu lorsque le menu est ouvert
+  React.useEffect(() => {
+    if (isNotificationOpen && notificationCount > 0) {
+      // Attendre un court délai pour simuler la lecture
+      const timer = setTimeout(() => {
+        setNotificationCount(0);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isNotificationOpen, notificationCount]);
+  
+  React.useEffect(() => {
+    if (isMessageOpen && messageCount > 0) {
+      // Attendre un court délai pour simuler la lecture
+      const timer = setTimeout(() => {
+        setMessageCount(0);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isMessageOpen, messageCount]);
   
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
@@ -36,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
           <ThemeSelector />
           
           {/* Menu des notifications */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={setIsNotificationOpen}>
             <DropdownMenuTrigger asChild>
               <button className="relative p-1 text-gray-500 hover:text-gray-700 focus:outline-none">
                 <Bell size={20} />
@@ -48,7 +84,20 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
             <DropdownMenuContent align="end" className="w-80">
               <div className="flex items-center justify-between px-4 py-2 border-b">
                 <h3 className="font-medium">Notifications</h3>
-                <span className="text-xs text-gray-500">{notificationCount} nouvelles</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">{notificationCount} nouvelles</span>
+                  {notificationCount > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={markAllNotificationsAsRead}
+                      title="Marquer tout comme lu"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 <DropdownMenuItem className="cursor-pointer focus:bg-blue-50">
@@ -98,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
           </DropdownMenu>
           
           {/* Menu des messages */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={setIsMessageOpen}>
             <DropdownMenuTrigger asChild>
               <button className="relative p-1 text-gray-500 hover:text-gray-700 focus:outline-none">
                 <Mail size={20} />
@@ -110,7 +159,20 @@ const Header: React.FC<HeaderProps> = ({ sidebarOpen, setSidebarOpen }) => {
             <DropdownMenuContent align="end" className="w-80">
               <div className="flex items-center justify-between px-4 py-2 border-b">
                 <h3 className="font-medium">Messages</h3>
-                <span className="text-xs text-gray-500">{messageCount} non lus</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">{messageCount} non lus</span>
+                  {messageCount > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={markAllMessagesAsRead}
+                      title="Marquer tout comme lu"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 <DropdownMenuItem className="cursor-pointer focus:bg-blue-50">
