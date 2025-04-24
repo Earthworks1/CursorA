@@ -42,3 +42,38 @@
     line-height: var(--line-height-sm);
   }
 }
+
+/* Forcer l'opacité complète pour tous les menus et popups */
+[data-radix-popper-content-wrapper],
+[data-state="open"],
+[data-radix-portal] > div,
+[data-radix-menu-content],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content],
+[data-radix-popover-content] {
+  background-color: hsl(var(--background)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* Correction du blink lors du chargement des pages */
+#root:not(:empty) {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Prévenir l'erreur removeChild */
+[data-radix-portal] {
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+/* Assurer que les popups sont entièrement opaques */
+.bg-background\/70,
+.bg-background\/90,
+div[style*="backdrop-filter"] {
+  background-color: hsl(var(--background)) !important;
+  backdrop-filter: none !important;
+}

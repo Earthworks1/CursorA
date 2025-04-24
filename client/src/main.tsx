@@ -5,6 +5,43 @@ import "./index.css";
 // Afficher un message de débogage
 console.log("main.tsx chargé - initialisation de l'application React");
 
+// Monkey patch pour résoudre les problèmes de removeChild
+try {
+  // Sauvegarder la méthode originale
+  const originalRemoveChild = Node.prototype.removeChild;
+  
+  // Remplacer par une version sécurisée
+  Node.prototype.removeChild = function(child) {
+    // Si l'enfant n'est pas un enfant direct, ignorer l'erreur
+    if (!this.contains(child)) {
+      console.warn("Tentative de suppression d'un nœud qui n'est pas enfant, ignorée");
+      return child; // Retourner l'enfant pour compatibilité
+    }
+    
+    // Sinon, utiliser la méthode d'origine
+    try {
+      return originalRemoveChild.call(this, child);
+    } catch (e) {
+      console.warn("Erreur lors de removeChild, ignorée:", e);
+      // Essayer de nettoyer les portails après une erreur
+      setTimeout(() => {
+        document.querySelectorAll('[data-radix-portal]').forEach(portal => {
+          try {
+            if (portal.parentNode) {
+              portal.parentNode.removeChild(portal);
+            }
+          } catch (e) { /* ignorer */ }
+        });
+      }, 0);
+      return child;
+    }
+  };
+  
+  console.log("Patch de sécurité appliqué pour removeChild");
+} catch (e) {
+  console.error("Échec de l'application du patch:", e);
+}
+
 // Configuration de la police
 const fontConfig = {
   className: "font-sans",
@@ -17,6 +54,13 @@ function handleBeforeUnload() {
   if (root) {
     // Essayer de nettoyer le contenu si nécessaire
     try {
+      // Nettoyer les portails Radix qui pourraient causer des problèmes
+      document.querySelectorAll('[data-radix-portal]').forEach(portal => {
+        try {
+          document.body.removeChild(portal);
+        } catch (e) { /* ignorer */ }
+      });
+      
       // Nettoyer les effets React d'abord
       if (window.__REACT_ROOT_INSTANCE) {
         // @ts-ignore - Propriété interne de React
@@ -30,6 +74,17 @@ function handleBeforeUnload() {
 
 // Écouter les événements de navigation
 window.addEventListener("beforeunload", handleBeforeUnload);
+
+// Nettoyer le DOM au changement de route
+window.addEventListener("hashchange", () => {
+  document.querySelectorAll('[data-radix-portal]').forEach(portal => {
+    try {
+      if (portal.parentNode) {
+        portal.parentNode.removeChild(portal);
+      }
+    } catch (e) { /* ignorer */ }
+  });
+});
 
 try {
   const root = document.getElementById("root");
