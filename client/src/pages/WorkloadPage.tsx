@@ -4,7 +4,7 @@ import TaskListSidebar from '@/components/Workload/TaskListSidebar';
 import WorkloadCalendar from '@/components/Workload/WorkloadCalendar';
 import TaskForm from '@/components/Workload/TaskForm';
 import { Task } from '@shared/types/workload';
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 import { formatISO, parse, addHours } from 'date-fns';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { Button } from '@/components/ui/button'; // Potentiellement nécessaire
