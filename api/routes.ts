@@ -10,12 +10,11 @@ import { z } from 'zod';
 try {
   console.log("[routes.ts] Starting imports...");
   console.log(`[routes.ts] Current directory: ${process.cwd()}`);
-  console.log(`[routes.ts] File exists (storage.ts): ${fs.access('./storage.ts').then(() => true).catch(() => false)}`);
 } catch (e) {
   console.error("[routes.ts] Error in initial diagnostic:", e);
 }
 
-// We'll import service functions directly to avoid storage.ts dependency
+// Import services directly instead of through storage.ts
 import { generatePdf } from "./services/pdf";
 import { sendNotificationEmail } from "./services/notification";
 
@@ -73,7 +72,7 @@ async function readDatabase(): Promise<Database> {
     return db;
   } catch (error) {
     console.error('Erreur lors de la lecture de la base de données:', error);
-    return { tasks: [], users: [], sites: [] };
+    return { tasks: [], users: [], sites: [] }; 
   }
 }
 
@@ -127,25 +126,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter by week
       if (typeof week === 'string') {
         try {
-          // Parse week string (YYYY-WNN)
-          const [yearStr, weekNumberStr] = week.split('-W');
-          const year = parseInt(yearStr);
-          const weekNumber = parseInt(weekNumberStr);
-          
-          if (!isNaN(year) && !isNaN(weekNumber) && weekNumber >= 1 && weekNumber <= 53) {
+        // Parse week string (YYYY-WNN)
+        const [yearStr, weekNumberStr] = week.split('-W');
+        const year = parseInt(yearStr);
+        const weekNumber = parseInt(weekNumberStr);
+        
+        if (!isNaN(year) && !isNaN(weekNumber) && weekNumber >= 1 && weekNumber <= 53) {
             const targetDate = parse(`${year}-W${weekNumber}-1`, 'YYYY-\'W\'II-i', new Date());
-            
-            if (isValid(targetDate)) {
+          
+          if (isValid(targetDate)) {
               const weekStart = startOfWeek(targetDate, { weekStartsOn: 1 });
               const weekEnd = endOfWeek(targetDate, { weekStartsOn: 1 });
-              
-              filteredTasks = filteredTasks.filter(task => {
+            
+            filteredTasks = filteredTasks.filter(task => {
                 if (task.startTime instanceof Date) {
-                  return task.startTime >= weekStart && task.startTime <= weekEnd;
-                }
+                return task.startTime >= weekStart && task.startTime <= weekEnd;
+              }
                 return false;
-              });
-            }
+            });
+          }
           }
         } catch (error) {
           console.error('Erreur lors du filtrage par semaine:', error);
