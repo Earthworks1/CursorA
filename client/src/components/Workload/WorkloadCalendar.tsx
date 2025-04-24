@@ -278,7 +278,7 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSe
   );
 };
 
-// Export de fetchSites pour réutilisation
-export { fetchSites }; 
+// Export de fetchSites et fetchUsers pour réutilisation
+export { fetchSites, fetchUsers }; 
 
 export default WorkloadCalendar; 
