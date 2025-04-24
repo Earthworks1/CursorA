@@ -111,25 +111,6 @@ function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   
-  // Effet pour nettoyer le DOM lors des changements de contenu
-  useEffect(() => {
-    const cleanup = () => {
-      // Vérifier si le contenu est encore présent
-      if (contentRef.current) {
-        console.log("Nettoyage du contenu avant changement");
-        // Force le framework à recalculer le DOM
-        const fragment = document.createDocumentFragment();
-        while (contentRef.current.firstChild) {
-          fragment.appendChild(contentRef.current.firstChild);
-        }
-        // Réinitialiser proprement
-        contentRef.current.innerHTML = '';
-      }
-    };
-    
-    return cleanup;
-  }, [children]);
-  
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 text-gray-800">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
@@ -145,7 +126,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col overflow-hidden w-full">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">
-          <div ref={contentRef} className="w-full h-full">
+          <div ref={contentRef} key={location.pathname} className="w-full h-full">
             {children}
           </div>
         </main>
@@ -159,37 +140,6 @@ function Router() {
   
   // Utilisation du crochet useLocation personnalisé
   const [location] = useHashLocation();
-  
-  // Effet pour gérer le nettoyage lors des changements de route
-  useEffect(() => {
-    console.log("Changement de route détecté:", location);
-    
-    // Nettoyer les erreurs visibles
-    const errorBanner = document.querySelector('.error-notification');
-    if (errorBanner) {
-      errorBanner.remove();
-    }
-    
-    return () => {
-      // Nettoyage avant de changer de route
-      console.log("Nettoyage de la route précédente");
-      
-      // Nettoyer les nœuds DOM problématiques
-      const cleanupDOM = () => {
-        // Supprimer les éléments qui pourraient causer des problèmes
-        const portals = document.querySelectorAll('[data-radix-portal]');
-        portals.forEach(portal => {
-          try {
-            document.body.removeChild(portal);
-          } catch (e) {
-            console.warn("Impossible de supprimer un portal:", e);
-          }
-        });
-      };
-      
-      cleanupDOM();
-    };
-  }, [location]);
   
   return (
     <Switch hook={useHashLocation}>
