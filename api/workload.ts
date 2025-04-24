@@ -6,21 +6,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const path = req.query.path || [];
+  const path = req.url?.split('/').filter(Boolean) || [];
+  const route = path[path.length - 1];
 
   try {
-    switch (path[0]) {
-      case 'stats':
-        const stats = await getWorkloadStats();
-        return res.status(200).json(stats);
-
-      case 'activities':
-        const activities = await getRecentActivities();
-        return res.status(200).json(activities);
-
-      default:
-        return res.status(404).json({ message: 'Route not found' });
+    // Gérer les différentes routes
+    if (route === 'stats' || route === 'statistiques') {
+      const stats = await getWorkloadStats();
+      return res.status(200).json(stats);
     }
+    
+    if (route === 'activities' || route === 'activites' || route === 'activités') {
+      const activities = await getRecentActivities();
+      return res.status(200).json(activities);
+    }
+
+    if (route === 'utilisateurs') {
+      return res.status(200).json([]); // Pour l'instant retourne une liste vide
+    }
+
+    if (route === 'sites') {
+      return res.status(200).json([]); // Pour l'instant retourne une liste vide
+    }
+
+    if (route === 'tâches' || route === 'taches') {
+      const tasks = await getRecentTasks();
+      return res.status(200).json(tasks);
+    }
+
+    return res.status(404).json({ message: 'Route not found' });
   } catch (error) {
     console.error('Workload API Error:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -136,5 +150,28 @@ async function getRecentActivities() {
     project: {
       name: activity.project.name
     }
+  }));
+}
+
+async function getRecentTasks() {
+  const tasks = await prisma.tache.findMany({
+    take: 10,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      project: {
+        select: {
+          name: true
+        }
+      }
+    }
+  });
+
+  return tasks.map(task => ({
+    id: task.id,
+    title: task.title,
+    projectName: task.project.name,
+    status: task.status,
+    dueDate: task.deadline.toISOString(),
+    progress: task.progress || 0
   }));
 } 
