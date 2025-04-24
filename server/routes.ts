@@ -38,36 +38,54 @@ interface Database {
   sites: Site[];
 }
 
-// Helper pour lire la base de données JSON
+// Helper pour lire la base de données JSON (plus robuste)
 async function readDatabase(): Promise<Database> {
+  const absoluteDbPath = path.resolve(DB_PATH);
+  console.log(`[readDatabase] Tentative de lecture depuis: ${absoluteDbPath}`);
+
   try {
-    const data = await fs.readFile(DB_PATH, 'utf-8');
+    // Vérifier l'existence et les permissions de lecture
+    await fs.access(absoluteDbPath, fs.constants.R_OK);
+    console.log(`[readDatabase] Fichier trouvé et accessible: ${absoluteDbPath}`);
+  } catch (accessError) {
+    // Le fichier n'existe pas ou n'est pas lisible
+    console.warn(`[readDatabase] Fichier non trouvé ou inaccessible: ${absoluteDbPath}. Raison: ${(accessError as Error).message}`);
+    console.warn('[readDatabase] Retourne une structure de base de données vide.');
+    return { tasks: [], users: [], sites: [] };
+  }
+
+  try {
+    // Lire le contenu du fichier
+    const data = await fs.readFile(absoluteDbPath, 'utf-8');
     // Convertir les chaînes de date en objets Date
     const db: Database = JSON.parse(data, (key, value) => {
       if ((key === 'startTime' || key === 'endTime' || key === 'createdAt') && typeof value === 'string') {
         const date = new Date(value);
-        return isNaN(date.getTime()) ? value : date; // Retourner la chaîne si invalide
+        // Attention: Si la date est invalide, on pourrait vouloir retourner null ou undefined
+        // plutôt que la chaîne originale pour éviter des erreurs plus tard.
+        // Pour l'instant, on garde le comportement original mais on pourrait l'ajuster.
+        return isNaN(date.getTime()) ? value : date; 
       }
       return value;
     });
+    console.log(`[readDatabase] Contenu lu et parsé avec succès.`);
     return db;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      // Le fichier n'existe pas, retourner une structure vide
-      console.warn('database.json not found, returning empty structure.');
-      return { tasks: [], users: [], sites: [] };
-    }
-    console.error("Erreur de lecture de database.json:", error);
-    throw new Error("Impossible de lire la base de données.");
+  } catch (readError) {
+    // Gérer les erreurs de lecture ou de parsing JSON
+    console.error(`[readDatabase] Erreur de lecture ou de parsing JSON pour ${absoluteDbPath}:`, readError);
+    console.warn('[readDatabase] Retourne une structure de base de données vide suite à une erreur de lecture/parsing.');
+    // Retourner une structure vide pour éviter de planter l'application
+    return { tasks: [], users: [], sites: [] }; 
   }
 }
 
 // Helper pour écrire dans la base de données JSON
 async function writeDatabase(data: Database): Promise<void> {
+  const absoluteDbPath = path.resolve(DB_PATH);
   try {
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    await fs.writeFile(absoluteDbPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
-    console.error("Erreur d'écriture de database.json:", error);
+    console.error(`[writeDatabase] Erreur d'écriture de ${absoluteDbPath}:`, error);
     throw new Error("Impossible d'enregistrer les données.");
   }
 }
