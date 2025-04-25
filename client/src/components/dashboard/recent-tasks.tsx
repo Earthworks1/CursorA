@@ -120,7 +120,7 @@ const RecentTasks = () => {
                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <ProgressWithText value={task.progress} />
+                    <ProgressWithText value={task.progress} status={task.status} />
                   </TableCell>
                 </TableRow>
               ))
