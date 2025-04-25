@@ -14,6 +14,24 @@ export const RoleUtilisateur = {
   GEOMETRE_PROJETEUR: "geometre_projeteur"
 };
 
+// Types de lots standardisés
+export const TypeLot = {
+  TERRASSEMENT: "terrassement",
+  RESEAUX_SECS: "reseaux_secs",
+  RESEAUX_HUMIDES: "reseaux_humides",
+  VOIRIE: "voirie",
+  VRD: "vrd"
+};
+
+// Types de tâches standardisés
+export const TypeTache = {
+  LEVE: "leve",
+  IMPLANTATION: "implantation",
+  RECOLEMENT: "recolement",
+  ETUDE: "etude",
+  DAO: "DAO"
+};
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -48,7 +66,7 @@ export const insertChantierSchema = createInsertSchema(chantiers).omit({
 export const lots = pgTable("lots", {
   id: serial("id").primaryKey(),
   nom: text("nom").notNull(),
-  type: text("type").notNull().default("structure"), // structure, reseaux_secs, reseaux_humides, voirie, etc.
+  type: text("type").notNull().default("terrassement"), // terrassement, reseaux_secs, reseaux_humides, voirie, vrd
   description: text("description"),
   chantierId: integer("chantier_id").notNull(),
   code: text("code"), // Ex: VRD, RS (Réseaux Secs), etc.
@@ -78,7 +96,7 @@ export const taches = pgTable("taches", {
   description: text("description"),
   lotId: integer("lot_id").notNull(),
   chantierId: integer("chantier_id").notNull(), // Pour faciliter les recherches directes
-  type: text("type").notNull(), // Étude, Conception, Exécution, etc.
+  type: text("type").notNull(), // leve, implantation, recolement, etude, DAO
   statut: text("statut").notNull().default("a_faire"), // a_faire, en_cours, en_validation, termine, en_retard, en_revision
   progression: integer("progression").default(0), // 0-100
   priorite: text("priorite").default("normale"), // basse, normale, haute, urgente
@@ -431,25 +449,6 @@ export const PrioriteTache = {
   NORMALE: 'normale',
   HAUTE: 'haute',
   URGENTE: 'urgente'
-} as const;
-
-export const TypeTache = {
-  ETUDE: 'etude',
-  CONCEPTION: 'conception',
-  LEVE: 'leve',                   // Nouveau
-  IMPLANTATION: 'implantation',   // Nouveau
-  RECOLEMENT: 'recolement',       // Nouveau
-  AUTRE: 'autre'
-} as const;
-
-export const TypeLot = {
-  VOIRIE: 'voirie',
-  RESEAUX_SECS: 'reseaux_secs',
-  RESEAUX_HUMIDES: 'reseaux_humides',
-  BATIMENT: 'batiment',
-  ESPACES_VERTS: 'espaces_verts',
-  SIGNALISATION: 'signalisation',
-  AUTRE: 'autre'
 } as const;
 
 export const TypeActivite = {
