@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import TagInput from './ui/tag-input';
 import SubtaskList from './tasks/subtask-list';
