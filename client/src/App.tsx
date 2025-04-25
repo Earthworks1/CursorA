@@ -21,7 +21,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 
 // Variables pour suivre l'état de la navigation
 let isNavigating = false;
-let pendingNavigation = null;
+let pendingNavigation: string | null = null;
 
 // Créer une version de wouter qui fonctionne avec les déploiements statiques
 function useHashLocation(): [string, (to: string) => void] {
