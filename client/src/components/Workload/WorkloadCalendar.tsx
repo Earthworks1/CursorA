@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer, Views, SlotInfo, Event as BigCalendarEvent } from 'react-big-calendar';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import startOfWeek from 'date-fns/startOfWeek';
-import getDay from 'date-fns/getDay';
-import enUS from 'date-fns/locale/en-US';
-import fr from 'date-fns/locale/fr'; // Importer la locale française
-import addWeeks from 'date-fns/addWeeks';
-import subWeeks from 'date-fns/subWeeks';
-import startOfMonth from 'date-fns/startOfMonth';
-import endOfMonth from 'date-fns/endOfMonth';
-import endOfWeek from 'date-fns/endOfWeek';
-import parseISO from 'date-fns/parseISO'; // Pour parser les dates de l'API
+import { 
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  addWeeks,
+  subWeeks,
+  startOfMonth,
+  endOfMonth,
+  endOfWeek,
+  parseISO
+} from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@/styles/calendar.css'; // Import des styles personnalisés

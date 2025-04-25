@@ -27,8 +27,8 @@ import { StatutTache, TypeTache, PrioriteTache } from '@shared/schema';
 import { Calendar as CalendarIcon, Upload, Plus, Minus, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { fr } from 'date-fns/locale';
 import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import QuickCreateChantierModal from '../chantiers/quick-create-chantier-modal';
 
 // Type pour les utilisateurs
