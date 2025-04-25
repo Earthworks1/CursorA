@@ -104,7 +104,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
   };
 
   // Options pour les selects (pourrait être mis en dehors du composant)
-  const typeOptions: Task['type'][] = ['leve', 'conception', 'implantation', 'reunion', 'administratif'];
+  const typeOptions: Task['type'][] = ['leve', 'implantation', 'recolement', 'etude', 'dao', 'autre'];
   const statusOptions: Task['status'][] = ['a_planifier', 'planifie', 'en_cours', 'termine', 'bloque'];
 
   return (

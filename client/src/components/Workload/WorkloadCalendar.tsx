@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Task, User, Site } from '@shared/types/workload'; // Import des types
 import { useQuery } from '@tanstack/react-query'; // Import pour le fetching
-import { Droppable } from 'react-beautiful-dnd';
+import { Droppable } from '@hello-pangea/dnd';
 
 // Configuration du localizer avec date-fns et la locale française
 const locales = {
@@ -81,10 +81,11 @@ const fetchSites = async (): Promise<Site[]> => {
 const getTypeColor = (type: Task['type']): string => {
   switch (type) {
     case 'leve': return '#3b82f6'; // blue-500
-    case 'conception': return '#10b981'; // emerald-500
     case 'implantation': return '#f97316'; // orange-500
-    case 'reunion': return '#8b5cf6'; // violet-500
-    case 'administratif': return '#6b7280'; // gray-500
+    case 'recolement': return '#10b981'; // emerald-500
+    case 'etude': return '#8b5cf6'; // violet-500
+    case 'dao': return '#6b7280'; // gray-500
+    case 'autre': return '#a1a1aa'; // zinc-400
     default: return '#a1a1aa'; // zinc-400
   }
 };

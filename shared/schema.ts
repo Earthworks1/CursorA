@@ -25,11 +25,12 @@ export const TypeLot = {
 
 // Types de tâches standardisés
 export const TypeTache = {
+  ETUDE: "etude",
   LEVE: "leve",
   IMPLANTATION: "implantation",
   RECOLEMENT: "recolement",
-  ETUDE: "etude",
-  DAO: "DAO"
+  AUTRE: "autre",
+  DAO: "dao"
 };
 
 export const users = pgTable("users", {
