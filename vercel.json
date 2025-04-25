@@ -1,6 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm run vercel-build",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://your-api-url.vercel.app"
+  },
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.ts": {
