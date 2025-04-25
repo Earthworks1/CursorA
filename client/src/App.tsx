@@ -108,6 +108,12 @@ function useHashLocation(): [string, (to: string) => void] {
   return [path, navigate];
 }
 
+// Créer un composant wrapper pour utiliser notre hook personnalisé
+function HashRouter({ children }: { children: React.ReactNode }) {
+  const [location] = useHashLocation();
+  return <Switch>{children}</Switch>;
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -139,11 +145,8 @@ function Layout({ children }: { children: React.ReactNode }) {
 function Router() {
   console.log("Router component initializing");
   
-  // Utilisation du crochet useLocation personnalisé
-  const [location] = useHashLocation();
-  
   return (
-    <Switch hook={useHashLocation}>
+    <HashRouter>
       <Route path="/">
         {() => {
           console.log("Rendering dashboard route");
@@ -345,7 +348,7 @@ function Router() {
           return <NotFound />;
         }}
       </Route>
-    </Switch>
+    </HashRouter>
   );
 }
 
