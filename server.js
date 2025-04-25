@@ -2,8 +2,12 @@
 // Vercel utilisera les fonctions serverless définies dans le dossier api/
 // Pour plus d'informations, consultez la documentation Vercel sur les fonctions serverless
 
-const { spawn } = require('child_process');
-const path = require('path');
+import { exec } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Détermine l'environnement
 const isDev = process.env.NODE_ENV !== 'production';
@@ -11,10 +15,15 @@ const isDev = process.env.NODE_ENV !== 'production';
 if (isDev) {
   // En développement, lancez le serveur TypeScript avec tsx
   console.log('Starting development server...');
-  const server = spawn('npx', ['tsx', path.join(__dirname, 'api/index.ts')], {
-    stdio: 'inherit',
+  
+  const command = `"${process.execPath}" "${join(__dirname, 'node_modules', '.bin', 'tsx')}" "${join(__dirname, 'api/index.ts')}"`;
+  
+  const server = exec(command, {
     env: { ...process.env, NODE_ENV: 'development' }
   });
+
+  server.stdout?.pipe(process.stdout);
+  server.stderr?.pipe(process.stderr);
 
   process.on('SIGINT', () => {
     console.log('Shutting down development server...');
