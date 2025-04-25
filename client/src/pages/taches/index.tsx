@@ -31,7 +31,7 @@ import StatusBadge from '@/components/ui/status-badge';
 import ProgressWithText from '@/components/ui/progress-with-text';
 import { formatDate, isDatePassed } from '@/lib/utils';
 import { Clock } from 'lucide-react';
-import { StatutTache, TypeTache } from '@shared/schema';
+import { StatutTache, TypeTache } from '@/types/schema';
 
 type Tache = {
   id: number;

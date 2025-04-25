@@ -73,6 +73,26 @@ export const StatutTache = {
   PENDING: 'pending',
   IN_PROGRESS: 'in-progress',
   COMPLETED: 'completed',
+  A_FAIRE: 'a_faire',
+  EN_COURS: 'en_cours',
+  EN_VALIDATION: 'en_validation',
+  TERMINE: 'termine',
+  EN_RETARD: 'en_retard',
+  EN_REVISION: 'en_revision'
+} as const;
+
+export const TypeTache = {
+  STANDARD: 'standard',
+  URGENT: 'urgent',
+  MAINTENANCE: 'maintenance',
+  PLANIFICATION: 'planification',
+  REUNION: 'reunion',
+  AUTRE: 'autre',
+  ETUDE: 'etude',
+  CONCEPTION: 'conception',
+  EXECUTION: 'execution',
+  VALIDATION: 'validation',
+  REVISION: 'revision'
 } as const;
 
 export const PrioriteTache = {
