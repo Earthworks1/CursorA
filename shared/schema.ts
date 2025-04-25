@@ -20,7 +20,11 @@ export const TypeLot = {
   RESEAUX_SECS: "reseaux_secs",
   RESEAUX_HUMIDES: "reseaux_humides",
   VOIRIE: "voirie",
-  VRD: "vrd"
+  VRD: "vrd",
+  BATIMENT: "batiment",
+  ESPACES_VERTS: "espaces_verts",
+  SIGNALISATION: "signalisation",
+  AUTRE: "autre"
 };
 
 // Types de tâches standardisés
