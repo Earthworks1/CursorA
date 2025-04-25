@@ -34,7 +34,7 @@ const createTask = async (newTaskData: Omit<Task, 'id' | 'createdAt'>): Promise<
 
 const updateTask = async (taskId: string, updatedData: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task> => {
   // S'assurer que les dates sont au format ISO si elles sont présentes
-  const bodyData = { ...updatedData };
+  const bodyData: any = { ...updatedData };
   if (bodyData.startTime && bodyData.startTime instanceof Date) {
     bodyData.startTime = formatISO(bodyData.startTime);
   }
