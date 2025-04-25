@@ -361,12 +361,11 @@ export default function ChantierDetail({ id }: ChantierDetailProps) {
                     <SelectValue placeholder="Sélectionnez un type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="structure">Structure</SelectItem>
-                    <SelectItem value="reseaux_secs">Réseaux secs</SelectItem>
-                    <SelectItem value="reseaux_humides">Réseaux humides</SelectItem>
-                    <SelectItem value="voirie">Voirie</SelectItem>
-                    <SelectItem value="finitions">Finitions</SelectItem>
-                    <SelectItem value="autre">Autre</SelectItem>
+                    <SelectItem value={TypeLot.TERRASSEMENT}>Terrassement</SelectItem>
+                    <SelectItem value={TypeLot.RESEAUX_SECS}>Réseaux secs</SelectItem>
+                    <SelectItem value={TypeLot.RESEAUX_HUMIDES}>Réseaux humides</SelectItem>
+                    <SelectItem value={TypeLot.VOIRIE}>Voirie</SelectItem>
+                    <SelectItem value={TypeLot.VRD}>VRD</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
