@@ -44,6 +44,31 @@ type Chantier = {
   nom: string;
 };
 
+// Type pour la tâche
+type Task = {
+  id: number;
+  titre: string;
+  description?: string;
+  chantierId?: number;
+  lotId?: number;
+  type: string;
+  statut: string;
+  progression: number;
+  piloteId?: number;
+  priorite: string;
+  intervenants?: { userId: number }[];
+  dateDebut?: string | null;
+  dateDemande?: string | null;
+  dateRealisation?: string | null;
+  dateLimite?: string | null;
+  piecesJointes?: {
+    id: number;
+    nom: string;
+    type: string;
+    url: string;
+  }[];
+};
+
 // Schéma du formulaire
 const formSchema = z.object({
   titre: z.string().min(3, { message: "Le titre doit contenir au moins 3 caractères" }),
@@ -75,7 +100,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
   const [fileUploads, setFileUploads] = useState<File[]>([]);
   
   // Charger les données de la tâche si en mode édition
-  const { data: task, isLoading: isTaskLoading } = useQuery({
+  const { data: task, isLoading: isTaskLoading } = useQuery<Task>({
     queryKey: [`/api/taches/${taskId}`],
     enabled: isEditing && !!taskId,
   });
@@ -227,24 +252,25 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                   <FormItem>
                     <FormLabel>Chantier</FormLabel>
                     <div className="flex gap-2">
-                      <Select
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        defaultValue={field.value?.toString()}
-                        className="flex-1"
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un chantier" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {chantiers?.map((chantier) => (
-                            <SelectItem key={chantier.id} value={chantier.id.toString()}>
-                              {chantier.nom}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex-1">
+                        <Select
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          defaultValue={field.value?.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionner un chantier" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {chantiers?.map((chantier) => (
+                              <SelectItem key={chantier.id} value={chantier.id.toString()}>
+                                {chantier.nom}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <QuickCreateChantierModal
                         onChantierCreated={(chantierId) => {
                           field.onChange(chantierId);
@@ -277,6 +303,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                         <SelectItem value={TypeTache.IMPLANTATION}>Implantation</SelectItem>
                         <SelectItem value={TypeTache.RECOLEMENT}>Récolement</SelectItem>
                         <SelectItem value={TypeTache.ETUDE}>Étude</SelectItem>
+                        <SelectItem value={TypeTache.AUTRE}>Autre</SelectItem>
                         <SelectItem value={TypeTache.DAO}>DAO</SelectItem>
                       </SelectContent>
                     </Select>

@@ -1,7 +1,7 @@
 export interface Task {
   id: string; // UUID
   description: string;
-  type: 'leve' | 'conception' | 'implantation' | 'reunion' | 'administratif';
+  type: 'leve' | 'implantation' | 'recolement' | 'etude' | 'dao' | 'autre';
   siteId: string | null;
   assignedUserId: string | null;
   startTime: Date;

@@ -6,7 +6,7 @@ import TaskForm from '@/components/Workload/TaskForm';
 import { Task } from '@shared/types/workload';
 import { useToast } from "@/hooks/use-toast";
 import { formatISO, parse, addHours } from 'date-fns';
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button'; // Potentiellement nécessaire
 
 // Fonctions pour appeler l'API (création/mise à jour)

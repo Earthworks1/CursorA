@@ -264,12 +264,11 @@ const EditTachePage: React.FC<EditTacheProps> = ({ id }) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value={TypeTache.EXECUTION}>Exécution</SelectItem>
-                          <SelectItem value={TypeTache.CONCEPTION}>Conception</SelectItem>
-                          <SelectItem value={TypeTache.VALIDATION}>Validation</SelectItem>
-                          <SelectItem value={TypeTache.COORDINATION}>Coordination</SelectItem>
-                          <SelectItem value={TypeTache.SECURITE}>Sécurité</SelectItem>
-                          <SelectItem value={TypeTache.ADMINISTRATIVE}>Administrative</SelectItem>
+                          <SelectItem value={TypeTache.LEVE}>Levé</SelectItem>
+                          <SelectItem value={TypeTache.IMPLANTATION}>Implantation</SelectItem>
+                          <SelectItem value={TypeTache.RECOLMENT}>Recollement</SelectItem>
+                          <SelectItem value={TypeTache.ETUDE}>Étude</SelectItem>
+                          <SelectItem value={TypeTache.DAO}>DAO</SelectItem>
                           <SelectItem value={TypeTache.AUTRE}>Autre</SelectItem>
                         </SelectContent>
                       </Select>

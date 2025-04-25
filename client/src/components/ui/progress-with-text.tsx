@@ -8,7 +8,7 @@ interface ProgressWithTextProps {
 }
 
 const ProgressWithText: React.FC<ProgressWithTextProps> = ({ value, status }) => {
-  const color = getProgressColor(value, status);
+  const color = getProgressColor(value);
   
   return (
     <div>

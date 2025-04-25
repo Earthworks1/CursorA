@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './sidebar';
 
 type MainLayoutProps = {
@@ -6,9 +6,11 @@ type MainLayoutProps = {
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <main className="flex-1 bg-gray-50 overflow-auto">
         {children}
       </main>

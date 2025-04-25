@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, StrictMode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Task, Site } from '@shared/types/workload';
 import { fetchSites } from './WorkloadCalendar'; // Réutiliser la fonction fetch
-import { Draggable, Droppable } from 'react-beautiful-dnd'; // Importer DND
+import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 
 // Fonction pour fetch les tâches "à planifier"
 const fetchUnplannedTasks = async (): Promise<Task[]> => {
@@ -56,49 +56,55 @@ const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ onAddTask, droppableI
     return site ? site.name : 'Inconnu';
   };
 
+  const handleDragEnd = (result: DropResult) => {
+    // Gérer le drag and drop ici
+  };
+
   return (
-    <div className="p-4 border-r h-full flex flex-col bg-card">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">À Planifier</h3>
-        <Button size="icon" variant="ghost" onClick={onAddTask}>
-          <Plus className="h-5 w-5" />
-        </Button>
-      </div>
-      {/* Rendre la zone de liste Droppable */}
-      <Droppable droppableId={droppableId}>
-        {(provided) => (
-          <div 
-            {...provided.droppableProps} 
-            ref={provided.innerRef}
-            className="flex-grow overflow-y-auto space-y-2"
-          >
-            {tasks && tasks.length > 0 ? (
-              tasks.map((task, index) => (
-                /* Rendre chaque tâche Draggable */
-                <Draggable key={task.id} draggableId={task.id} index={index}>
-                  {(providedDraggable) => (
-                    <div 
-                      ref={providedDraggable.innerRef}
-                      {...providedDraggable.draggableProps}
-                      {...providedDraggable.dragHandleProps} // Poignée pour saisir
-                      className="p-2 border rounded bg-card-foreground/5 cursor-grab text-sm shadow-sm"
-                    >
-                      <p className="font-medium">
-                        [{task.type.toUpperCase()}] {getSiteName(task.siteId)}
-                      </p>
-                      <p className="text-muted-foreground truncate">{task.description}</p>
-                    </div>
-                  )}
-                </Draggable>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-center py-4">Aucune tâche à planifier.</p>
+    <StrictMode>
+      <div className="p-4 border-r h-full flex flex-col bg-card">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">À Planifier</h3>
+          <Button size="icon" variant="ghost" onClick={onAddTask}>
+            <Plus className="h-5 w-5" />
+          </Button>
+        </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId={droppableId} type="TASK">
+            {(provided) => (
+              <div 
+                {...provided.droppableProps} 
+                ref={provided.innerRef}
+                className="flex-grow overflow-y-auto space-y-2"
+              >
+                {tasks && tasks.length > 0 ? (
+                  tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                      {(providedDraggable) => (
+                        <div 
+                          ref={providedDraggable.innerRef}
+                          {...providedDraggable.draggableProps}
+                          {...providedDraggable.dragHandleProps}
+                          className="p-2 border rounded bg-card-foreground/5 cursor-grab text-sm shadow-sm"
+                        >
+                          <p className="font-medium">
+                            [{task.type.toUpperCase()}] {getSiteName(task.siteId)}
+                          </p>
+                          <p className="text-muted-foreground truncate">{task.description}</p>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">Aucune tâche à planifier.</p>
+                )}
+                {provided.placeholder}
+              </div>
             )}
-            {provided.placeholder} {/* Placeholder pour DND */}
-          </div>
-        )}
-      </Droppable>
-    </div>
+          </Droppable>
+        </DragDropContext>
+      </div>
+    </StrictMode>
   );
 };
 
