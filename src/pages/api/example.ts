@@ -1,3 +1,4 @@
+// Trigger Vercel redeploy: minor change
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
