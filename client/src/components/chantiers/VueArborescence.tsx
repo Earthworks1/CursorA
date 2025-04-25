@@ -282,7 +282,7 @@ const VueArborescence = () => {
         const treeTaches: TreeTache[] = lotTaches.map((tache: any) => ({
           id: tache.id || 0,
           titre: tache.titre || "Tâche sans titre",
-          type: tache.type || "autre",
+          type: tache.type || "vrd",
           statut: tache.statut || "a_faire",
           lotId: tache.lotId || 0,
           chantierId: tache.chantierId || 0
@@ -294,7 +294,7 @@ const VueArborescence = () => {
         return {
           id: lot.id || 0,
           nom: lot.nom || "Lot sans nom",
-          type: lot.type || "autre",
+          type: lot.type || "vrd",
           chantierId: lot.chantierId || 0,
           taches: treeTaches || [],
           pilotes: pilotes,
@@ -362,13 +362,11 @@ const VueArborescence = () => {
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">Tous les types</SelectItem>
-                <SelectItem value={TypeLot.VOIRIE}>Voirie</SelectItem>
+                <SelectItem value={TypeLot.TERRASSEMENT}>Terrassement</SelectItem>
                 <SelectItem value={TypeLot.RESEAUX_SECS}>Réseaux secs</SelectItem>
                 <SelectItem value={TypeLot.RESEAUX_HUMIDES}>Réseaux humides</SelectItem>
-                <SelectItem value={TypeLot.BATIMENT}>Bâtiment</SelectItem>
-                <SelectItem value={TypeLot.ESPACES_VERTS}>Espaces verts</SelectItem>
-                <SelectItem value={TypeLot.SIGNALISATION}>Signalisation</SelectItem>
-                <SelectItem value={TypeLot.AUTRE}>Autre</SelectItem>
+                <SelectItem value={TypeLot.VOIRIE}>Voirie</SelectItem>
+                <SelectItem value={TypeLot.VRD}>VRD</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
