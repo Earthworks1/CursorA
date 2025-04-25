@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import TaskListSidebar from '@/components/Workload/TaskListSidebar';
 import WorkloadCalendar from '@/components/Workload/WorkloadCalendar';
@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { formatISO, parse, addHours } from 'date-fns';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button'; // Potentiellement nécessaire
+import { workloadApi } from '../api/workload';
+import { toast } from 'sonner';
 
 // Fonctions pour appeler l'API (création/mise à jour)
 const createTask = async (newTaskData: Omit<Task, 'id' | 'createdAt'>): Promise<Task> => {
@@ -57,9 +59,12 @@ const updateTask = async (taskId: string, updatedData: Partial<Omit<Task, 'id' |
 const WorkloadPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Stocke soit la tâche complète pour édition, soit un objet partiel pour pré-remplir la création
-  const [selectedTask, setSelectedTask] = useState<Partial<Task> | null>(null); 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null); 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Mutation pour créer une tâche
   const createTaskMutation = useMutation({ 
@@ -92,6 +97,58 @@ const WorkloadPage: React.FC = () => {
       toast({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
+
+  const fetchTasks = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await workloadApi.getAll();
+      setTasks(data);
+    } catch (err) {
+      setError('Erreur lors du chargement des tâches');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const handleTaskCreate = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newTask = await workloadApi.createTask(taskData);
+      setTasks(prev => [...prev, newTask]);
+      toast.success('Tâche créée avec succès');
+    } catch (err) {
+      toast.error('Erreur lors de la création de la tâche');
+      console.error(err);
+    }
+  };
+
+  const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      await workloadApi.update(taskId, updates);
+      toast.success('Tâche mise à jour avec succès');
+      fetchTasks();
+    } catch (err) {
+      toast.error('Erreur lors de la mise à jour de la tâche');
+      console.error(err);
+    }
+  };
+
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      await workloadApi.delete(taskId);
+      toast.success('Tâche supprimée avec succès');
+      setSelectedTask(null);
+      fetchTasks();
+    } catch (err) {
+      toast.error('Erreur lors de la suppression de la tâche');
+      console.error(err);
+    }
+  };
 
   // Gérer la sauvegarde depuis le formulaire
   const handleSaveTask = (formData: Omit<Task, 'id' | 'createdAt'> | Partial<Omit<Task, 'id' | 'createdAt'>>) => {
@@ -216,6 +273,14 @@ const WorkloadPage: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return <div>Chargement...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   return (
     <DragDropContext onDragEnd={onDragEnd}> 
       <div className="flex h-[calc(100vh-var(--header-height,60px))] ">
@@ -226,7 +291,8 @@ const WorkloadPage: React.FC = () => {
         <div className="flex-1 overflow-auto p-4">
           {/* Passer la prop pour activer le DND sur le calendrier */}
           <WorkloadCalendar 
-            onSelectEvent={handleSelectEvent} 
+            tasks={tasks}
+            onTaskSelect={handleSelectEvent} 
             onSelectSlot={handleSelectSlot} 
             isDroppable={true} // Indiquer que le calendrier doit gérer le drop
           />

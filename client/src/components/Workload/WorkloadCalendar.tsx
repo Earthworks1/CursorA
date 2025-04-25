@@ -10,7 +10,9 @@ import {
   startOfMonth,
   endOfMonth,
   endOfWeek,
-  parseISO
+  parseISO,
+  addDays,
+  isSameDay
 } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
@@ -21,6 +23,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Task, User, Site } from '@shared/types/workload'; // Import des types
 import { useQuery } from '@tanstack/react-query'; // Import pour le fetching
 import { Droppable } from '@hello-pangea/dnd';
+import { workloadApi } from '@/api/workload';
+import { toast } from 'sonner';
 
 // Configuration du localizer avec date-fns et la locale française
 const locales = {
@@ -95,6 +99,8 @@ interface WorkloadCalendarProps {
   onSelectEvent: (event: any) => void; // Callback pour la sélection d'un événement existant
   onSelectSlot: (slotInfo: SlotInfo) => void; // Callback pour la sélection d'un créneau vide
   isDroppable?: boolean; // Optionnel pour activer le DND
+  tasks: Task[];
+  onTaskSelect: (task: Task | null) => void;
 }
 
 // Interface pour les props du wrapper de créneau
@@ -180,115 +186,101 @@ const CustomTimeGutterHeader: React.FC = () => {
   );
 };
 
-const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSelectSlot, isDroppable = false }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSelectSlot, isDroppable = false, tasks, onTaskSelect }) => {
+  const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [weekTasks, setWeekTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Format de semaine YYYY-WNN pour l'API
-  const currentWeek = format(currentDate, 'yyyy-\'W\'II', { locale: fr, weekStartsOn: 1 });
-
-  // --- Fetching des données avec React Query ---
-  const { data: tasks, isLoading: isLoadingTasks, error: tasksError } = 
-    useQuery<Task[]>({ 
-      queryKey: ['workloadTasks', currentWeek], 
-      queryFn: () => fetchTasks(currentWeek) 
-    });
-
-  const { data: sites, isLoading: isLoadingSites, error: sitesError } = 
-    useQuery<Site[]>({ 
-      queryKey: ['workloadSites'], 
-      queryFn: fetchSites,
-      staleTime: Infinity,
-    });
-
-  // Navigation
-  const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
-  const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
-
-  // Calculer les dates de début et de fin de la semaine affichée
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-
-  // Formatage du titre de la semaine
-  const weekLabel = `Semaine du ${format(weekStart, 'd')} au ${format(weekEnd, 'd MMMM yyyy', { locale: fr })}`;
-
-  // Transformation des tâches en événements pour le calendrier
-  const events = useMemo(() => {
-    if (!tasks || !sites) return [];
-    
-    return tasks.map(task => {
-      const site = sites.find(s => s.id === task.siteId);
-      const siteName = site ? site.name : 'N/A';
-      return {
-        title: `${siteName} - ${task.description}`,
-        start: task.startTime,
-        end: task.endTime,
-        allDay: false,
-        resource: task,
-      };
-    });
-  }, [tasks, sites]);
-
-  // Style des événements basé sur le type
-  const eventPropGetter = (event: any) => {
-    const backgroundColor = getTypeColor(event.resource.type);
-    return { 
-      style: { 
-        backgroundColor,
-        color: 'white',
-        border: 'none',
-        borderRadius: '2px',
-        fontSize: '0.875rem',
-      } 
-    };
+  const fetchWeekTasks = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const week = format(currentWeek, 'yyyy-MM-dd');
+      const data = await workloadApi.getTasksByWeek(week);
+      setWeekTasks(data);
+    } catch (err) {
+      setError('Erreur lors du chargement des tâches');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isLoadingTasks || isLoadingSites) {
+  useEffect(() => {
+    fetchWeekTasks();
+  }, [currentWeek]);
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => 
+    addDays(startOfWeek(currentWeek), i)
+  );
+
+  const handlePreviousWeek = () => {
+    setCurrentWeek(prev => addDays(prev, -7));
+  };
+
+  const handleNextWeek = () => {
+    setCurrentWeek(prev => addDays(prev, 7));
+  };
+
+  if (isLoading) {
     return <div>Chargement...</div>;
   }
 
-  if (tasksError || sitesError) {
-    return <div>Erreur: {(tasksError || sitesError)?.message}</div>;
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white">
-      <div className="flex items-center justify-between p-4 border-b">
-        <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-lg font-semibold">{weekLabel}</h2>
-        <Button variant="outline" size="icon" onClick={goToNextWeek}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={handlePreviousWeek}
+          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+        >
+          Semaine précédente
+        </button>
+        <h2 className="text-lg font-semibold">
+          {format(currentWeek, 'MMMM yyyy', { locale: fr })}
+        </h2>
+        <button
+          onClick={handleNextWeek}
+          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+        >
+          Semaine suivante
+        </button>
       </div>
-      <div className="flex-grow">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          defaultView={Views.WORK_WEEK}
-          views={availableViews}
-          date={currentDate}
-          onNavigate={() => {}}
-          onSelectEvent={onSelectEvent}
-          onSelectSlot={onSelectSlot}
-          selectable
-          min={minTime}
-          max={maxTime}
-          eventPropGetter={eventPropGetter}
-          culture='fr'
-          step={60}
-          timeslots={1}
-          formats={{
-            timeGutterFormat: 'HH:mm',
-            dayFormat: 'EEEE d',
-            dayHeaderFormat: (date: Date) => format(date, 'EEEE d MMMM', { locale: fr }),
-          }}
-          className="custom-calendar"
-          style={{ height: '100%' }}
-          dayLayoutAlgorithm="no-overlap"
-        />
+
+      <div className="grid grid-cols-7 gap-4">
+        {weekDays.map(day => (
+          <div key={day.toString()} className="border rounded p-2">
+            <div className="font-semibold text-center mb-2">
+              {format(day, 'EEEE', { locale: fr })}
+            </div>
+            <div className="text-center mb-2">
+              {format(day, 'd')}
+            </div>
+            <div className="space-y-2">
+              {weekTasks
+                .filter(task => 
+                  task.startTime && 
+                  isSameDay(new Date(task.startTime), day)
+                )
+                .map(task => (
+                  <div
+                    key={task.id}
+                    onClick={() => onTaskSelect(task)}
+                    className="p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
+                  >
+                    <div className="font-medium">{task.title}</div>
+                    <div className="text-sm text-gray-600">
+                      {task.startTime && format(new Date(task.startTime), 'HH:mm')}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

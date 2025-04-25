@@ -16,7 +16,9 @@
     "db:seed": "tsx seed.ts",
     "generate": "drizzle-kit generate",
     "migrate": "tsx migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "check-deploy": "node scripts/check-deploy.js",
+    "predeploy": "npm run check-deploy"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.8.0",

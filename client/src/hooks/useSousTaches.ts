@@ -1,28 +1,36 @@
-import { useState, useEffect, useCallback } from 'react';
-import { SousTache, sousTachesApi } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { SousTache, sousTachesApi } from '@/api/sous-taches';
 import { toast } from 'sonner';
 
 export function useSousTaches(tacheId: number) {
-  const [sousTaches, setSousTaches] = useState<SousTache[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchSousTaches = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const fetchedSousTaches = await sousTachesApi.getByTache(tacheId);
-      setSousTaches(fetchedSousTaches);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [tacheId]);
+  const { data: sousTaches, isLoading, error } = useQuery({
+    queryKey: ['sous-taches', tacheId],
+    queryFn: () => sousTachesApi.getByTache(tacheId),
+  });
 
-  useEffect(() => {
-    fetchSousTaches();
-  }, [fetchSousTaches]);
+  const createMutation = useMutation({
+    mutationFn: sousTachesApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, updates }: { id: number; updates: { completed?: boolean; titre?: string } }) =>
+      sousTachesApi.update(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: sousTachesApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+    },
+  });
 
   const createSousTache = async (titre: string) => {
     try {
@@ -30,7 +38,6 @@ export function useSousTaches(tacheId: number) {
         titre,
         tacheId,
       });
-      setSousTaches(current => [...current, newSousTache]);
       toast.success('Sous-tâche créée avec succès');
       return newSousTache;
     } catch (error) {
@@ -44,9 +51,6 @@ export function useSousTaches(tacheId: number) {
   ) => {
     try {
       const updatedSousTache = await sousTachesApi.update(id, updates);
-      setSousTaches(current =>
-        current.map(st => (st.id === id ? updatedSousTache : st))
-      );
       toast.success('Sous-tâche mise à jour avec succès');
       return updatedSousTache;
     } catch (error) {
@@ -57,7 +61,6 @@ export function useSousTaches(tacheId: number) {
   const deleteSousTache = async (id: number) => {
     try {
       await sousTachesApi.delete(id);
-      setSousTaches(current => current.filter(st => st.id !== id));
       toast.success('Sous-tâche supprimée avec succès');
     } catch (error) {
       throw error;
@@ -72,10 +75,12 @@ export function useSousTaches(tacheId: number) {
     sousTaches,
     isLoading,
     error,
-    refresh: fetchSousTaches,
-    createSousTache,
-    updateSousTache,
-    deleteSousTache,
+    createSousTache: createMutation.mutate,
+    updateSousTache: updateMutation.mutate,
+    deleteSousTache: deleteMutation.mutate,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
     toggleSousTache,
   };
 } 

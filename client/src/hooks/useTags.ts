@@ -1,33 +1,32 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Tag, tagsApi } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Tag, tagsApi } from '@/api/tags';
 import { toast } from 'sonner';
 
 export function useTags() {
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchTags = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const fetchedTags = await tagsApi.getAll();
-      setTags(fetchedTags);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: tags, isLoading, error } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.getAll,
+  });
 
-  useEffect(() => {
-    fetchTags();
-  }, [fetchTags]);
+  const createMutation = useMutation({
+    mutationFn: tagsApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: tagsApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+    },
+  });
 
   const createTag = async (tagData: { nom: string; couleur?: string }) => {
     try {
-      const newTag = await tagsApi.create(tagData);
-      setTags(current => [...current, newTag]);
+      const newTag = await createMutation.mutateAsync(tagData);
       toast.success('Tag créé avec succès');
       return newTag;
     } catch (error) {
@@ -37,8 +36,7 @@ export function useTags() {
 
   const deleteTag = async (id: number) => {
     try {
-      await tagsApi.delete(id);
-      setTags(current => current.filter(tag => tag.id !== id));
+      await deleteMutation.mutateAsync(id);
       toast.success('Tag supprimé avec succès');
     } catch (error) {
       throw error;
@@ -49,8 +47,9 @@ export function useTags() {
     tags,
     isLoading,
     error,
-    refresh: fetchTags,
     createTag,
     deleteTag,
+    isCreating: createMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 } 

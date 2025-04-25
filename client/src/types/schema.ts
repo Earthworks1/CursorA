@@ -1,73 +1,84 @@
 import { z } from 'zod';
 
-// Définition du schéma de tâche
-export const taskSchema = z.object({
-  titre: z.string().min(1, "Le titre est requis"),
-  description: z.string().optional(),
-  priorite: z.string().optional(),
-  statut: z.string().default("a_faire"),
-  dateDebut: z.string().optional().nullable(),
-  dateDemande: z.string().optional().nullable(),
-  dateRealisation: z.string().optional().nullable(),
-  dateLimite: z.string().optional().nullable(),
-  intervenants: z.array(z.object({ id: z.number(), nom: z.string() })).optional(),
-  piecesJointes: z.array(z.object({ id: z.number(), nom: z.string(), url: z.string() })).optional(),
+// Types de base
+export const dateSchema = z.string().datetime();
+
+// Schémas pour les ressources
+export const ressourceSchema = z.object({
+  id: z.string(),
+  nom: z.string(),
+  prenom: z.string(),
+  email: z.string().email(),
+  role: z.string(),
+  competences: z.array(z.string()),
+  disponibilite: z.object({
+    debut: z.string(),
+    fin: z.string(),
+  }),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
 });
 
-// Définition des types exportés
-export type Task = z.infer<typeof taskSchema>;
+// Schémas pour les tâches
+export const taskSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  startTime: z.date().optional(),
+  endTime: z.date().optional(),
+  resourceId: z.string(),
+  status: z.enum(['pending', 'in-progress', 'completed']),
+  priority: z.enum(['low', 'medium', 'high']),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
+});
 
-// Définition du type Tool (ressource)
-export type Tool = {
-  id: number;
-  nom: string;
-  type: string;
-  cout_horaire?: number;
-  statut: string;
-};
+// Schémas pour le planning
+export const planningRessourceSchema = z.object({
+  id: z.string(),
+  ressourceId: z.string(),
+  date: z.string(),
+  charge: z.number(),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
+});
+
+// Schémas pour les sous-tâches
+export const sousTacheSchema = z.object({
+  id: z.number(),
+  titre: z.string(),
+  completed: z.boolean(),
+  tacheId: z.number(),
+  created_at: dateSchema,
+  updated_at: dateSchema,
+});
+
+// Schémas pour les tags
+export const tagSchema = z.object({
+  id: z.number(),
+  nom: z.string(),
+  couleur: z.string().optional(),
+  created_at: dateSchema,
+});
+
+// Types exportés
+export type Ressource = z.infer<typeof ressourceSchema>;
+export type Task = z.infer<typeof taskSchema>;
+export type PlanningRessource = z.infer<typeof planningRessourceSchema>;
+export type SousTache = z.infer<typeof sousTacheSchema>;
+export type Tag = z.infer<typeof tagSchema>;
 
 // Enums pour faciliter la validation
 export const StatutTache = {
-  A_FAIRE: 'a_faire',
-  EN_COURS: 'en_cours',
-  EN_VALIDATION: 'en_validation',
-  TERMINE: 'termine',
-  EN_RETARD: 'en_retard',
-  EN_REVISION: 'en_revision'
+  PENDING: 'pending',
+  IN_PROGRESS: 'in-progress',
+  COMPLETED: 'completed',
 } as const;
 
 export const PrioriteTache = {
-  BASSE: 'basse',
-  NORMALE: 'normale',
-  HAUTE: 'haute',
-  URGENTE: 'urgente'
-} as const;
-
-export const TypeTache = {
-  ETUDE: 'etude',
-  CONCEPTION: 'conception',
-  LEVE: 'leve',
-  IMPLANTATION: 'implantation',
-  RECOLEMENT: 'recolement',
-  AUTRE: 'autre'
-} as const;
-
-// Types de lots standardisés
-export const TypeLot = {
-  TERRASSEMENT: "terrassement",
-  RESEAUX_SECS: "reseaux_secs",
-  RESEAUX_HUMIDES: "reseaux_humides",
-  VOIRIE: "voirie",
-  VRD: "vrd"
-};
-
-export const TypeActivite = {
-  CREATION: 'creation',
-  MODIFICATION: 'modification',
-  VALIDATION: 'validation',
-  REVISION: 'revision',
-  RETARD: 'retard',
-  ASSIGNATION: 'assignation'
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
 } as const;
 
 export const TypeRessource = {
@@ -76,14 +87,14 @@ export const TypeRessource = {
   VEHICULE: 'vehicule',
   MATERIAU: 'materiau',
   OUTIL: 'outil',
-  AUTRE: 'autre'
+  AUTRE: 'autre',
 } as const;
 
 export const StatutRessource = {
   DISPONIBLE: 'disponible',
   ASSIGNE: 'assigne',
   INDISPONIBLE: 'indisponible',
-  EN_MAINTENANCE: 'en_maintenance'
+  EN_MAINTENANCE: 'en_maintenance',
 } as const;
 
 export const RoleUtilisateur = {
@@ -93,5 +104,5 @@ export const RoleUtilisateur = {
   DIRECTEUR: "directeur",
   SERVICE_INTERNE: "service_interne",
   ASSISTANTE_CONDUCTRICE: "assistante_conductrice",
-  GEOMETRE_PROJETEUR: "geometre_projeteur"
+  GEOMETRE_PROJETEUR: "geometre_projeteur",
 } as const; 
