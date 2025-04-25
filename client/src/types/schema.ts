@@ -92,13 +92,24 @@ export const TypeTache = {
   CONCEPTION: 'conception',
   EXECUTION: 'execution',
   VALIDATION: 'validation',
-  REVISION: 'revision'
+  REVISION: 'revision',
+  LEVE: 'leve',
+  IMPLANTATION: 'implantation',
+  RECOLEMENT: 'recolement',
+  DAO: 'dao',
+  COORDINATION: 'coordination',
+  SECURITE: 'securite',
+  ADMINISTRATIVE: 'administrative'
 } as const;
 
 export const PrioriteTache = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
+  BASSE: 'basse',
+  NORMALE: 'normale',
+  HAUTE: 'haute',
+  URGENTE: 'urgente'
 } as const;
 
 export const TypeRessource = {

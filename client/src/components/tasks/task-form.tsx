@@ -23,7 +23,7 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
-import { StatutTache, TypeTache, PrioriteTache } from '@shared/schema';
+import { StatutTache, TypeTache, PrioriteTache } from '@/types/schema';
 import { Calendar as CalendarIcon, Upload, Plus, Minus, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';

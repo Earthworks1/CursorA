@@ -49,7 +49,7 @@ import { CalendarIcon, Check, ChevronsUpDown, ArrowLeft, Loader2 } from 'lucide-
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { StatutTache, PrioriteTache, TypeTache } from '@shared/schema';
+import { StatutTache, PrioriteTache, TypeTache } from '@/types/schema';
 import { cn } from '@/lib/utils';
 
 // Schéma de validation pour le formulaire
