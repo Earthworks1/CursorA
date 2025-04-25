@@ -23,12 +23,13 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
-import { StatutTache, TypeTache } from '@shared/schema';
+import { StatutTache, TypeTache, PrioriteTache } from '@shared/schema';
 import { Calendar as CalendarIcon, Upload, Plus, Minus, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { fr } from 'date-fns/locale';
 import { format } from 'date-fns';
+import QuickCreateChantierModal from '../chantiers/quick-create-chantier-modal';
 
 // Type pour les utilisateurs
 type User = {
@@ -47,10 +48,12 @@ type Chantier = {
 const formSchema = z.object({
   titre: z.string().min(3, { message: "Le titre doit contenir au moins 3 caractères" }),
   description: z.string().optional(),
-  chantierId: z.number({ required_error: "Veuillez sélectionner un chantier" }),
+  chantierId: z.number().optional(),
   type: z.string({ required_error: "Veuillez sélectionner un type" }),
   statut: z.string({ required_error: "Veuillez sélectionner un statut" }),
   progression: z.number().min(0).max(100),
+  piloteId: z.number().optional(),
+  priorite: z.string().default("normale"),
   intervenants: z.array(z.number()),
   dateDebut: z.date().optional().nullable(),
   dateDemande: z.date().optional().nullable(),
@@ -222,24 +225,32 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                 name="chantierId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Chantier *</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(parseInt(value))}
-                      defaultValue={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un chantier" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {chantiers?.map((chantier) => (
-                          <SelectItem key={chantier.id} value={chantier.id.toString()}>
-                            {chantier.nom}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Chantier</FormLabel>
+                    <div className="flex gap-2">
+                      <Select
+                        onValueChange={(value) => field.onChange(parseInt(value))}
+                        defaultValue={field.value?.toString()}
+                        className="flex-1"
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un chantier" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {chantiers?.map((chantier) => (
+                            <SelectItem key={chantier.id} value={chantier.id.toString()}>
+                              {chantier.nom}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <QuickCreateChantierModal
+                        onChantierCreated={(chantierId) => {
+                          field.onChange(chantierId);
+                        }}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -262,11 +273,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value={TypeTache.LEVE}>Levé</SelectItem>
+                        <SelectItem value={TypeTache.IMPLANTATION}>Implantation</SelectItem>
+                        <SelectItem value={TypeTache.RECOLEMENT}>Récolement</SelectItem>
                         <SelectItem value={TypeTache.ETUDE}>Étude</SelectItem>
-                        <SelectItem value={TypeTache.CONCEPTION}>Conception</SelectItem>
-                        <SelectItem value={TypeTache.EXECUTION}>Exécution</SelectItem>
-                        <SelectItem value={TypeTache.VALIDATION}>Validation</SelectItem>
-                        <SelectItem value={TypeTache.REVISION}>Révision</SelectItem>
+                        <SelectItem value={TypeTache.DAO}>DAO</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -508,55 +519,96 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
               
               <Separator className="sm:col-span-2 my-4" />
               
-              {/* Intervenants */}
               <div className="sm:col-span-2">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Intervenants</h3>
-                
-                <FormField
-                  control={form.control}
-                  name="intervenants"
-                  render={() => (
-                    <FormItem>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Responsables</h3>
+              </div>
+
+              {/* Pilote */}
+              <FormField
+                control={form.control}
+                name="piloteId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pilote</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      defaultValue={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner un pilote" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
                         {users?.map((user) => (
-                          <FormField
-                            key={user.id}
-                            control={form.control}
-                            name="intervenants"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={user.id}
-                                  className="flex flex-row items-center space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(user.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, user.id])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== user.id
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal cursor-pointer">
-                                    {user.prenom} {user.nom}
-                                  </FormLabel>
-                                </FormItem>
-                              );
+                          <SelectItem key={user.id} value={user.id.toString()}>
+                            {user.prenom} {user.nom}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Intervenants */}
+              <FormField
+                control={form.control}
+                name="intervenants"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Intervenants</FormLabel>
+                    <div className="space-y-2">
+                      {users?.map((user) => (
+                        <div key={user.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={field.value?.includes(user.id)}
+                            onCheckedChange={(checked) => {
+                              const newValue = checked
+                                ? [...(field.value || []), user.id]
+                                : (field.value || []).filter((id) => id !== user.id);
+                              field.onChange(newValue);
                             }}
                           />
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                          <Label>{user.prenom} {user.nom}</Label>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Priorité */}
+              <FormField
+                control={form.control}
+                name="priorite"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priorité</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionner une priorité" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={PrioriteTache.BASSE}>Basse</SelectItem>
+                        <SelectItem value={PrioriteTache.NORMALE}>Normale</SelectItem>
+                        <SelectItem value={PrioriteTache.HAUTE}>Haute</SelectItem>
+                        <SelectItem value={PrioriteTache.URGENTE}>Urgente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Separator className="sm:col-span-2 my-4" />
               
               {/* Pièces jointes */}
               {isEditing && (

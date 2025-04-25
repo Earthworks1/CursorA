@@ -286,6 +286,8 @@ export const tachesRelations = relations(taches, ({ one, many }) => ({
     fields: [taches.intervenantId],
     references: [users.id],
   }),
+  tags: many(tacheTags),
+  sousTaches: many(sousTaches),
 }));
 
 export const tacheIntervenantsRelations = relations(tacheIntervenants, ({ one }) => ({
@@ -578,3 +580,76 @@ export type Tool = {
   cout_horaire?: number;
   statut: string;
 };
+
+// Tags
+export const tags = pgTable("tags", {
+  id: serial("id").primaryKey(),
+  nom: text("nom").notNull(),
+  couleur: text("couleur"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertTagSchema = createInsertSchema(tags).omit({
+  id: true,
+  created_at: true,
+});
+
+// Association tags-tâches
+export const tacheTags = pgTable("tache_tags", {
+  id: serial("id").primaryKey(),
+  tacheId: integer("tache_id").notNull(),
+  tagId: integer("tag_id").notNull(),
+});
+
+export const insertTacheTagSchema = createInsertSchema(tacheTags).omit({
+  id: true,
+});
+
+// Sous-tâches
+export const sousTaches = pgTable("sous_taches", {
+  id: serial("id").primaryKey(),
+  titre: text("titre").notNull(),
+  completed: boolean("completed").default(false),
+  tacheId: integer("tache_id").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSousTacheSchema = createInsertSchema(sousTaches).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+// Relations
+export const tagsRelations = relations(tags, ({ many }) => ({
+  tacheTags: many(tacheTags),
+}));
+
+export const tacheTagsRelations = relations(tacheTags, ({ one }) => ({
+  tag: one(tags, {
+    fields: [tacheTags.tagId],
+    references: [tags.id],
+  }),
+  tache: one(taches, {
+    fields: [tacheTags.tacheId],
+    references: [taches.id],
+  }),
+}));
+
+export const sousTachesRelations = relations(sousTaches, ({ one }) => ({
+  tache: one(taches, {
+    fields: [sousTaches.tacheId],
+    references: [taches.id],
+  }),
+}));
+
+// Types exportés
+export type Tag = typeof tags.$inferSelect;
+export type InsertTag = z.infer<typeof insertTagSchema>;
+
+export type TacheTag = typeof tacheTags.$inferSelect;
+export type InsertTacheTag = z.infer<typeof insertTacheTagSchema>;
+
+export type SousTache = typeof sousTaches.$inferSelect;
+export type InsertSousTache = z.infer<typeof insertSousTacheSchema>;

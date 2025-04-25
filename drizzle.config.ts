@@ -1,14 +1,14 @@
-import { defineConfig } from "drizzle-kit";
+import type { Config } from 'drizzle-kit';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
-}
-
-export default defineConfig({
-  out: "./migrations",
-  schema: "./shared/schema.ts",
-  dialect: "postgresql",
+export default {
+  schema: './shared/schema.ts',
+  out: './drizzle',
+  driver: 'pg',
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL || "postgresql://postgres:Spiess*123@db.iblaaljrzvbsorbpscnq.supabase.co:5432/postgres",
   },
-});
+  verbose: true,
+  strict: true,
+} satisfies Config;
