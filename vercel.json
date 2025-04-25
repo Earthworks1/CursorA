@@ -6,17 +6,5 @@
   "framework": "nextjs",
   "env": {
     "NEXT_PUBLIC_API_URL": "https://your-api-url.vercel.app"
-  },
-  "outputDirectory": "client/dist",
-  "functions": {
-    "api/index.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.ts" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  }
 } 
