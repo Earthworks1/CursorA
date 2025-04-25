@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format } from "date-fns";
+import { format, Locale } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
