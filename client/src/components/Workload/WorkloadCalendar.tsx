@@ -30,7 +30,7 @@ const locales = {
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: (date) => startOfWeek(date, { weekStartsOn: 1 }), // Lundi
+  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 1 }), // Lundi
   getDay,
   locales,
 });
