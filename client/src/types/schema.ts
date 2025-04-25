@@ -112,6 +112,21 @@ export const PrioriteTache = {
   URGENTE: 'urgente'
 } as const;
 
+export const TypeLot = {
+  VOIRIE: 'voirie',
+  RESEAUX_SECS: 'reseaux_secs',
+  RESEAUX_HUMIDES: 'reseaux_humides',
+  AMENAGEMENT: 'amenagement',
+  OUVRAGE: 'ouvrage',
+  ETUDE: 'etude',
+  AUTRE: 'autre',
+  TERRASSEMENT: 'terrassement',
+  VRD: 'vrd',
+  BATIMENT: 'batiment',
+  ESPACES_VERTS: 'espaces_verts',
+  SIGNALISATION: 'signalisation'
+} as const;
+
 export const TypeRessource = {
   PERSONNEL: 'personnel',
   EQUIPEMENT: 'equipement',
