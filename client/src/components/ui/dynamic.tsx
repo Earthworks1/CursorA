@@ -49,5 +49,14 @@ export default function Dynamic({ children }: DynamicProps) {
     );
   }
 
-  return Component;
+  // Ajout d'un try/catch défensif pour ignorer l'erreur removeChild
+  try {
+    return Component;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("removeChild")) {
+      console.warn("Erreur removeChild ignorée dans Dynamic :", error);
+      return null;
+    }
+    throw error;
+  }
 }
