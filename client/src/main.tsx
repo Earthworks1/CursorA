@@ -39,6 +39,10 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
   }
   render() {
     if (this.state.hasError) {
+      // Si c'est une erreur removeChild, ignorer et continuer à afficher l'app
+      if (this.state.error?.message?.includes("removeChild") || String(this.state.error).includes("removeChild")) {
+        return this.props.children;
+      }
       return (
         <div style={{ background: '#f44336', color: 'white', padding: 20, fontFamily: 'system-ui', textAlign: 'center' }}>
           <b>Erreur critique :</b> {this.state.error?.message || String(this.state.error)}

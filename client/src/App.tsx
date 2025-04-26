@@ -15,7 +15,6 @@ import Configuration from "@/pages/configuration/index";
 import WorkloadPage from "@/pages/WorkloadPage";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
-import Dynamic from "@/components/ui/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -170,36 +169,28 @@ function Router() {
       <Route path="/chantiers/new">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/chantiers/new").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/chantiers/new").default}
           </Layout>
         )}
       </Route>
       <Route path="/chantiers/arborescence">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/chantiers/arborescence").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/chantiers/arborescence").default}
           </Layout>
         )}
       </Route>
       <Route path="/chantiers/:id">
         {(params) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/chantiers/[id]").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            {require("@/pages/chantiers/[id]").default(params)}
           </Layout>
         )}
       </Route>
       <Route path="/chantiers/:id/edit">
         {(params) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/chantiers/[id]/edit").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            {require("@/pages/chantiers/[id]/edit").default(params)}
           </Layout>
         )}
       </Route>
@@ -213,9 +204,7 @@ function Router() {
       <Route path="/taches/new">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/taches/new").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/taches/new").default}
           </Layout>
         )}
       </Route>
@@ -229,9 +218,7 @@ function Router() {
       <Route path="/taches/:id/edit">
         {(params) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/taches/[id]/edit").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            {require("@/pages/taches/[id]/edit").default(params)}
           </Layout>
         )}
       </Route>
@@ -273,36 +260,28 @@ function Router() {
       <Route path="/configuration/interface">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/configuration/interface").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/configuration/interface").default}
           </Layout>
         )}
       </Route>
       <Route path="/ressources">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/index").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/ressources/index").default}
           </Layout>
         )}
       </Route>
       <Route path="/ressources/new">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/new").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/ressources/new").default}
           </Layout>
         )}
       </Route>
       <Route path="/ressources/planning">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/planning").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/ressources/planning").default}
           </Layout>
         )}
       </Route>
@@ -316,18 +295,14 @@ function Router() {
       <Route path="/ressources/:id">
         {(params) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/[id]").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            {require("@/pages/ressources/[id]").default(params)}
           </Layout>
         )}
       </Route>
       <Route path="/ressources/:id/edit">
         {(params) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/[id]/edit").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            {require("@/pages/ressources/[id]/edit").default(params)}
           </Layout>
         )}
       </Route>
@@ -335,9 +310,7 @@ function Router() {
       <Route path="/admin">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/admin/index").then(mod => <mod.default />)}
-            </Dynamic>
+            {require("@/pages/admin/index").default}
           </Layout>
         )}
       </Route>
