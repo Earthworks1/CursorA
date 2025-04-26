@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import React from "react";
 
 // Afficher un message de débogage
 console.log("main.tsx chargé - initialisation de l'application React");
@@ -21,7 +22,7 @@ window.addEventListener("hashchange", cleanupResources);
 
 // Gestionnaire d'erreurs global
 window.onerror = (message, source, lineno, colno, error) => {
-  console.error("Erreur globale:", { message, source, lineno, colno, error });
+  console.error("Erreur globale:", { message, source, lineno, colno, error, stack: error?.stack });
   return false;
 };
 
@@ -38,9 +39,11 @@ try {
   const rootInstance = createRoot(root);
   
   rootInstance.render(
-    <div className={fontConfig.className}>
-      <App />
-    </div>
+    <React.StrictMode>
+      <div className={fontConfig.className}>
+        <App />
+      </div>
+    </React.StrictMode>
   );
   console.log("Rendu terminé");
 } catch (error) {
