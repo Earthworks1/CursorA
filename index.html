@@ -22,27 +22,6 @@
       }
     </style>
     <script>
-      // Correction de l'erreur removeChild
-      try {
-        const originalRemoveChild = Node.prototype.removeChild;
-        
-        Node.prototype.removeChild = function(child) {
-          if (!this.contains(child)) {
-            console.warn("Nœud à supprimer non enfant, ignoré");
-            return child;
-          }
-          
-          try {
-            return originalRemoveChild.call(this, child);
-          } catch (e) {
-            console.warn("Erreur removeChild, ignorée:", e);
-            return child;
-          }
-        };
-      } catch (e) {
-        console.error("Impossible d'appliquer le correctif:", e);
-      }
-      
       // Script pour le routage SPA
       (function() {
         // Redirection vers l'index pour les routes non trouvées
