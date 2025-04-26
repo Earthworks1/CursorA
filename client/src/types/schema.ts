@@ -1,3 +1,5 @@
+// Types et schémas pour l'application
+// Ajout d'un commentaire pour déclencher un nouveau déploiement Vercel avec les correctifs
 import { z } from 'zod';
 
 // Types de base
