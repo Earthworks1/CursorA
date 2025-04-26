@@ -26,6 +26,29 @@ window.onerror = (message, source, lineno, colno, error) => {
   return false;
 };
 
+class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("[ErrorBoundary]", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ background: '#f44336', color: 'white', padding: 20, fontFamily: 'system-ui', textAlign: 'center' }}>
+          <b>Erreur critique :</b> {this.state.error?.message || String(this.state.error)}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 try {
   const root = document.getElementById("root");
   if (!root) {
@@ -40,9 +63,11 @@ try {
   
   rootInstance.render(
     <React.StrictMode>
-      <div className={fontConfig.className}>
-        <App />
-      </div>
+      <GlobalErrorBoundary>
+        <div className={fontConfig.className}>
+          <App />
+        </div>
+      </GlobalErrorBoundary>
     </React.StrictMode>
   );
   console.log("Rendu terminé");
