@@ -55,7 +55,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { StatutTache } from '@shared/schema';
+import { StatutTache } from '@/types/schema';
 
 interface TacheDetailProps {
   id: string;

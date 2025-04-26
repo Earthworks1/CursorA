@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import TaskListSidebar from '@/components/Workload/TaskListSidebar';
 import WorkloadCalendar from '@/components/Workload/WorkloadCalendar';
-import TaskForm from '@/components/Workload/TaskForm';
-import { Task } from '@shared/types/workload';
+import TaskDialog from '@/components/Workload/TaskDialog';
+import { Task } from '@/types/workload';
 import { useToast } from "@/hooks/use-toast";
 import { formatISO, parse, addHours } from 'date-fns';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
@@ -11,20 +11,46 @@ import { Button } from '@/components/ui/button'; // Potentiellement nécessaire
 import { workloadApi } from '../api/workload';
 import { toast } from 'sonner';
 
+// Utilitaire pour formater les dates
+const formatDatesForApi = (data: any) => {
+  const formattedData = { ...data };
+  if (formattedData.startTime instanceof Date) {
+    formattedData.startTime = formatISO(formattedData.startTime);
+  }
+  if (formattedData.endTime instanceof Date) {
+    formattedData.endTime = formatISO(formattedData.endTime);
+  }
+  return formattedData;
+};
+
+// Fonction pour appeler l'API avec timeout
+const fetchWithTimeout = async (url: string, options: RequestInit, timeout = 5000): Promise<Response> => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+};
+
 // Fonctions pour appeler l'API (création/mise à jour)
 const createTask = async (newTaskData: Omit<Task, 'id' | 'createdAt'>): Promise<Task> => {
-  const response = await fetch('/api/workload/tasks', {
+  const formattedData = formatDatesForApi(newTaskData);
+  const response = await fetchWithTimeout('/api/workload/tasks', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    // Formater les dates en ISO string pour le JSON
-    body: JSON.stringify({
-      ...newTaskData,
-      startTime: formatISO(newTaskData.startTime),
-      endTime: formatISO(newTaskData.endTime),
-    }),
+    body: JSON.stringify(formattedData),
   });
+  
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Erreur lors de la création de la tâche');
@@ -33,22 +59,15 @@ const createTask = async (newTaskData: Omit<Task, 'id' | 'createdAt'>): Promise<
 };
 
 const updateTask = async (taskId: string, updatedData: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<Task> => {
-  // S'assurer que les dates sont au format ISO si elles sont présentes
-  const bodyData: any = { ...updatedData };
-  if (bodyData.startTime && bodyData.startTime instanceof Date) {
-    bodyData.startTime = formatISO(bodyData.startTime);
-  }
-  if (bodyData.endTime && bodyData.endTime instanceof Date) {
-    bodyData.endTime = formatISO(bodyData.endTime);
-  }
-
-  const response = await fetch(`/api/workload/tasks/${taskId}`, {
+  const formattedData = formatDatesForApi(updatedData);
+  const response = await fetchWithTimeout(`/api/workload/tasks/${taskId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(bodyData),
+    body: JSON.stringify(formattedData),
   });
+  
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Erreur lors de la mise à jour de la tâche');
@@ -58,10 +77,9 @@ const updateTask = async (taskId: string, updatedData: Partial<Omit<Task, 'id' |
 
 const WorkloadPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Stocke soit la tâche complète pour édition, soit un objet partiel pour pré-remplir la création
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null); 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { toast: toastHook } = useToast(); // Renommé pour éviter la confusion
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,15 +88,14 @@ const WorkloadPage: React.FC = () => {
   const createTaskMutation = useMutation({ 
     mutationFn: createTask,
     onSuccess: () => {
-      // Invalider les queries pour rafraîchir les données
       queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
       queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
-      toast({ title: "Succès", description: "Tâche créée." });
+      toastHook({ title: "Succès", description: "Tâche créée." });
       setIsModalOpen(false);
       setSelectedTask(null);
     },
     onError: (error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toastHook({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
 
@@ -89,12 +106,12 @@ const WorkloadPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
       queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
-      toast({ title: "Succès", description: "Tâche mise à jour." });
+      toastHook({ title: "Succès", description: "Tâche mise à jour." });
       setIsModalOpen(false);
       setSelectedTask(null);
     },
-     onError: (error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    onError: (error) => {
+      toastHook({ title: "Erreur", description: error.message, variant: "destructive" });
     }
   });
 
@@ -105,8 +122,13 @@ const WorkloadPage: React.FC = () => {
       const data = await workloadApi.getAll();
       setTasks(data);
     } catch (err) {
-      setError('Erreur lors du chargement des tâches');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des tâches';
+      setError(errorMessage);
+      toastHook({ 
+        title: "Erreur", 
+        description: errorMessage, 
+        variant: "destructive" 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -117,50 +139,38 @@ const WorkloadPage: React.FC = () => {
   }, []);
 
   const handleTaskCreate = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      const newTask = await workloadApi.createTask(taskData);
-      setTasks(prev => [...prev, newTask]);
-      toast.success('Tâche créée avec succès');
-    } catch (err) {
-      toast.error('Erreur lors de la création de la tâche');
-      console.error(err);
-    }
+    createTaskMutation.mutate(taskData);
   };
 
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
-    try {
-      await workloadApi.update(taskId, updates);
-      toast.success('Tâche mise à jour avec succès');
-      fetchTasks();
-    } catch (err) {
-      toast.error('Erreur lors de la mise à jour de la tâche');
-      console.error(err);
-    }
+    updateTaskMutation.mutate({ taskId, data: updates });
   };
 
   const handleTaskDelete = async (taskId: string) => {
     try {
       await workloadApi.delete(taskId);
-      toast.success('Tâche supprimée avec succès');
+      toastHook({ title: "Succès", description: "Tâche supprimée avec succès" });
       setSelectedTask(null);
-      fetchTasks();
+      queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
     } catch (err) {
-      toast.error('Erreur lors de la suppression de la tâche');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression de la tâche';
+      toastHook({ 
+        title: "Erreur", 
+        description: errorMessage, 
+        variant: "destructive" 
+      });
     }
   };
 
   // Gérer la sauvegarde depuis le formulaire
   const handleSaveTask = (formData: Omit<Task, 'id' | 'createdAt'> | Partial<Omit<Task, 'id' | 'createdAt'>>) => {
-    console.log('Saving task with data:', formData);
-    
-    if (selectedTask && selectedTask.id) {
-      // Mode édition
-      console.log('Updating existing task:', selectedTask.id);
-      updateTaskMutation.mutate({ taskId: selectedTask.id, data: formData });
+    if (selectedTask?.id) {
+      updateTaskMutation.mutate({ 
+        taskId: selectedTask.id, 
+        data: formData 
+      });
     } else {
-      // Mode création
-      // S'assurer que toutes les propriétés requises sont présentes
       const newTaskData = {
         ...formData,
         status: formData.status || 'a_planifier',
@@ -168,144 +178,118 @@ const WorkloadPage: React.FC = () => {
         endTime: formData.endTime || new Date(),
       } as Omit<Task, 'id' | 'createdAt'>;
       
-      console.log('Creating new task with data:', newTaskData);
       createTaskMutation.mutate(newTaskData);
     }
   };
 
-  // Ouvrir la modale pour la création
   const handleAddTask = () => {
-    setSelectedTask(null); // Reset pour indiquer la création
+    setSelectedTask(null);
     setIsModalOpen(true);
   };
 
-  // Ouvrir la modale pour l'édition depuis le calendrier
-  const handleSelectEvent = (event: any) => {
-    // rawTask contient la tâche originale attachée à l'événement
+  const handleSelectEvent = (event: { rawTask: Task }) => {
     if (event.rawTask) {
-      setSelectedTask(event.rawTask); 
+      setSelectedTask(event.rawTask);
       setIsModalOpen(true);
     }
   };
   
-  // Ouvrir la modale depuis un créneau vide du calendrier
-  const handleSelectSlot = (slotInfo: { start: Date, end: Date, resourceId?: string }) => {
-    console.log('Selected slot:', slotInfo);
-    
+  const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
     const newTask = {
       startTime: slotInfo.start,
       endTime: slotInfo.end,
       assignedUserId: slotInfo.resourceId || null,
       status: 'planifie',
-      type: 'leve', // Type par défaut
-      description: '', // À remplir dans le formulaire
-      siteId: null, // À sélectionner dans le formulaire
+      type: 'leve',
+      description: '',
+      siteId: null,
       notes: null,
     };
     
-    console.log('Pre-filling task form with:', newTask);
     setSelectedTask(newTask);
     setIsModalOpen(true);
   };
 
-  // Gérer la fin du drag & drop
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
-    // Drop en dehors d'une zone valide
-    if (!destination) {
-      return;
-    }
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-    // Drop sur la même position (ou retour dans la sidebar pour l'instant)
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    // --- Drop de la Sidebar vers le Calendrier --- 
     if (source.droppableId === 'sidebar-unplanned' && destination.droppableId.startsWith('calendar-slot-')) {
-      console.log('Dropped from sidebar to calendar', result);
       const taskId = draggableId;
-      
-      // Décoder les informations du slot de destination
-      // Format attendu : calendar-slot-YYYYMMDD-HH-userId
-      const parts = destination.droppableId.split('-');
-      if (parts.length < 5) {
-          console.error("ID de slot de destination invalide:", destination.droppableId);
-          toast({ title: "Erreur", description: "Impossible de placer la tâche ici.", variant: "destructive" });
-          return;
-      }
-      const dateStr = parts[2];
-      const hourStr = parts[3];
-      const userId = parts.slice(4).join('-'); // Rejoindre au cas où l'userId contient des '-'
+      const [, , dateStr, hourStr, ...userIdParts] = destination.droppableId.split('-');
+      const userId = userIdParts.join('-');
       
       try {
-          // Recalculer la date/heure de début exacte
-          const startTime = parse(`${dateStr}${hourStr}`, 'yyyyMMddHH', new Date());
-          // Calculer l'heure de fin (par ex. +2 heures)
-          const endTime = addHours(startTime, 2); 
+        const startTime = parse(`${dateStr}${hourStr}`, 'yyyyMMddHH', new Date());
+        const endTime = addHours(startTime, 2);
 
-          console.log(`Updating task ${taskId} to startTime: ${startTime}, endTime: ${endTime}, userId: ${userId}`);
-
-          // Appeler la mutation pour mettre à jour la tâche
-          updateTaskMutation.mutate({
-              taskId: taskId,
-              data: {
-                  startTime: startTime,
-                  endTime: endTime,
-                  assignedUserId: userId,
-                  status: 'planifie' // Mettre à jour le statut
-              }
-          });
-          // Le onSuccess de la mutation gérera l'invalidation et le toast
-
+        updateTaskMutation.mutate({
+          taskId,
+          data: {
+            startTime,
+            endTime,
+            assignedUserId: userId,
+            status: 'planifie'
+          }
+        });
       } catch (e) {
-          console.error("Erreur lors du parsing de la date/heure du slot:", e);
-          toast({ title: "Erreur", description: "Impossible de calculer la date/heure.", variant: "destructive" });
+        const errorMessage = e instanceof Error ? e.message : "Erreur lors du calcul de la date/heure";
+        toastHook({ 
+          title: "Erreur", 
+          description: errorMessage, 
+          variant: "destructive" 
+        });
       }
-      
-    } else {
-      // Gérer d'autres cas de DND (ex: réordonner dans la sidebar, déplacer dans le calendrier) si nécessaire
-      console.log('Unhandled drag and drop:', result);
     }
   };
 
   if (isLoading) {
-    return <div>Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-red-500 bg-red-100 p-4 rounded-lg">
+          <h3 className="font-bold">Erreur</h3>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <DragDropContext onDragEnd={onDragEnd}> 
-      <div className="flex h-[calc(100vh-var(--header-height,60px))] ">
+      <div className="flex h-[calc(100vh-var(--header-height,60px))]">
         <div className="w-1/4 max-w-xs min-w-[250px]">
-          {/* Passer l'id du droppable à la sidebar */}
-          <TaskListSidebar onAddTask={handleAddTask} droppableId="sidebar-unplanned" /> 
+          <TaskListSidebar 
+            onAddTask={handleAddTask} 
+            droppableId="sidebar-unplanned" 
+          /> 
         </div>
         <div className="flex-1 overflow-auto p-4">
-          {/* Passer la prop pour activer le DND sur le calendrier */}
           <WorkloadCalendar 
             tasks={tasks}
             onTaskSelect={handleSelectEvent} 
             onSelectSlot={handleSelectSlot} 
-            isDroppable={true} // Indiquer que le calendrier doit gérer le drop
+            isDroppable={true}
           />
         </div>
-        
-        <TaskForm 
-          isOpen={isModalOpen} 
-          onRequestClose={() => {
-            setIsModalOpen(false);
-            setSelectedTask(null);
-          }} 
-          taskToEdit={selectedTask} 
-          onSave={handleSaveTask} 
+        <TaskDialog
+          task={selectedTask || undefined}
+          isOpen={isModalOpen}
+          onOpenChange={(open) => {
+            setIsModalOpen(open);
+            if (!open) setSelectedTask(null);
+          }}
+          onSave={handleSaveTask}
+          onDelete={selectedTask && selectedTask.id ? () => handleTaskDelete(selectedTask.id) : undefined}
         />
       </div>
     </DragDropContext>

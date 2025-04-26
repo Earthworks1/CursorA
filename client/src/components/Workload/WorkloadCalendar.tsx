@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, dateFnsLocalizer, Views, SlotInfo, Event as BigCalendarEvent } from 'react-big-calendar';
+import React, { useState, useCallback } from 'react';
+import { Calendar, dateFnsLocalizer, Views, SlotInfo } from 'react-big-calendar';
 import { 
   format,
   parse,
@@ -7,155 +7,102 @@ import {
   getDay,
   addWeeks,
   subWeeks,
-  startOfMonth,
-  endOfMonth,
-  endOfWeek,
   parseISO,
   addDays,
-  isSameDay
 } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '@/styles/calendar.css'; // Import des styles personnalisés
+import '@/styles/calendar.css';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Task, User, Site } from '@shared/types/workload'; // Import des types
-import { useQuery } from '@tanstack/react-query'; // Import pour le fetching
+import { Task, User, Site } from '@/types/workload';
+import { useQuery } from '@tanstack/react-query';
 import { Droppable } from '@hello-pangea/dnd';
 import { workloadApi } from '@/api/workload';
 import { toast } from 'sonner';
 
-// Configuration du localizer avec date-fns et la locale française
-const locales = {
-  'fr': fr,
-};
+// Configuration du localizer
+const locales = { 'fr': fr };
 
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 1 }), // Lundi
+  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 1 }),
   getDay,
   locales,
 });
 
-// Créneaux horaires de 7h à 18h
+// Configuration des horaires
 const minTime = new Date();
 minTime.setHours(7, 0, 0);
 
 const maxTime = new Date();
 maxTime.setHours(18, 0, 0);
 
-// Définir les vues autorisées (semaine de travail)
+// Vues disponibles
 const availableViews = [Views.WORK_WEEK];
-
-// Fonctions de fetch API (à adapter selon votre client HTTP, ex: fetch, axios)
-const fetchTasks = async (week: string): Promise<Task[]> => {
-  const response = await fetch(`/api/workload/tasks?week=${week}`);
-  if (!response.ok) {
-    throw new Error('Erreur lors du chargement des tâches');
-  }
-  const tasks = await response.json();
-  // Convertir les chaînes de date en objets Date
-  return tasks.map((task: any) => ({
-    ...task,
-    startTime: parseISO(task.startTime),
-    endTime: parseISO(task.endTime),
-    createdAt: parseISO(task.createdAt),
-  }));
-};
-
-const fetchUsers = async (): Promise<User[]> => {
-  const response = await fetch('/api/workload/users');
-  if (!response.ok) {
-    throw new Error('Erreur lors du chargement des utilisateurs');
-  }
-  return response.json();
-};
-
-const fetchSites = async (): Promise<Site[]> => {
-  const response = await fetch('/api/workload/sites');
-  if (!response.ok) {
-    throw new Error('Erreur lors du chargement des sites');
-  }
-  return response.json();
-};
 
 // Fonction pour obtenir la couleur basée sur le type de tâche
 const getTypeColor = (type: Task['type']): string => {
   switch (type) {
-    case 'leve': return '#3b82f6'; // blue-500
-    case 'implantation': return '#f97316'; // orange-500
-    case 'recolement': return '#10b981'; // emerald-500
-    case 'etude': return '#8b5cf6'; // violet-500
-    case 'dao': return '#6b7280'; // gray-500
-    case 'autre': return '#a1a1aa'; // zinc-400
-    default: return '#a1a1aa'; // zinc-400
+    case 'leve': return '#3b82f6';
+    case 'implantation': return '#f97316';
+    case 'recolement': return '#10b981';
+    case 'etude': return '#8b5cf6';
+    case 'dao': return '#6b7280';
+    case 'autre': return '#a1a1aa';
+    default: return '#a1a1aa';
   }
 };
 
-// Interface pour les props du composant
+// Interfaces
 interface WorkloadCalendarProps {
-  onSelectEvent: (event: any) => void; // Callback pour la sélection d'un événement existant
-  onSelectSlot: (slotInfo: SlotInfo) => void; // Callback pour la sélection d'un créneau vide
-  isDroppable?: boolean; // Optionnel pour activer le DND
+  onSelectEvent: (event: any) => void;
+  onSelectSlot: (slotInfo: SlotInfo) => void;
+  isDroppable?: boolean;
   tasks: Task[];
   onTaskSelect: (task: Task | null) => void;
 }
 
-// Interface pour les props du wrapper de créneau
 interface TimeSlotWrapperProps {
   children: React.ReactNode;
-  value: Date; // La date/heure de début du créneau
-  resource?: string | number; // L'ID de la ressource (utilisateur) associé à ce créneau
+  value: Date;
+  resource?: string | number;
 }
 
-// Composant Wrapper pour rendre les créneaux horaires droppables
+// Composant Wrapper pour les créneaux horaires droppables
 const DroppableTimeSlotWrapper: React.FC<TimeSlotWrapperProps & { isDroppable?: boolean }> = 
   ({ children, value, resource, isDroppable }) => {
     
   if (!isDroppable || !resource) {
-    // Si DND n'est pas activé ou si pas de ressource (ex: en-tête d'heure), rendre l'enfant normal
     return <>{children}</>;
   }
 
-  // Générer l'ID pour Droppable: calendar-slot-YYYYMMDD-HH-userId
   const dateStr = format(value, 'yyyyMMdd');
-  const hourStr = format(value, 'HH'); // Heure de début du créneau
+  const hourStr = format(value, 'HH');
   const droppableId = `calendar-slot-${dateStr}-${hourStr}-${resource}`;
 
   return (
-    <Droppable droppableId={droppableId}>
+    <Droppable droppableId={droppableId} type="TASK">
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
-          style={{ 
-            height: '100%', // Important pour que Droppable prenne la taille du slot
-            backgroundColor: snapshot.isDraggingOver ? 'lightblue' : undefined, // Feedback visuel
-          }}
-          className="rbc-time-slot" // Garder les classes RBC si nécessaire
+          className={`rbc-time-slot h-full ${snapshot.isDraggingOver ? 'bg-blue-100' : ''}`}
         >
-          {children} {/* Affiche le contenu original du slot */}
-          {/* Le placeholder est souvent caché ou n'a pas de contenu visible ici */}
-          {provided.placeholder} 
+          {children}
+          <div style={{ display: 'none' }}>{provided.placeholder}</div>
         </div>
       )}
     </Droppable>
   );
 };
 
-// --- Composant CustomDateHeader --- START ---
-interface CustomDateHeaderProps {
-  date: Date;
-  label: string; // Le label par défaut (ex: "Lundi 21")
-  localizer: any; // Le localizer pour le formatage
-}
-
-const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date }) => {
-  // Formatter le nom du jour et la date
-  const dayName = format(date, 'EEEE', { locale: fr }); // Nom complet du jour
-  const dayNumber = format(date, 'd MMMM', { locale: fr }); // Jour et mois
+// Composants d'en-tête personnalisés
+const CustomDateHeader: React.FC<{ date: Date }> = ({ date }) => {
+  const dayName = format(date, 'EEEE', { locale: fr });
+  const dayNumber = format(date, 'd MMMM', { locale: fr });
 
   return (
     <div className="flex flex-col items-center p-2 border-b bg-gray-50">
@@ -164,129 +111,113 @@ const CustomDateHeader: React.FC<CustomDateHeaderProps> = ({ date }) => {
     </div>
   );
 };
-// --- Composant CustomDateHeader --- END ---
 
-// Composant personnalisé pour l'affichage des heures
-const CustomTimeGutter: React.FC<{ date: Date }> = ({ date }) => {
-  return (
-    <div className="flex items-center justify-end pr-2 h-full">
-      <span className="text-xs font-medium text-gray-600">
-        {format(date, 'HH:mm')}
-      </span>
-    </div>
-  );
-};
+const CustomTimeGutter: React.FC<{ date: Date }> = ({ date }) => (
+  <div className="flex items-center justify-end pr-2 h-full">
+    <span className="text-xs font-medium text-gray-600">
+      {format(date, 'HH:mm')}
+    </span>
+  </div>
+);
 
-// Composant personnalisé pour l'en-tête de la colonne des heures
-const CustomTimeGutterHeader: React.FC = () => {
-  return (
-    <div className="p-2 border-b bg-gray-50">
-      <span className="text-xs font-medium text-gray-600">Heures</span>
-    </div>
-  );
-};
+const CustomTimeGutterHeader: React.FC = () => (
+  <div className="p-2 border-b bg-gray-50">
+    <span className="text-xs font-medium text-gray-600">Heures</span>
+  </div>
+);
 
-const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ onSelectEvent, onSelectSlot, isDroppable = false, tasks, onTaskSelect }) => {
+// Composant principal du calendrier
+const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({ 
+  onSelectEvent, 
+  onSelectSlot, 
+  isDroppable = false, 
+  tasks, 
+  onTaskSelect 
+}) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [weekTasks, setWeekTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchWeekTasks = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const week = format(currentWeek, 'yyyy-MM-dd');
-      const data = await workloadApi.getTasksByWeek(week);
-      setWeekTasks(data);
-    } catch (err) {
-      setError('Erreur lors du chargement des tâches');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Requêtes pour les utilisateurs et les sites
+  const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
+    queryKey: ['workloadUsers'],
+    queryFn: () => workloadApi.getUsers(),
+    staleTime: Infinity,
+  });
 
-  useEffect(() => {
-    fetchWeekTasks();
-  }, [currentWeek]);
+  const { data: sites } = useQuery<Site[]>({
+    queryKey: ['workloadSites'],
+    queryFn: () => workloadApi.getSites(),
+    staleTime: Infinity,
+  });
 
-  const weekDays = Array.from({ length: 7 }, (_, i) => 
-    addDays(startOfWeek(currentWeek), i)
-  );
+  // Navigation dans le calendrier
+  const handlePreviousWeek = useCallback(() => {
+    setCurrentWeek(prev => subWeeks(prev, 1));
+  }, []);
 
-  const handlePreviousWeek = () => {
-    setCurrentWeek(prev => addDays(prev, -7));
-  };
+  const handleNextWeek = useCallback(() => {
+    setCurrentWeek(prev => addWeeks(prev, 1));
+  }, []);
 
-  const handleNextWeek = () => {
-    setCurrentWeek(prev => addDays(prev, 7));
-  };
+  // Formatage des événements pour le calendrier
+  const events = tasks.map(task => ({
+    id: task.id,
+    title: `[${task.type.toUpperCase()}] ${sites?.find(s => s.id === task.siteId)?.name || 'N/A'}`,
+    start: new Date(task.startTime),
+    end: new Date(task.endTime),
+    resourceId: task.assignedUserId,
+    rawTask: task,
+    style: {
+      backgroundColor: getTypeColor(task.type),
+    },
+  }));
 
-  if (isLoading) {
-    return <div>Chargement...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
+  if (isLoadingUsers) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={handlePreviousWeek}
-          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
-        >
-          Semaine précédente
-        </button>
-        <h2 className="text-lg font-semibold">
-          {format(currentWeek, 'MMMM yyyy', { locale: fr })}
-        </h2>
-        <button
-          onClick={handleNextWeek}
-          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
-        >
-          Semaine suivante
-        </button>
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4 px-4">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handlePreviousWeek}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleNextWeek}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-4">
-        {weekDays.map(day => (
-          <div key={day.toString()} className="border rounded p-2">
-            <div className="font-semibold text-center mb-2">
-              {format(day, 'EEEE', { locale: fr })}
-            </div>
-            <div className="text-center mb-2">
-              {format(day, 'd')}
-            </div>
-            <div className="space-y-2">
-              {weekTasks
-                .filter(task => 
-                  task.startTime && 
-                  isSameDay(new Date(task.startTime), day)
-                )
-                .map(task => (
-                  <div
-                    key={task.id}
-                    onClick={() => onTaskSelect(task)}
-                    className="p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
-                  >
-                    <div className="font-medium">{task.title}</div>
-                    <div className="text-sm text-gray-600">
-                      {task.startTime && format(new Date(task.startTime), 'HH:mm')}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        views={availableViews}
+        defaultView={Views.WORK_WEEK}
+        min={minTime}
+        max={maxTime}
+        date={currentWeek}
+        onNavigate={date => setCurrentWeek(date)}
+        onSelectEvent={onSelectEvent}
+        onSelectSlot={onSelectSlot}
+        selectable
+        resourceIdAccessor="resourceId"
+        resources={users}
+        components={{
+          timeSlotWrapper: props => (
+            <DroppableTimeSlotWrapper {...props} isDroppable={isDroppable} />
+          ),
+          dateCellWrapper: CustomDateHeader,
+          timeGutterHeader: CustomTimeGutterHeader,
+          timeGutter: CustomTimeGutter,
+        }}
+        className="flex-grow"
+      />
     </div>
   );
 };
-
-// Export de fetchSites et fetchUsers pour réutilisation
-export { fetchSites, fetchUsers }; 
 
 export default WorkloadCalendar; 

@@ -1,26 +1,49 @@
 import { toast } from "sonner";
 import { handleResponse } from './index';
-import { formatISO } from 'date-fns';
+import { formatISO, parseISO } from 'date-fns';
+import { Task, TaskInput, TaskUpdate, Site, User } from '@/types/workload';
 
-export interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  startTime?: Date;
-  endTime?: Date;
-  resourceId: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Fonction utilitaire pour convertir les dates
+const convertDates = <T extends { startTime?: Date | null; endTime?: Date | null }>(data: T): T => {
+  const converted = { ...data };
+  if (converted.startTime instanceof Date) {
+    converted.startTime = formatISO(converted.startTime);
+  }
+  if (converted.endTime instanceof Date) {
+    converted.endTime = formatISO(converted.endTime);
+  }
+  return converted;
+};
+
+// Fonction utilitaire pour parser les dates dans la réponse
+const parseDates = <T extends { startTime?: string | null; endTime?: string | null; createdAt: string; updatedAt?: string }>(data: T): T => {
+  const parsed = { ...data };
+  if (parsed.startTime) parsed.startTime = parseISO(parsed.startTime);
+  if (parsed.endTime) parsed.endTime = parseISO(parsed.endTime);
+  parsed.createdAt = parseISO(parsed.createdAt);
+  if (parsed.updatedAt) parsed.updatedAt = parseISO(parsed.updatedAt);
+  return parsed;
+};
 
 export const workloadApi = {
-  getTasks: async (week?: string): Promise<Task[]> => {
+  // Tâches
+  getAll: async (): Promise<Task[]> => {
     try {
-      const url = week ? `/api/workload/tasks?week=${week}` : '/api/workload/tasks';
-      const response = await fetch(url);
-      return handleResponse<Task[]>(response);
+      const response = await fetch('/api/workload/tasks');
+      const data = await handleResponse<Task[]>(response);
+      return data.map(task => parseDates(task));
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tâches:', error);
+      toast.error('Impossible de récupérer les tâches');
+      throw error;
+    }
+  },
+
+  getTasksByWeek: async (week: string): Promise<Task[]> => {
+    try {
+      const response = await fetch(`/api/workload/tasks?week=${week}`);
+      const data = await handleResponse<Task[]>(response);
+      return data.map(task => parseDates(task));
     } catch (error) {
       console.error('Erreur lors de la récupération des tâches:', error);
       toast.error('Impossible de récupérer les tâches');
@@ -31,7 +54,8 @@ export const workloadApi = {
   getTask: async (taskId: string): Promise<Task> => {
     try {
       const response = await fetch(`/api/workload/tasks/${taskId}`);
-      return handleResponse<Task>(response);
+      const data = await handleResponse<Task>(response);
+      return parseDates(data);
     } catch (error) {
       console.error('Erreur lors de la récupération de la tâche:', error);
       toast.error('Impossible de récupérer la tâche');
@@ -39,18 +63,15 @@ export const workloadApi = {
     }
   },
 
-  createTask: async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
+  createTask: async (task: TaskInput): Promise<Task> => {
     try {
-      const bodyData = { ...task };
-      if (bodyData.startTime) bodyData.startTime = formatISO(bodyData.startTime);
-      if (bodyData.endTime) bodyData.endTime = formatISO(bodyData.endTime);
-
       const response = await fetch('/api/workload/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyData),
+        body: JSON.stringify(convertDates(task)),
       });
-      return handleResponse<Task>(response);
+      const data = await handleResponse<Task>(response);
+      return parseDates(data);
     } catch (error) {
       console.error('Erreur lors de la création de la tâche:', error);
       toast.error('Impossible de créer la tâche');
@@ -58,22 +79,15 @@ export const workloadApi = {
     }
   },
 
-  updateTask: async (taskId: string, updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Task> => {
+  update: async (taskId: string, updates: TaskUpdate): Promise<Task> => {
     try {
-      const bodyData = { ...updates };
-      if (bodyData.startTime && bodyData.startTime instanceof Date) {
-        bodyData.startTime = formatISO(bodyData.startTime);
-      }
-      if (bodyData.endTime && bodyData.endTime instanceof Date) {
-        bodyData.endTime = formatISO(bodyData.endTime);
-      }
-
       const response = await fetch(`/api/workload/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyData),
+        body: JSON.stringify(convertDates(updates)),
       });
-      return handleResponse<Task>(response);
+      const data = await handleResponse<Task>(response);
+      return parseDates(data);
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la tâche:', error);
       toast.error('Impossible de mettre à jour la tâche');
@@ -81,15 +95,49 @@ export const workloadApi = {
     }
   },
 
-  deleteTask: async (taskId: string): Promise<{ success: boolean }> => {
+  delete: async (taskId: string): Promise<void> => {
     try {
       const response = await fetch(`/api/workload/tasks/${taskId}`, {
         method: 'DELETE',
       });
-      return handleResponse<{ success: boolean }>(response);
+      await handleResponse(response);
     } catch (error) {
       console.error('Erreur lors de la suppression de la tâche:', error);
       toast.error('Impossible de supprimer la tâche');
+      throw error;
+    }
+  },
+
+  // Utilisateurs
+  getUsers: async (): Promise<User[]> => {
+    try {
+      const response = await fetch('/api/workload/users');
+      const data = await handleResponse<User[]>(response);
+      return data.map(user => ({
+        ...user,
+        createdAt: parseISO(user.createdAt),
+        updatedAt: user.updatedAt ? parseISO(user.updatedAt) : undefined,
+      }));
+    } catch (error) {
+      console.error('Erreur lors de la récupération des utilisateurs:', error);
+      toast.error('Impossible de récupérer les utilisateurs');
+      throw error;
+    }
+  },
+
+  // Sites
+  getSites: async (): Promise<Site[]> => {
+    try {
+      const response = await fetch('/api/workload/sites');
+      const data = await handleResponse<Site[]>(response);
+      return data.map(site => ({
+        ...site,
+        createdAt: parseISO(site.createdAt),
+        updatedAt: site.updatedAt ? parseISO(site.updatedAt) : undefined,
+      }));
+    } catch (error) {
+      console.error('Erreur lors de la récupération des sites:', error);
+      toast.error('Impossible de récupérer les sites');
       throw error;
     }
   },

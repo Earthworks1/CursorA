@@ -13,7 +13,7 @@ import {
 import { Link } from 'wouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { TypeLot } from '@shared/schema';
+import { TypeLot } from '@/types/schema';
 import { 
   Select,
   SelectContent,
