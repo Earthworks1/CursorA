@@ -5,107 +5,130 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Task, User, Site } from '@shared/types/workload';
+import { Task, TaskInput, TaskType, TaskStatus, TaskTypes, TaskStatuses } from '@/types/workload';
 import { useQuery } from '@tanstack/react-query';
-import { fetchUsers, fetchSites } from './WorkloadCalendar'; // Réutiliser les fonctions
-import { formatISO, parseISO } from 'date-fns'; // Pour formater/parser les dates
+import { workloadApi } from '@/api/workload';
+import { parseISO, addHours, format } from 'date-fns';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, Controller } from 'react-hook-form';
+import { TaskSchema } from '@/types/workload';
+import { z } from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { formatDateForInput } from './dateHelpers';
 
 interface TaskFormProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  taskToEdit: Partial<Task> | null; // Partial car on peut pré-remplir seulement certaines props
-  onSave: (formData: Omit<Task, 'id' | 'createdAt'> | Partial<Omit<Task, 'id' | 'createdAt'>>) => void;
+  taskToEdit: Partial<Task> | null;
+  onSave: (formData: TaskInput) => void;
 }
 
-// Helper pour formater une Date en string datetime-local
-const formatDateForInput = (date: Date | null | undefined): string => {
-  if (!date) return '';
-  try {
-    // Format YYYY-MM-DDTHH:mm
-    return formatISO(date).substring(0, 16);
-  } catch {
-    return '';
-  }
-};
+// Schéma de validation du formulaire
+const TaskFormSchema = TaskSchema.omit({ 
+  id: true, 
+  createdAt: true, 
+  updatedAt: true 
+});
+
+type TaskFormData = z.infer<typeof TaskFormSchema>;
 
 const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit, onSave }) => {
-  // États du formulaire
-  const [description, setDescription] = useState('');
-  const [type, setType] = useState<Task['type']>('leve');
-  const [siteId, setSiteId] = useState<string | null>(null);
-  const [assignedUserId, setAssignedUserId] = useState<string | null>(null);
-  const [startTime, setStartTime] = useState<string>(''); // Stocker comme string YYYY-MM-DDTHH:mm
-  const [endTime, setEndTime] = useState<string>('');
-  const [status, setStatus] = useState<Task['status']>('a_planifier');
-  const [notes, setNotes] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<TaskFormData>({
+    resolver: zodResolver(TaskFormSchema),
+    defaultValues: {
+      description: '',
+      type: 'leve' as TaskType,
+      siteId: null,
+      assignedUserId: null,
+      startTime: null,
+      endTime: null,
+      status: 'a_planifier' as TaskStatus,
+      notes: null,
+    },
+  });
 
-  // Fetch Users & Sites pour les selects
-  const { data: users, isLoading: isLoadingUsers } = 
-    useQuery<User[]>({ queryKey: ['workloadUsers'], queryFn: fetchUsers, staleTime: Infinity });
-  const { data: sites, isLoading: isLoadingSites } = 
-    useQuery<Site[]>({ queryKey: ['workloadSites'], queryFn: fetchSites, staleTime: Infinity });
+  // Requêtes pour les utilisateurs et les sites
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['workloadUsers'],
+    queryFn: workloadApi.getUsers,
+    staleTime: Infinity,
+  });
 
-  // Pré-remplir le formulaire si taskToEdit est fourni
+  const { data: sites, isLoading: isLoadingSites } = useQuery({
+    queryKey: ['workloadSites'],
+    queryFn: workloadApi.getSites,
+    staleTime: Infinity,
+  });
+
+  // Reset le formulaire quand la tâche change ou que la modale s'ouvre
   useEffect(() => {
-    if (taskToEdit) {
-      setDescription(taskToEdit.description || '');
-      setType(taskToEdit.type || 'leve');
-      setSiteId(taskToEdit.siteId || null);
-      setAssignedUserId(taskToEdit.assignedUserId || null);
-      setStartTime(formatDateForInput(taskToEdit.startTime));
-      setEndTime(formatDateForInput(taskToEdit.endTime));
-      setStatus(taskToEdit.status || 'a_planifier');
-      setNotes(taskToEdit.notes || null);
-      setError(null);
-    } else {
-      // Reset form for new task
-      setDescription('');
-      setType('leve');
-      setSiteId(null);
-      setAssignedUserId(null);
-      setStartTime('');
-      setEndTime('');
-      setStatus('a_planifier');
-      setNotes(null);
-      setError(null);
+    if (isOpen) {
+      form.reset(taskToEdit ? {
+        ...taskToEdit,
+        startTime: taskToEdit.startTime || null,
+        endTime: taskToEdit.endTime || null,
+      } : {
+        description: '',
+        type: 'leve',
+        siteId: null,
+        assignedUserId: null,
+        startTime: null,
+        endTime: null,
+        status: 'a_planifier',
+        notes: null,
+      });
     }
-  }, [taskToEdit, isOpen]); // Re-run quand la tâche change OU que la modale s'ouvre
+  }, [taskToEdit, isOpen, form.reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (!startTime || !endTime) {
-        setError("Les dates et heures de début et de fin sont requises.");
-        return;
-    }
-    
-    const startDate = parseISO(startTime);
-    const endDate = parseISO(endTime);
-
-    if (endDate <= startDate) {
-      setError("La date de fin doit être strictement postérieure à la date de début.");
+  const onSubmit = form.handleSubmit(async (data) => {
+    // Validation supplémentaire des dates
+    if (data.startTime && data.endTime && data.endTime <= data.startTime) {
+      toast({
+        title: 'Erreur',
+        description: 'La date de fin doit être après la date de début.',
+        variant: 'destructive',
+      });
       return;
     }
+    setIsLoading(true);
+    try {
+      await onSave(data);
+      toast({
+        title: taskToEdit?.id ? 'Tâche modifiée' : 'Tâche créée',
+        description: taskToEdit?.id ? 'La tâche a bien été modifiée.' : 'La tâche a bien été créée.',
+      });
+      onRequestClose();
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: "Une erreur est survenue lors de l'enregistrement.",
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  });
 
-    const formData = {
-      description,
-      type,
-      siteId,
-      assignedUserId,
-      startTime: startDate, // Envoyer objets Date
-      endTime: endDate,
-      status,
-      notes,
-    };
-
-    onSave(formData);
-  };
-
-  // Options pour les selects (pourrait être mis en dehors du composant)
-  const typeOptions: Task['type'][] = ['leve', 'implantation', 'recolement', 'etude', 'dao', 'autre'];
-  const statusOptions: Task['status'][] = ['a_planifier', 'planifie', 'en_cours', 'termine', 'bloque'];
+  // Observer les changements de startTime pour mettre à jour endTime automatiquement
+  const startTime = form.watch('startTime');
+  useEffect(() => {
+    if (startTime && !form.watch('endTime')) {
+      form.reset({
+        ...form.watch(),
+        endTime: addHours(startTime, 2),
+      }, { keepDefaultValues: true });
+    }
+  }, [startTime, form.reset, form.watch]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onRequestClose}>
@@ -113,85 +136,269 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
         <DialogHeader>
           <DialogTitle>{taskToEdit?.id ? 'Modifier la Tâche' : 'Nouvelle Tâche'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">Type</Label>
-              <Select value={type} onValueChange={(value: Task['type']) => setType(value)} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionner type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {typeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="site" className="text-right">Site</Label>
-              <Select value={siteId ?? 'none'} onValueChange={(value) => setSiteId(value === 'none' ? null : value)} >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionner site..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
-                  {isLoadingSites ? <SelectItem value="loading" disabled>Chargement...</SelectItem> : 
-                    sites?.map(site => <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>)
-                  }
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="user" className="text-right">Assigné à</Label>
-              <Select value={assignedUserId ?? 'none'} onValueChange={(value) => setAssignedUserId(value === 'none' ? null : value)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Assigner à..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucun</SelectItem>
-                  {isLoadingUsers ? <SelectItem value="loading" disabled>Chargement...</SelectItem> : 
-                    users?.map(user => <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>)
-                  }
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="startTime" className="text-right">Début</Label>
-              <Input id="startTime" type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} required className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="endTime" className="text-right">Fin</Label>
-              <Input id="endTime" type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} required className="col-span-3" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">Statut</Label>
-               <Select value={status} onValueChange={(value: Task['status']) => setStatus(value)} required>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Sélectionner statut..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map(opt => <SelectItem key={opt} value={opt}>{opt.replace('_', ' ').charAt(0).toUpperCase() + opt.replace('_', ' ').slice(1)}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">Notes</Label>
-              <Textarea id="notes" value={notes ?? ''} onChange={(e) => setNotes(e.target.value || null)} className="col-span-3" />
-            </div>
-            {error && (
-              <div className="col-span-4 text-red-600 text-sm text-center p-2 bg-red-100 border border-red-300 rounded">
-                {error}
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">Description</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            id="description"
+                            placeholder="Description de la tâche"
+                            className={form.formState.errors.description ? "border-red-500" : ""}
+                          />
+                        </FormControl>
+                        {form.formState.errors.description && (
+                          <FormMessage className="text-red-500 text-sm mt-1">{form.formState.errors.description.message}</FormMessage>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onRequestClose}>Annuler</Button>
-            <Button type="submit">Sauvegarder</Button>
-          </DialogFooter>
-        </form>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">Type</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className={form.formState.errors.type ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Sélectionner type..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TaskTypes.map(type => (
+                                <SelectItem key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        {form.formState.errors.type && (
+                          <FormMessage className="text-red-500 text-sm mt-1">{form.formState.errors.type.message}</FormMessage>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="site" className="text-right">Site</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="siteId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            value={field.value ?? "none"}
+                            onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner site..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">Aucun</SelectItem>
+                              {isLoadingSites ? (
+                                <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                              ) : (
+                                sites?.map(site => (
+                                  <SelectItem key={site.id} value={site.id}>
+                                    {site.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="assignedUser" className="text-right">Assigné à</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="assignedUserId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            value={field.value ?? "none"}
+                            onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Assigner à..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">Aucun</SelectItem>
+                              {isLoadingUsers ? (
+                                <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                              ) : (
+                                users?.map(user => (
+                                  <SelectItem key={user.id} value={user.id}>
+                                    {user.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="startTime" className="text-right">Début</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field: { value, onChange, ...field } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            id="startTime"
+                            type="datetime-local"
+                            value={value ? formatDateForInput(value) : ''}
+                            onChange={(e) => onChange(e.target.value ? parseISO(e.target.value) : null)}
+                            className={form.formState.errors.startTime ? "border-red-500" : ""}
+                          />
+                        </FormControl>
+                        {form.formState.errors.startTime && (
+                          <FormMessage className="text-red-500 text-sm mt-1">{form.formState.errors.startTime.message}</FormMessage>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="endTime" className="text-right">Fin</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field: { value, onChange, ...field } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            id="endTime"
+                            type="datetime-local"
+                            value={value ? formatDateForInput(value) : ''}
+                            onChange={(e) => onChange(e.target.value ? parseISO(e.target.value) : null)}
+                            className={form.formState.errors.endTime ? "border-red-500" : ""}
+                          />
+                        </FormControl>
+                        {form.formState.errors.endTime && (
+                          <FormMessage className="text-red-500 text-sm mt-1">{form.formState.errors.endTime.message}</FormMessage>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">Statut</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className={form.formState.errors.status ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Sélectionner statut..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TaskStatuses.map(status => (
+                                <SelectItem key={status} value={status}>
+                                  {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        {form.formState.errors.status && (
+                          <FormMessage className="text-red-500 text-sm mt-1">{form.formState.errors.status.message}</FormMessage>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="notes" className="text-right">Notes</Label>
+                <div className="col-span-3">
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field: { value, onChange, ...field } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            value={value || ''}
+                            onChange={(e) => onChange(e.target.value || null)}
+                            placeholder="Notes optionnelles"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onRequestClose} disabled={isLoading}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
