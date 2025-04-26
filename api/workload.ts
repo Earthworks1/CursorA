@@ -33,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json([]); // Pour l'instant retourne une liste vide
     }
 
-    // Route pour les tâches
-    if (fullPath.includes('/taches') || fullPath.includes('/tâches')) {
+    // Route pour les tâches (français ou anglais)
+    if (fullPath.includes('/taches') || fullPath.includes('/tâches') || fullPath.includes('/tasks')) {
       const tasks = await getRecentTasks();
       return res.status(200).json(tasks);
     }
