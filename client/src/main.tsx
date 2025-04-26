@@ -10,26 +10,8 @@ const fontConfig = {
   className: "font-sans",
 };
 
-// Fonction pour nettoyer les portails Radix
-function cleanupPortals() {
-  try {
-    document.querySelectorAll('[data-radix-portal]').forEach(portal => {
-      try {
-        if (portal.parentNode) {
-          portal.parentNode.removeChild(portal);
-        }
-      } catch (e) {
-        console.warn("Erreur lors du nettoyage d'un portail:", e);
-      }
-    });
-  } catch (e) {
-    console.error("Erreur lors du nettoyage des portails:", e);
-  }
-}
-
 // Fonction pour nettoyer les ressources
 function cleanupResources() {
-  cleanupPortals();
   // Nettoyer d'autres ressources si nécessaire
 }
 
