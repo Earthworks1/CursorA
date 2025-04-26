@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Task, Site } from '@/types/workload';
-import { fetchSites } from './WorkloadCalendar';
+import { workloadApi } from '@/api/workload';
 import { Draggable, Droppable } from '@hello-pangea/dnd';
 
 // Fonction pour fetch les tâches "à planifier"
@@ -37,7 +37,7 @@ const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ onAddTask, droppableI
   const { data: sites, isLoading: isLoadingSites, error: sitesError } = 
     useQuery<Site[]>({ 
       queryKey: ['workloadSites'],
-      queryFn: fetchSites,
+      queryFn: workloadApi.getSites,
       staleTime: Infinity,
     });
 
