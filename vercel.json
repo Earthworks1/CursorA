@@ -4,21 +4,16 @@
     {
       "src": "package.json",
       "use": "@vercel/next"
+    },
+    {
+      "src": "api-mock/**/*.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Authorization",
-        "X-Frame-Options": "DENY",
-        "X-Content-Type-Options": "nosniff",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-        "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
-      },
-      "continue": true
+      "dest": "/api-mock/$1.ts"
     },
     {
       "src": "/(.*)",
