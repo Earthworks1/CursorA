@@ -186,7 +186,7 @@ function Router() {
         )}
       </Route>
       <Route path="/chantiers/:id">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <Dynamic>
               {() => import("@/pages/chantiers/[id]").then(mod => <mod.default id={params.id} />)}
@@ -195,7 +195,7 @@ function Router() {
         )}
       </Route>
       <Route path="/chantiers/:id/edit">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <Dynamic>
               {() => import("@/pages/chantiers/[id]/edit").then(mod => <mod.default id={params.id} />)}
@@ -220,14 +220,14 @@ function Router() {
         )}
       </Route>
       <Route path="/taches/:id">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <TacheDetail id={params.id} />
           </Layout>
         )}
       </Route>
       <Route path="/taches/:id/edit">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <Dynamic>
               {() => import("@/pages/taches/[id]/edit").then(mod => <mod.default id={params.id} />)}
@@ -314,7 +314,7 @@ function Router() {
         )}
       </Route>
       <Route path="/ressources/:id">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <Dynamic>
               {() => import("@/pages/ressources/[id]").then(mod => <mod.default id={params.id} />)}
@@ -323,7 +323,7 @@ function Router() {
         )}
       </Route>
       <Route path="/ressources/:id/edit">
-        {(params) => (
+        {(params: any) => (
           <Layout>
             <Dynamic>
               {() => import("@/pages/ressources/[id]/edit").then(mod => <mod.default id={params.id} />)}
@@ -343,7 +343,7 @@ function Router() {
       </Route>
 
       <Route>
-        {(params) => {
+        {(params: any) => {
           console.log("Route not found, path:", window.location.pathname);
           return <NotFound />;
         }}

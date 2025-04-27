@@ -162,8 +162,8 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({
   const events = tasks.map(task => ({
     id: task.id,
     title: `[${task.type.toUpperCase()}] ${sites?.find(s => s.id === task.siteId)?.name || 'N/A'}`,
-    start: new Date(task.startTime),
-    end: new Date(task.endTime),
+    start: task.startTime ? new Date(task.startTime) : new Date(),
+    end: task.endTime ? new Date(task.endTime) : new Date(),
     resourceId: task.assignedUserId,
     rawTask: task,
     style: {
@@ -204,15 +204,12 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({
         onSelectEvent={onSelectEvent}
         onSelectSlot={onSelectSlot}
         selectable
-        resourceIdAccessor="resourceId"
+        resourceIdAccessor="id"
         resources={users}
         components={{
-          timeSlotWrapper: props => (
+          timeSlotWrapper: (props: any) => (
             <DroppableTimeSlotWrapper {...props} isDroppable={isDroppable} />
           ),
-          dateCellWrapper: CustomDateHeader,
-          timeGutterHeader: CustomTimeGutterHeader,
-          timeGutter: CustomTimeGutter,
         }}
         className="flex-grow"
       />

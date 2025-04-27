@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp src/_redirects dist/_redirects",
+    "build": "vite build && npx cpx src/_redirects dist/",
     "vercel-build": "node vercel-build.js",
     "preview": "vite preview"
   },
@@ -65,11 +65,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.2",
-    "@types/react": "^18.2.25",
+    "@types/react": "^19.1.2",
     "@types/react-dom": "^18.2.10",
     "@types/react-helmet": "^6.1.11",
     "@vitejs/plugin-react": "^4.1.0",
     "autoprefixer": "^10.4.16",
+    "cpx": "^1.5.0",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
     "tailwindcss-animate": "^1.0.7",

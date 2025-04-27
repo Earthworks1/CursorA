@@ -21,7 +21,7 @@ const TagInput: React.FC<TagInputProps> = ({
   const [inputValue, setInputValue] = useState('');
   const { tags, isLoading, error, createTag } = useTags();
 
-  const selectedTagObjects = tags.filter(tag => selectedTags.includes(tag.id));
+  const selectedTagObjects = (tags ?? []).filter(tag => selectedTags.includes(tag.id));
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -37,7 +37,7 @@ const TagInput: React.FC<TagInputProps> = ({
     if (!tagName || selectedTags.length >= maxTags) return;
 
     // Vérifier si le tag existe déjà
-    const existingTag = tags.find(tag => tag.nom.toLowerCase() === tagName);
+    const existingTag = (tags ?? []).find(tag => tag.nom.toLowerCase() === tagName);
     
     try {
       if (existingTag) {

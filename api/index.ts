@@ -9,11 +9,7 @@ const port = process.env.PORT || 3001;
 
 // Configuration de la base de données
 const pool = new Pool({
-  user: 'postgres',
-  password: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  database: 'spiess_planning'
+  connectionString: process.env.DATABASE_URL
 });
 
 const db = drizzle(pool);

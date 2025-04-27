@@ -57,9 +57,10 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
 
         {isEditing ? (
           <TaskForm
-            initialData={task}
-            onSubmit={handleSave}
-            onCancel={() => setIsEditing(false)}
+            isOpen={isOpen}
+            onRequestClose={() => setIsEditing(false)}
+            taskToEdit={task ?? null}
+            onSave={handleSave}
           />
         ) : (
           task && (

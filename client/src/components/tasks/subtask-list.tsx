@@ -24,7 +24,7 @@ const SubtaskList: React.FC<SubtaskListProps> = ({ tacheId }) => {
   const handleAddSubtask = async () => {
     if (newSubtaskTitle.trim()) {
       try {
-        await createSousTache(newSubtaskTitle.trim());
+        await createSousTache({ titre: newSubtaskTitle.trim(), tacheId });
         setNewSubtaskTitle('');
       } catch (error) {
         // L'erreur est déjà gérée par le hook et affichée via toast
@@ -70,7 +70,7 @@ const SubtaskList: React.FC<SubtaskListProps> = ({ tacheId }) => {
       </div>
 
       <div className="space-y-2">
-        {sousTaches.map((sousTache) => (
+        {(sousTaches ?? []).map((sousTache) => (
           <div
             key={sousTache.id}
             className="flex items-center gap-2 p-2 rounded-md hover:bg-accent"

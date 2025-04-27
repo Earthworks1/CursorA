@@ -4,7 +4,7 @@ import { formatISO, parseISO } from 'date-fns';
 import { Task, TaskInput, TaskUpdate, Site, User } from '@/types/workload';
 
 // Fonction utilitaire pour convertir les dates
-const convertDates = <T extends { startTime?: Date | null; endTime?: Date | null }>(data: T): T => {
+const convertDates = <T extends { startTime?: string | Date | null; endTime?: string | Date | null }>(data: T): T => {
   const converted = { ...data };
   if (converted.startTime instanceof Date) {
     converted.startTime = formatISO(converted.startTime);
@@ -16,12 +16,12 @@ const convertDates = <T extends { startTime?: Date | null; endTime?: Date | null
 };
 
 // Fonction utilitaire pour parser les dates dans la réponse
-const parseDates = <T extends { startTime?: string | null; endTime?: string | null; createdAt: string; updatedAt?: string }>(data: T): T => {
+const parseDates = <T extends { startTime?: string | Date | null; endTime?: string | Date | null; createdAt: string | Date; updatedAt?: string | Date }>(data: T): T => {
   const parsed = { ...data };
-  if (parsed.startTime) parsed.startTime = parseISO(parsed.startTime);
-  if (parsed.endTime) parsed.endTime = parseISO(parsed.endTime);
-  parsed.createdAt = parseISO(parsed.createdAt);
-  if (parsed.updatedAt) parsed.updatedAt = parseISO(parsed.updatedAt);
+  if (parsed.startTime) parsed.startTime = parseISO(String(parsed.startTime));
+  if (parsed.endTime) parsed.endTime = parseISO(String(parsed.endTime));
+  parsed.createdAt = parseISO(String(parsed.createdAt));
+  if (parsed.updatedAt) parsed.updatedAt = parseISO(String(parsed.updatedAt));
   return parsed;
 };
 
@@ -115,8 +115,8 @@ export const workloadApi = {
       const data = await handleResponse<User[]>(response);
       return data.map(user => ({
         ...user,
-        createdAt: parseISO(user.createdAt),
-        updatedAt: user.updatedAt ? parseISO(user.updatedAt) : undefined,
+        createdAt: parseISO(String(user.createdAt)),
+        updatedAt: user.updatedAt ? parseISO(String(user.updatedAt)) : undefined,
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
@@ -132,8 +132,8 @@ export const workloadApi = {
       const data = await handleResponse<Site[]>(response);
       return data.map(site => ({
         ...site,
-        createdAt: parseISO(site.createdAt),
-        updatedAt: site.updatedAt ? parseISO(site.updatedAt) : undefined,
+        createdAt: parseISO(String(site.createdAt)),
+        updatedAt: site.updatedAt ? parseISO(String(site.updatedAt)) : undefined,
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des sites:', error);
