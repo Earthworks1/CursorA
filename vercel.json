@@ -49,5 +49,8 @@
     "env": {
       "NEXT_PUBLIC_VERCEL_ENV": "production"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 } 
