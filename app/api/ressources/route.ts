@@ -1,11 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-export async function GET(req: NextRequest) {
-  // TODO: Remplacer par la vraie logique métier
-  return NextResponse.json([]);
-}
-
-export async function POST(req: NextRequest) {
-  // TODO: Ajouter la logique de création de ressource
-  return NextResponse.json({ success: true });
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  switch (req.method) {
+    case 'GET':
+      res.status(200).json([]);
+      break;
+    case 'POST':
+    case 'PATCH':
+    case 'PUT':
+      res.status(200).json({ success: true });
+      break;
+    case 'DELETE':
+      res.status(200).json({ success: true });
+      break;
+    default:
+      res.status(405).json({ message: 'Méthode non autorisée' });
+  }
 } 
