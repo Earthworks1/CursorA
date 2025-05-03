@@ -21,7 +21,7 @@ type Task = {
 
 const RecentTasks = () => {
   const { data: tasks, isLoading } = useQuery<Task[]>({
-    queryKey: ['/api/charge de travail/taches'],
+    queryKey: ['/api/charge-de-travail/taches'],
   });
 
   const [selectedProject, setSelectedProject] = React.useState('tous');
