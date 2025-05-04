@@ -1,10 +1,5 @@
 {
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
-  "/_document": "pages/_document.js",
-  "/api/taches": "pages/api/taches.js",
-  "/api/charge-de-travail-taches": "pages/api/charge-de-travail-taches.js",
-  "/api/charge-de-travail-statistiques": "pages/api/charge-de-travail-statistiques.js",
-  "/api/charge-de-travail-activites": "pages/api/charge-de-travail-activites.js",
-  "/api/workload/tasks": "pages/api/workload/tasks.js"
+  "/_document": "pages/_document.js"
 }
