@@ -4,17 +4,9 @@
     {
       "src": "package.json",
       "use": "@vercel/next"
-    },
-    {
-      "src": "api-mock/**/*.ts",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api-mock/$1.ts"
-    },
     {
       "src": "/(.*)",
       "headers": {
@@ -30,12 +22,6 @@
     "NODE_ENV": "production"
   },
   "regions": ["fra1"],
-  "functions": {
-    "api/**/*.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "github": {
     "enabled": true,
     "silent": true
@@ -44,8 +30,5 @@
     "env": {
       "NEXT_PUBLIC_VERCEL_ENV": "production"
     }
-  },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  }
 } 

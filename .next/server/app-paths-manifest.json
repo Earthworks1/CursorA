@@ -1,6 +1,1 @@
-{
-  "/api/workload/tasks/route": "app/api/workload/tasks/route.js",
-  "/api/ressources/route": "app/api/ressources/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/test/page": "app/test/page.js"
-}
+{}
