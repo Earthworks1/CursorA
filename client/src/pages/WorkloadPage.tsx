@@ -88,8 +88,8 @@ const WorkloadPage: React.FC = () => {
   const createTaskMutation = useMutation({ 
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
-      queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/workload/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/unplannedTasks'] });
       toastHook({ title: "Succès", description: "Tâche créée." });
       setIsModalOpen(false);
       setSelectedTask(null);
@@ -104,8 +104,8 @@ const WorkloadPage: React.FC = () => {
     mutationFn: (variables: { taskId: string; data: Partial<Omit<Task, 'id' | 'createdAt'>> }) => 
       updateTask(variables.taskId, variables.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
-      queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/workload/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/unplannedTasks'] });
       toastHook({ title: "Succès", description: "Tâche mise à jour." });
       setIsModalOpen(false);
       setSelectedTask(null);
@@ -151,8 +151,8 @@ const WorkloadPage: React.FC = () => {
       await workloadApi.delete(taskId);
       toastHook({ title: "Succès", description: "Tâche supprimée avec succès" });
       setSelectedTask(null);
-      queryClient.invalidateQueries({ queryKey: ['workloadTasks'] });
-      queryClient.invalidateQueries({ queryKey: ['unplannedTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/workload/tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/unplannedTasks'] });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression de la tâche';
       toastHook({ 

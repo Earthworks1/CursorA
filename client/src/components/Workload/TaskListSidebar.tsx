@@ -29,14 +29,14 @@ interface TaskListSidebarProps {
 const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ onAddTask, droppableId }) => {
   const { data: tasks, isLoading: isLoadingTasks, error: tasksError } = 
     useQuery<Task[]>({ 
-      queryKey: ['unplannedTasks'], 
+      queryKey: ['/api/unplannedTasks'], 
       queryFn: fetchUnplannedTasks,
       staleTime: 30000, // 30 secondes
     });
 
   const { data: sites, isLoading: isLoadingSites, error: sitesError } = 
     useQuery<Site[]>({ 
-      queryKey: ['workloadSites'],
+      queryKey: ['/api/workload/sites'],
       queryFn: workloadApi.getSites,
       staleTime: Infinity,
     });

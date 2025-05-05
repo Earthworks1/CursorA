@@ -9,16 +9,10 @@ export const dateSchema = z.string().datetime();
 export const ressourceSchema = z.object({
   id: z.string(),
   nom: z.string(),
-  prenom: z.string(),
-  email: z.string().email(),
-  role: z.string(),
-  competences: z.array(z.string()),
-  disponibilite: z.object({
-    debut: z.string(),
-    fin: z.string(),
-  }),
-  createdAt: dateSchema,
-  updatedAt: dateSchema,
+  type: z.string(),
+  description: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 // Schémas pour les tâches
@@ -153,4 +147,16 @@ export const RoleUtilisateur = {
   SERVICE_INTERNE: "service_interne",
   ASSISTANTE_CONDUCTRICE: "assistante_conductrice",
   GEOMETRE_PROJETEUR: "geometre_projeteur",
-} as const; 
+} as const;
+
+// Schémas pour les rapports
+export const rapportSchema = z.object({
+  id: z.string(),
+  titre: z.string(),
+  contenu: z.string(),
+  type: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type Rapport = z.infer<typeof rapportSchema>; 

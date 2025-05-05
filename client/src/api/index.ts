@@ -1,17 +1,17 @@
-import { tagsApi } from './tags';
-import { sousTachesApi } from './sous-taches';
-import { workloadApi } from './workload';
-import { ressourcesApi } from './ressources';
-import { planningApi } from './planning';
+import { chantiersApi } from './chantiers';
 import { tachesApi } from './taches';
+import { equipesApi } from './equipes';
+import { ressourcesApi } from './ressources';
+import { rapportsApi } from './rapports';
+import { configurationApi } from './configuration';
 
-export {
-  tagsApi,
-  sousTachesApi,
-  workloadApi,
-  ressourcesApi,
-  planningApi,
-  tachesApi
+export const api = {
+  chantiers: chantiersApi,
+  taches: tachesApi,
+  equipes: equipesApi,
+  ressources: ressourcesApi,
+  rapports: rapportsApi,
+  configuration: configurationApi,
 };
 
 export class APIError extends Error {

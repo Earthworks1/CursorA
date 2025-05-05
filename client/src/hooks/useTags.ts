@@ -6,21 +6,21 @@ export function useTags() {
   const queryClient = useQueryClient();
 
   const { data: tags, isLoading, error } = useQuery({
-    queryKey: ['tags'],
+    queryKey: ['/api/tags'],
     queryFn: tagsApi.getAll,
   });
 
   const createMutation = useMutation({
     mutationFn: tagsApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: tagsApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
     },
   });
 

@@ -876,13 +876,6 @@ export default function ChantierDetail({ id }: ChantierDetailProps) {
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier le chantier
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Voir le planning
-              </Button>
             </CardContent>
           </Card>
         </div>

@@ -6,14 +6,14 @@ export function useSousTaches(tacheId: number) {
   const queryClient = useQueryClient();
 
   const { data: sousTaches, isLoading, error } = useQuery({
-    queryKey: ['sous-taches', tacheId],
+    queryKey: ['/api/sous-taches', tacheId],
     queryFn: () => sousTachesApi.getByTache(tacheId),
   });
 
   const createMutation = useMutation({
     mutationFn: sousTachesApi.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sous-taches', tacheId] });
     },
   });
 
@@ -21,14 +21,14 @@ export function useSousTaches(tacheId: number) {
     mutationFn: ({ id, updates }: { id: number; updates: { completed?: boolean; titre?: string } }) =>
       sousTachesApi.update(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sous-taches', tacheId] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: sousTachesApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sous-taches', tacheId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sous-taches', tacheId] });
     },
   });
 

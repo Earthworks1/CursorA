@@ -297,22 +297,6 @@ function Router() {
           </Layout>
         )}
       </Route>
-      <Route path="/ressources/planning">
-        {() => (
-          <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/planning").then(mod => <mod.default />)}
-            </Dynamic>
-          </Layout>
-        )}
-      </Route>
-      <Route path="/planning">
-        {() => (
-          <Layout>
-            <WorkloadPage />
-          </Layout>
-        )}
-      </Route>
       <Route path="/ressources/:id">
         {(params: any) => (
           <Layout>

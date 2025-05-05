@@ -59,13 +59,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
 
   // Requêtes pour les utilisateurs et les sites
   const { data: users, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['workloadUsers'],
+    queryKey: ['/api/workload/users'],
     queryFn: workloadApi.getUsers,
     staleTime: Infinity,
   });
 
   const { data: sites, isLoading: isLoadingSites } = useQuery({
-    queryKey: ['workloadSites'],
+    queryKey: ['/api/workload/sites'],
     queryFn: workloadApi.getSites,
     staleTime: Infinity,
   });

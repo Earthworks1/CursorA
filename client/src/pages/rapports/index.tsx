@@ -40,12 +40,12 @@ export default function Rapports() {
               Tâches en retard
             </CardTitle>
             <CardDescription>
-              Analyse des tâches en retard par chantier
+              Analyse des causes de retard et propositions d'actions correctives
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-500 mb-4">
-              Analyse des causes de retard, impact sur le planning et propositions d'actions correctives.
+              Analyse des causes de retard et propositions d'actions correctives.
             </p>
             <Button className="w-full">
               <Download className="mr-2 h-4 w-4" />

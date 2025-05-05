@@ -138,13 +138,13 @@ const WorkloadCalendar: React.FC<WorkloadCalendarProps> = ({
 
   // Requêtes pour les utilisateurs et les sites
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
-    queryKey: ['workloadUsers'],
+    queryKey: ['/api/workload/users'],
     queryFn: () => workloadApi.getUsers(),
     staleTime: Infinity,
   });
 
   const { data: sites } = useQuery<Site[]>({
-    queryKey: ['workloadSites'],
+    queryKey: ['/api/workload/sites'],
     queryFn: () => workloadApi.getSites(),
     staleTime: Infinity,
   });

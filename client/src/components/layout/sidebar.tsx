@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   Menu,
   ShieldCheck,
-  FileText
+  FileText,
+  User
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -27,10 +28,11 @@ const standardNavItems = [
   { label: 'Arborescence', href: '/chantiers/arborescence', icon: <FolderTree className="h-5 w-5" /> },
   { label: 'Tâches', href: '/taches', icon: <ClipboardList className="h-5 w-5" /> },
   { label: 'Équipes', href: '/equipes', icon: <Users className="h-5 w-5" /> },
-  { label: 'Ressources', href: '/ressources', icon: <Package className="h-5 w-5" /> },
-  { label: 'Planning', href: '/planning', icon: <Calendar className="h-5 w-5" /> },
+  { label: 'Ressources', href: '/ressources', icon: <Users className="h-5 w-5" /> },
   { label: 'Rapports', href: '/rapports', icon: <FileText className="h-5 w-5" /> },
+  { label: 'Mon Compte', href: '/mon-compte', icon: <User className="h-5 w-5" /> },
   { label: 'Configuration', href: '/configuration', icon: <Settings className="h-5 w-5" /> },
+  { label: 'Planning', href: '/planning', icon: <Calendar className="h-5 w-5" /> },
 ];
 
 const adminNavItem = { 
