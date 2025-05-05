@@ -326,6 +326,16 @@ function Router() {
         )}
       </Route>
 
+      <Route path="/planning">
+        {() => (
+          <Layout>
+            <Dynamic>
+              {() => import("@/pages/planning/PlanningPage").then(mod => <mod.default />)}
+            </Dynamic>
+          </Layout>
+        )}
+      </Route>
+
       <Route>
         {(params: any) => {
           console.log("Route not found, path:", window.location.pathname);
