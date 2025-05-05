@@ -86,7 +86,7 @@ try {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Spiess Planning</title>
+    <title>Spiess TP</title>
     <base href="/" />
     <meta name="description" content="Application de gestion de planification pour Spiess SA" />
     <!-- Debug info -->
