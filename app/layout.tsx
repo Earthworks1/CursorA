@@ -1,11 +1,12 @@
+// Trigger Vercel redeploy - test synchro
 import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Spiess Planning',
-  description: 'Application de gestion de planning pour Spiess TP',
+  title: 'Spiess TP',
+  description: 'Application de gestion de chantiers pour Spiess TP',
 }
 
 export default function RootLayout({
