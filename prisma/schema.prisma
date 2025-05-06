@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PlanningTask {
+  id            String   @id @default(uuid())
+  chantier      String
+  intervenantId String
+  date          DateTime
+  type          String
+  etat          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+} 
