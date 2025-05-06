@@ -1,6 +1,6 @@
-# Spiess Planning
+# Spiess TP
 
-Application de gestion de planning et de charge de travail.
+Application de gestion de projets et de charge de travail.
 
 ## Technologies
 
@@ -23,7 +23,7 @@ Application de gestion de planning et de charge de travail.
 1. Cloner le repository :
 ```bash
 git clone [repository-url]
-cd spiess-planning
+cd spiess-tp
 ```
 
 2. Installer les dépendances :
@@ -88,3 +88,4 @@ Le projet est configuré pour être déployé sur Vercel.
 ## Licence
 
 MIT 
+idi 

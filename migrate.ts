@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || "postgresql://postgres:Spiess*123@db.iblaaljrzvbsorbpscnq.supabase.co:5432/postgres",
+  connectionString: process.env.DATABASE_URL,
 });
 
 const db = drizzle(pool);

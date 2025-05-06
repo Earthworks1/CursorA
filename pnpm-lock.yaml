@@ -20,6 +20,9 @@ importers:
       '@neondatabase/serverless':
         specifier: ^0.10.4
         version: 0.10.4
+      '@prisma/client':
+        specifier: 6.7.0
+        version: 6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -127,10 +130,10 @@ importers:
         version: 16.5.0
       drizzle-orm:
         specifier: ^0.43.1
-        version: 0.43.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)
+        version: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(prisma@6.7.0(typescript@5.6.3))
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6))(zod@3.24.3)
+        version: 0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3)
       embla-carousel-react:
         specifier: ^8.3.0
         version: 8.6.0(react@18.3.1)
@@ -231,6 +234,9 @@ importers:
       postcss:
         specifier: ^8.4.47
         version: 8.5.3
+      prisma:
+        specifier: 6.7.0
+        version: 6.7.0(typescript@5.6.3)
       tailwindcss:
         specifier: ^3.4.14
         version: 3.4.17
@@ -1124,6 +1130,36 @@ packages:
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+
+  '@prisma/client@6.7.0':
+    resolution: {integrity: sha512-+k61zZn1XHjbZul8q6TdQLpuI/cvyfil87zqK2zpreNIXyXtpUv3+H/oM69hcsFcZXaokHJIzPAt5Z8C8eK2QA==}
+    engines: {node: '>=18.18'}
+    peerDependencies:
+      prisma: '*'
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+      typescript:
+        optional: true
+
+  '@prisma/config@6.7.0':
+    resolution: {integrity: sha512-di8QDdvSz7DLUi3OOcCHSwxRNeW7jtGRUD2+Z3SdNE3A+pPiNT8WgUJoUyOwJmUr5t+JA2W15P78C/N+8RXrOA==}
+
+  '@prisma/debug@6.7.0':
+    resolution: {integrity: sha512-RabHn9emKoYFsv99RLxvfG2GHzWk2ZI1BuVzqYtmMSIcuGboHY5uFt3Q3boOREM9de6z5s3bQoyKeWnq8Fz22w==}
+
+  '@prisma/engines-version@6.7.0-36.3cff47a7f5d65c3ea74883f1d736e41d68ce91ed':
+    resolution: {integrity: sha512-EvpOFEWf1KkJpDsBCrih0kg3HdHuaCnXmMn7XFPObpFTzagK1N0Q0FMnYPsEhvARfANP5Ok11QyoTIRA2hgJTA==}
+
+  '@prisma/engines@6.7.0':
+    resolution: {integrity: sha512-3wDMesnOxPrOsq++e5oKV9LmIiEazFTRFZrlULDQ8fxdub5w4NgRBoxtWbvXmj2nJVCnzuz6eFix3OhIqsZ1jw==}
+
+  '@prisma/fetch-engine@6.7.0':
+    resolution: {integrity: sha512-zLlAGnrkmioPKJR4Yf7NfW3hftcvqeNNEHleMZK9yX7RZSkhmxacAYyfGsCcqRt47jiZ7RKdgE0Wh2fWnm7WsQ==}
+
+  '@prisma/get-platform@6.7.0':
+    resolution: {integrity: sha512-i9IH5lO4fQwnMLvQLYNdgVh9TK3PuWBfQd7QLk/YurnAIg+VeADcZDbmhAi4XBBDD+hDif9hrKyASu0hbjwabw==}
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -3871,6 +3907,16 @@ packages:
   pretty-format@3.8.0:
     resolution: {integrity: sha512-WuxUnVtlWL1OfZFQFuqvnvs6MiAGk9UNsBostyBOB0Is9wb5uRESevA6rnl/rkksXaGX3GzZhPup5d6Vp1nFew==}
 
+  prisma@6.7.0:
+    resolution: {integrity: sha512-vArg+4UqnQ13CVhc2WUosemwh6hr6cr6FY2uzDvCIFwH8pu8BXVv38PktoMLVjtX7sbYThxbnZF5YiR8sN2clw==}
+    engines: {node: '>=18.18'}
+    hasBin: true
+    peerDependencies:
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
@@ -5236,6 +5282,39 @@ snapshots:
   '@polka/url@1.0.0-next.29': {}
 
   '@popperjs/core@2.11.8': {}
+
+  '@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3)':
+    optionalDependencies:
+      prisma: 6.7.0(typescript@5.6.3)
+      typescript: 5.6.3
+
+  '@prisma/config@6.7.0':
+    dependencies:
+      esbuild: 0.25.3
+      esbuild-register: 3.6.0(esbuild@0.25.3)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@prisma/debug@6.7.0': {}
+
+  '@prisma/engines-version@6.7.0-36.3cff47a7f5d65c3ea74883f1d736e41d68ce91ed': {}
+
+  '@prisma/engines@6.7.0':
+    dependencies:
+      '@prisma/debug': 6.7.0
+      '@prisma/engines-version': 6.7.0-36.3cff47a7f5d65c3ea74883f1d736e41d68ce91ed
+      '@prisma/fetch-engine': 6.7.0
+      '@prisma/get-platform': 6.7.0
+
+  '@prisma/fetch-engine@6.7.0':
+    dependencies:
+      '@prisma/debug': 6.7.0
+      '@prisma/engines-version': 6.7.0-36.3cff47a7f5d65c3ea74883f1d736e41d68ce91ed
+      '@prisma/get-platform': 6.7.0
+
+  '@prisma/get-platform@6.7.0':
+    dependencies:
+      '@prisma/debug': 6.7.0
 
   '@radix-ui/number@1.1.1': {}
 
@@ -6807,14 +6886,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6):
+  drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(prisma@6.7.0(typescript@5.6.3)):
     optionalDependencies:
       '@neondatabase/serverless': 0.10.4
+      '@prisma/client': 6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3)
       '@types/pg': 8.11.6
+      prisma: 6.7.0(typescript@5.6.3)
 
-  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6))(zod@3.24.3):
+  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3):
     dependencies:
-      drizzle-orm: 0.43.1(@neondatabase/serverless@0.10.4)(@types/pg@8.11.6)
+      drizzle-orm: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(prisma@6.7.0(typescript@5.6.3))
       zod: 3.24.3
 
   dunder-proto@1.0.1:
@@ -6974,6 +7055,13 @@ snapshots:
     dependencies:
       debug: 4.4.0
       esbuild: 0.19.12
+    transitivePeerDependencies:
+      - supports-color
+
+  esbuild-register@3.6.0(esbuild@0.25.3):
+    dependencies:
+      debug: 4.4.0
+      esbuild: 0.25.3
     transitivePeerDependencies:
       - supports-color
 
@@ -8168,6 +8256,16 @@ snapshots:
       react-is: 17.0.2
 
   pretty-format@3.8.0: {}
+
+  prisma@6.7.0(typescript@5.6.3):
+    dependencies:
+      '@prisma/config': 6.7.0
+      '@prisma/engines': 6.7.0
+    optionalDependencies:
+      fsevents: 2.3.3
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
 
   prop-types@15.8.1:
     dependencies:

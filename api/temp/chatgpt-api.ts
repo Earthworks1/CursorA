@@ -10,7 +10,7 @@ export function registerChatGptApi(app: Express) {
   // Point d'entrée principal pour l'API ChatGPT
   app.get("/api/chatgpt", (req, res) => {
     res.json({
-      message: "API ChatGPT pour Spiess TP Planning - Bienvenue",
+      message: "API ChatGPT pour Spiess TP - Bienvenue",
       version: "1.0",
       endpoints: [
         "/api/chatgpt/chantiers",
