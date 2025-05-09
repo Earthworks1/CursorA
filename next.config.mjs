@@ -14,6 +14,7 @@ const nextConfig = {
       '@/lib': path.resolve(__dirname, './client/src/lib'),
       '@/utils': path.resolve(__dirname, './client/src/utils'),
       '@/types': path.resolve(__dirname, './client/src/types'),
+      '@shared': path.resolve(__dirname, './shared'),
     };
     return config;
   },

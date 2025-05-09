@@ -20,10 +20,11 @@
     "paths": {
       "@/*": ["client/src/*"],
       "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
+      "@/lib/*": ["client/src/lib/*", "./client/src/lib/*", "./client/src/lib"],
       "@/utils/*": ["client/src/utils/*"],
       "@/types/*": ["client/src/types/*"],
-      "@/types": ["client/src/types/index.ts"]
+      "@/types": ["client/src/types/index.ts"],
+      "@shared/*": ["shared/*"]
     }
   },
   "include": [
