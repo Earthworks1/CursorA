@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Mock data
-let tags = [
+const tags = [
   {
     id: 1,
     nom: 'Urgent',

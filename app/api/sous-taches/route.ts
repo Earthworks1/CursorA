@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Mock data
-let sousTaches = [
+const sousTaches = [
   {
     id: 1,
     tacheId: 1,

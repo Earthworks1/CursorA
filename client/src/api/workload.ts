@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { handleResponse } from './index';
 import { formatISO, parseISO } from 'date-fns';
-import { Task, TaskInput, TaskUpdate, Site, User } from '@/types/workload';
+import { Task, TaskInput, TaskUpdate, Site, User } from '../types/workload';
 
 // Fonction utilitaire pour convertir les dates
 const convertDates = <T extends { startTime?: string | Date | null; endTime?: string | Date | null }>(data: T): T => {

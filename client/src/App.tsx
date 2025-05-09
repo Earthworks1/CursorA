@@ -1,20 +1,22 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/dashboard";
-import Chantiers from "@/pages/chantiers/index";
-import Taches from "@/pages/taches/index";
-import TacheDetail from "@/pages/taches/[id]";
-import Equipes from "@/pages/equipes/index";
-import Plans from "@/pages/plans/index";
-import Rapports from "@/pages/rapports/index";
-import MonCompte from "@/pages/mon-compte/index";
-import Configuration from "@/pages/configuration/index";
-import WorkloadPage from "@/pages/WorkloadPage";
-import Sidebar from "@/components/layout/sidebar";
-import Header from "@/components/layout/header";
+import { Toaster } from "./components/ui/toaster";
+import NotFound from "./pages/not-found";
+import Dashboard from "./pages/dashboard";
+import Chantiers from "./pages/chantiers";
+import ChantierDetails from "./pages/chantiers/[id]";
+import Taches from "./pages/taches";
+import TacheDetails from "./pages/taches/[id]";
+import Equipes from "./pages/equipes";
+import EquipeDetails from "./pages/equipes/[id]";
+import Ressources from "./pages/ressources";
+import RessourceDetails from "./pages/ressources/[id]";
+import Planning from "./pages/planning";
+import Rapports from "./pages/rapports";
+import Configuration from "./pages/configuration";
+import WorkloadPage from "./pages/WorkloadPage";
+import Sidebar from "./components/layout/sidebar";
 import { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dynamic from "@/components/ui/dynamic";
@@ -131,7 +133,6 @@ function Layout({ children }: { children: React.ReactNode }) {
       )}
       
       <div className="flex-1 flex flex-col overflow-hidden w-full">
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">
           <div ref={contentRef} key={location.pathname} className="w-full h-full">
             {children}
@@ -147,7 +148,7 @@ function Router() {
   
   return (
     <HashRouter>
-      <Route path="/">
+      <Route path="/" exact>
         {() => {
           console.log("Rendering dashboard route");
           return (
@@ -157,7 +158,7 @@ function Router() {
           );
         }}
       </Route>
-      <Route path="/chantiers">
+      <Route path="/chantiers" exact>
         {() => {
           console.log("Rendering /chantiers route");
           return (
@@ -203,7 +204,7 @@ function Router() {
           </Layout>
         )}
       </Route>
-      <Route path="/taches">
+      <Route path="/taches" exact>
         {() => (
           <Layout>
             <Taches />
@@ -222,7 +223,7 @@ function Router() {
       <Route path="/taches/:id">
         {(params: any) => (
           <Layout>
-            <TacheDetail id={params.id} />
+            <TacheDetails id={params.id} />
           </Layout>
         )}
       </Route>
@@ -235,17 +236,26 @@ function Router() {
           </Layout>
         )}
       </Route>
-      <Route path="/equipes">
+      <Route path="/equipes" exact>
         {() => (
           <Layout>
             <Equipes />
           </Layout>
         )}
       </Route>
+      <Route path="/equipes/:id">
+        {(params: any) => (
+          <Layout>
+            <EquipeDetails id={params.id} />
+          </Layout>
+        )}
+      </Route>
       <Route path="/plans">
         {() => (
           <Layout>
-            <Plans />
+            <Dynamic>
+              {() => import("@/pages/plans/index").then(mod => <mod.default />)}
+            </Dynamic>
           </Layout>
         )}
       </Route>
@@ -259,7 +269,9 @@ function Router() {
       <Route path="/mon-compte">
         {() => (
           <Layout>
-            <MonCompte />
+            <Dynamic>
+              {() => import("@/pages/mon-compte/index").then(mod => <mod.default />)}
+            </Dynamic>
           </Layout>
         )}
       </Route>
@@ -279,12 +291,10 @@ function Router() {
           </Layout>
         )}
       </Route>
-      <Route path="/ressources">
+      <Route path="/ressources" exact>
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/index").then(mod => <mod.default />)}
-            </Dynamic>
+            <Ressources />
           </Layout>
         )}
       </Route>
@@ -300,9 +310,7 @@ function Router() {
       <Route path="/ressources/:id">
         {(params: any) => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/ressources/[id]").then(mod => <mod.default id={params.id} />)}
-            </Dynamic>
+            <RessourceDetails id={params.id} />
           </Layout>
         )}
       </Route>
@@ -329,9 +337,15 @@ function Router() {
       <Route path="/planning">
         {() => (
           <Layout>
-            <Dynamic>
-              {() => import("@/pages/planning/PlanningPage").then(mod => <mod.default />)}
-            </Dynamic>
+            <Planning />
+          </Layout>
+        )}
+      </Route>
+
+      <Route path="/workload">
+        {() => (
+          <Layout>
+            <WorkloadPage />
           </Layout>
         )}
       </Route>

@@ -1,41 +1,43 @@
 import { NextResponse } from 'next/server';
+import { neon } from '@neondatabase/serverless';
 
-// Mock data
-let taches = [
-  {
-    id: 1,
-    titre: 'Développement Frontend',
-    description: 'Création de l\'interface utilisateur',
-    statut: 'en_cours',
-    priorite: 'haute',
-    dateDebut: '2024-04-01',
-    dateFin: '2024-04-15',
-    ressourceId: 1,
-  },
-  {
-    id: 2,
-    titre: 'Design UI/UX',
-    description: 'Création des maquettes',
-    statut: 'a_faire',
-    priorite: 'moyenne',
-    dateDebut: '2024-04-01',
-    dateFin: '2024-04-10',
-    ressourceId: 2,
-  },
-];
+const sql = neon(process.env.DATABASE_URL!);
 
-// GET /api/taches
+// GET: Liste toutes les tâches
 export async function GET() {
-  return NextResponse.json(taches);
+  try {
+    const taches = await sql`SELECT * FROM taches ORDER BY created_at DESC`;
+    return NextResponse.json(taches);
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la récupération des tâches' }, { status: 500 });
+  }
 }
 
-// POST /api/taches
+// POST: Crée une nouvelle tâche
 export async function POST(request: Request) {
-  const data = await request.json();
-  const newTache = {
-    id: taches.length + 1,
-    ...data,
-  };
-  taches.push(newTache);
-  return NextResponse.json(newTache, { status: 201 });
+  try {
+    const body = await request.json();
+    const { titre, description, statut, priorite, date_debut, date_fin, chantier_id, ressource_id, equipe_id } = body;
+    if (!titre) {
+      return NextResponse.json({ error: 'Le titre est requis' }, { status: 400 });
+    }
+    const [tache] = await sql`
+      INSERT INTO taches (titre, description, statut, priorite, date_debut, date_fin, chantier_id, ressource_id, equipe_id)
+      VALUES (
+        ${titre},
+        ${description},
+        ${statut || 'en_cours'},
+        ${priorite || 'moyenne'},
+        ${date_debut},
+        ${date_fin},
+        ${chantier_id},
+        ${ressource_id},
+        ${equipe_id}
+      )
+      RETURNING *;
+    `;
+    return NextResponse.json(tache, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la création de la tâche' }, { status: 500 });
+  }
 } 

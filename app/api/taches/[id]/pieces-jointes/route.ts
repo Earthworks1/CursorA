@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Mock data
-let piecesJointes = [
+const piecesJointes = [
   {
     id: 1,
     tacheId: 1,

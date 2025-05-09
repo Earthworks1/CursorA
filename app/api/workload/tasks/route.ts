@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getWeek } from 'date-fns';
 
 // Mock data
-let workloadTasks = [
+const workloadTasks = [
   {
     id: 1,
     titre: 'Tâche 1',
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
     const filteredTasks = workloadTasks.filter(task => {
       const taskDate = new Date(task.dateDebut);
       const weekDate = new Date(week);
-      return taskDate.getWeek() === weekDate.getWeek();
+      return getWeek(taskDate) === getWeek(weekDate);
     });
     return NextResponse.json(filteredTasks);
   }

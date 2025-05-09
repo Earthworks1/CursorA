@@ -1,37 +1,39 @@
 import { NextResponse } from 'next/server';
+import { neon } from '@neondatabase/serverless';
 
-// Mock data
-let ressources = [
-  {
-    id: 1,
-    nom: 'John Doe',
-    role: 'Développeur',
-    email: 'john@example.com',
-    telephone: '0123456789',
-    disponibilite: 100,
-  },
-  {
-    id: 2,
-    nom: 'Jane Smith',
-    role: 'Designer',
-    email: 'jane@example.com',
-    telephone: '0987654321',
-    disponibilite: 80,
-  },
-];
+const sql = neon(process.env.DATABASE_URL!);
 
-// GET /api/ressources
+// GET: Liste toutes les ressources
 export async function GET() {
-  return NextResponse.json(ressources);
+  try {
+    const ressources = await sql`SELECT * FROM ressources ORDER BY created_at DESC`;
+    return NextResponse.json(ressources);
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la récupération des ressources' }, { status: 500 });
+  }
 }
 
-// POST /api/ressources
+// POST: Crée une nouvelle ressource
 export async function POST(request: Request) {
-  const data = await request.json();
-  const newRessource = {
-    id: ressources.length + 1,
-    ...data,
-  };
-  ressources.push(newRessource);
-  return NextResponse.json(newRessource, { status: 201 });
+  try {
+    const body = await request.json();
+    const { nom, type, disponibilite, competences, equipe_id } = body;
+    if (!nom || !type) {
+      return NextResponse.json({ error: 'Le nom et le type sont requis' }, { status: 400 });
+    }
+    const [ressource] = await sql`
+      INSERT INTO ressources (nom, type, disponibilite, competences, equipe_id)
+      VALUES (
+        ${nom},
+        ${type},
+        ${disponibilite ?? 100},
+        ${competences ?? []},
+        ${equipe_id}
+      )
+      RETURNING *;
+    `;
+    return NextResponse.json(ressource, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Erreur lors de la création de la ressource' }, { status: 500 });
+  }
 } 

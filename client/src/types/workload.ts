@@ -73,4 +73,58 @@ export interface TaskFormData {
   startTime: string;
   endTime: string;
   status: Task['status'];
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime?: string;
+  status: 'todo' | 'in_progress' | 'done' | 'delayed';
+  priority: 'low' | 'medium' | 'high';
+  siteId: number;
+  userId?: number;
+  workload?: number;
+}
+
+export interface TaskInput {
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime?: string;
+  status: Task['status'];
+  priority: Task['priority'];
+  siteId: number;
+  userId?: number;
+  workload?: number;
+}
+
+export interface TaskUpdate {
+  title?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
+  status?: Task['status'];
+  priority?: Task['priority'];
+  siteId?: number;
+  userId?: number;
+  workload?: number;
+}
+
+export interface Site {
+  id: number;
+  name: string;
+  description?: string;
+  address?: string;
+  status: 'active' | 'completed' | 'paused';
+}
+
+export interface User {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'admin' | 'manager' | 'user';
 } 

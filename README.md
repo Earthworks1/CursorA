@@ -1,29 +1,38 @@
-# Spiess TP
+# Spiess Planning
 
-Application de gestion de projets et de charge de travail.
+Application de planification et de gestion de projet pour Spiess SA.
 
-## Technologies
+## Fonctionnalités
+
+- 📊 Vue Gantt interactive pour la planification des tâches
+- 🔥 Heatmap de charge de travail
+- 👥 Gestion des équipes et des ressources
+- 📈 Suivi de la progression des projets
+- 🔄 Drag & drop pour la réorganisation des tâches
+- 📱 Interface responsive et moderne
+
+## Technologies utilisées
 
 - Next.js 14
+- React 18
 - TypeScript
 - Tailwind CSS
 - Drizzle ORM
-- PostgreSQL
-- React Query
-- Radix UI
+- Neon Database (PostgreSQL)
+- React DnD pour le drag & drop
 
 ## Prérequis
 
-- Node.js >= 18.x
-- PostgreSQL
-- pnpm (recommandé) ou npm
+- Node.js 18+
+- pnpm
+- Compte Neon Database
 
 ## Installation
 
-1. Cloner le repository :
+1. Cloner le dépôt :
 ```bash
-git clone [repository-url]
-cd spiess-tp
+git clone https://github.com/votre-org/spiess-planning.git
+cd spiess-planning
 ```
 
 2. Installer les dépendances :
@@ -35,57 +44,53 @@ pnpm install
 ```bash
 cp .env.example .env.local
 ```
-Puis éditer `.env.local` avec vos configurations.
+Remplir les variables dans `.env.local` avec vos informations.
 
-4. Initialiser la base de données :
+4. Générer et exécuter les migrations :
 ```bash
-pnpm db:push
-pnpm db:seed
+pnpm db:generate
+pnpm db:migrate
 ```
 
-## Développement
-
+5. Lancer le serveur de développement :
 ```bash
 pnpm dev
 ```
 
-## Build
+## Scripts disponibles
 
-```bash
-pnpm build
-pnpm start
-```
-
-## Tests
-
-```bash
-pnpm test
-```
+- `pnpm dev` : Lance le serveur de développement
+- `pnpm build` : Compile l'application pour la production
+- `pnpm start` : Lance l'application en production
+- `pnpm lint` : Vérifie le code avec ESLint
+- `pnpm test` : Lance les tests
+- `pnpm db:generate` : Génère les migrations
+- `pnpm db:migrate` : Exécute les migrations
+- `pnpm db:studio` : Lance l'interface Drizzle Studio
 
 ## Structure du projet
 
 ```
-├── app/              # App Router (Next.js 14)
-├── components/       # Composants React réutilisables
-├── lib/             # Utilitaires et configurations
-├── pages/           # Pages et API routes
-├── public/          # Fichiers statiques
-└── styles/          # Styles globaux
+spiess-planning/
+├── app/                    # Application Next.js
+│   ├── api/               # API Routes
+│   ├── components/        # Composants React
+│   └── styles/           # Styles CSS
+├── lib/                   # Utilitaires et configuration
+│   ├── db.ts             # Configuration de la base de données
+│   └── schema.ts         # Schéma de la base de données
+├── scripts/              # Scripts utilitaires
+└── public/              # Fichiers statiques
 ```
 
-## API Routes
+## Contribution
 
-- `/api/taches` - Gestion des tâches
-- `/api/charge-de-travail-taches` - Charge de travail par tâche
-- `/api/charge-de-travail-activites` - Charge de travail par activité
-- `/api/charge-de-travail-statistiques` - Statistiques de charge de travail
-- `/api/workload/tasks` - Tâches de charge de travail
-
-## Déploiement
-
-Le projet est configuré pour être déployé sur Vercel.
+1. Fork le projet
+2. Créer une branche pour votre fonctionnalité
+3. Commiter vos changements
+4. Pousser vers la branche
+5. Ouvrir une Pull Request
 
 ## Licence
 
-MIT 
-idi 
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails. 
