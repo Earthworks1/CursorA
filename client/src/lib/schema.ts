@@ -21,15 +21,8 @@ export const tasks = pgTable('tasks', {
 export const users = pgTable('users', {
   id: text('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  email: text('email').notNull().unique(),
-  role: text('role', { enum: ['admin', 'manager', 'user'] }).notNull().default('user'),
-  team: text('team'),
-  skills: jsonb('skills').$type<string[]>(),
-  availability: jsonb('availability').$type<{
-    startDate: Date;
-    endDate: Date;
-    hoursPerDay: number;
-  }>(),
+  email: text('email').notNull(),
+  role: text('role', { enum: ['admin', 'user', 'manager'] }).notNull().default('user'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -37,10 +30,7 @@ export const users = pgTable('users', {
 export const teams = pgTable('teams', {
   id: text('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  members: jsonb('members').$type<string[]>().notNull(),
-  leader: text('leader'),
-  description: text('description'),
-  skills: jsonb('skills').$type<string[]>(),
+  members: jsonb('members').$type<string[]>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -51,11 +41,7 @@ export const projects = pgTable('projects', {
   description: text('description'),
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(),
-  status: text('status', { enum: ['planning', 'active', 'completed', 'on_hold'] }).notNull().default('planning'),
-  tasks: jsonb('tasks').$type<string[]>().notNull(),
-  team: text('team'),
-  budget: integer('budget'),
-  client: text('client'),
+  status: text('status', { enum: ['planned', 'in_progress', 'completed'] }).notNull().default('planned'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -63,15 +49,7 @@ export const projects = pgTable('projects', {
 export const resources = pgTable('resources', {
   id: text('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  type: text('type', { enum: ['human', 'material', 'equipment'] }).notNull(),
-  availability: jsonb('availability').$type<{
-    startDate: Date;
-    endDate: Date;
-    quantity: number;
-  }>().notNull(),
-  cost: integer('cost'),
-  skills: jsonb('skills').$type<string[]>(),
-  assignedTo: jsonb('assigned_to').$type<string[]>(),
+  type: text('type').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }); 
