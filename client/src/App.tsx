@@ -19,7 +19,7 @@ import WorkloadPage from "./pages/WorkloadPage";
 import Sidebar from "./components/layout/sidebar";
 import { useState, useEffect, useRef } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Dynamic from "@/components/ui/dynamic";
+import Dynamic from "./components/ui/dynamic";
 
 // Variables pour suivre l'état de la navigation
 let isNavigating = false;
