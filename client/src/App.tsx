@@ -172,7 +172,7 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/new").then(mod => <mod.default />)}
+              {() => import("@/pages/chantiers/new").then(mod => mod.default)}
             </Dynamic>
           </Layout>
         )}
@@ -181,7 +181,7 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/arborescence").then(mod => <mod.default />)}
+              {() => import("@/pages/chantiers/arborescence").then(mod => mod.default)}
             </Dynamic>
           </Layout>
         )}
@@ -190,7 +190,7 @@ function Router() {
         {(params: any) => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/[id]").then(mod => <mod.default id={params.id} />)}
+              {() => import("@/pages/chantiers/[id]").then(mod => mod.default)}
             </Dynamic>
           </Layout>
         )}
