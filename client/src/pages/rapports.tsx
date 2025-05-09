@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { rapportsApi } from '../api/rapports';
+import { rapportsApi } from '@/api/rapports';
 
 export default function Rapports() {
   const { data: statistiques, isLoading: isLoadingStats } = useQuery({

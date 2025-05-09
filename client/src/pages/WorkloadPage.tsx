@@ -7,8 +7,8 @@ import { Task } from '@/types/workload';
 import { useToast } from "@/hooks/use-toast";
 import { formatISO, parse, addHours } from 'date-fns';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
-import { Button } from '@/components/ui/button'; // Potentiellement nécessaire
-import { workloadApi } from '../api/workload';
+import { Button } from '@/components/ui/button';
+import { workloadApi } from '@/api/workload';
 import { toast } from 'sonner';
 
 // Utilitaire pour formater les dates

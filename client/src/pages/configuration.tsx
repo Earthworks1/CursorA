@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { configurationApi } from '../api/configuration';
+import { configurationApi } from '@/api/configuration';
 import { toast } from 'sonner';
 
 export default function Configuration() {

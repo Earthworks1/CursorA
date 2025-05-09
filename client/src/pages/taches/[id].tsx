@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation, useParams } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate, formatDateWithTime, getTimeAgo } from '@/lib/utils';
@@ -57,59 +57,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StatutTache } from '@/types/schema';
 
-interface TacheDetailProps {
-  id: string;
-}
-
-type Tache = {
-  id: number;
-  titre: string;
-  description: string;
-  chantierId: number;
-  chantierNom: string;
-  type: string;
-  statut: string;
-  progression: number;
-  dateDebut: string;
-  dateDemande: string;
-  dateRealisation: string;
-  dateLimite: string;
-  created_at: string;
-  updated_at: string;
-  updated_by: { id: number; nom: string; prenom: string } | null;
-  pilote: { id: number; nom: string; prenom: string } | null;
-  intervenant: { id: number; nom: string; prenom: string } | null;
-  intervenants: {
-    userId: number;
-    nom: string;
-    prenom: string;
-  }[];
-  piecesJointes: {
-    id: number;
-    nom: string;
-    type: string;
-    url: string;
-    created_at: string;
-    uploader: { id: number; nom: string; prenom: string };
-    revisions: {
-      id: number;
-      indice: string;
-      description: string;
-      created_at: string;
-      user: { id: number; nom: string; prenom: string };
-    }[];
-  }[];
-  historique: {
-    id: number;
-    type: string;
-    description: string;
-    created_at: string;
-    user: { id: number; nom: string; prenom: string } | null;
-    metadata: any;
-  }[];
-};
-
-const TacheDetail: React.FC<TacheDetailProps> = ({ id }) => {
+const TacheDetail: React.FC = () => {
+  const [, params] = useParams();
+  const id = params?.id || '';
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();

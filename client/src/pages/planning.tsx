@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { tachesApi } from '../api/taches';
+import { tachesApi } from '@/api/taches';
 
 export default function Planning() {
   const { data: taches, isLoading, error } = useQuery({
