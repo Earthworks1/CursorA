@@ -7,7 +7,7 @@ import Dashboard from "./pages/dashboard";
 import Chantiers from "./pages/chantiers";
 import ChantierDetails from "./pages/chantiers/[id]";
 import Taches from "./pages/taches";
-import TacheDetails from "./pages/taches/[id]";
+import TacheDetail from "./pages/taches/[id]";
 import Equipes from "./pages/equipes";
 import EquipeDetails from "./pages/equipes/[id]";
 import Ressources from "./pages/ressources";
