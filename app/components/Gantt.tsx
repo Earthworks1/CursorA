@@ -55,7 +55,6 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
 
 export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [scale, setScale] = useState<'day' | 'week' | 'month'>('week');
   const [startDate] = useState<Date>(new Date());
   const [endDate] = useState<Date>(() => {
     const date = new Date();
@@ -68,18 +67,8 @@ export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
     setSelectedTask(task);
   };
 
-  const handleTaskDrag = (taskId: string, newStartDate: Date) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    const duration = task.endDate.getTime() - task.startDate.getTime();
-    const newEndDate = new Date(newStartDate.getTime() + duration);
-
-    onTaskMove(taskId, newStartDate, newEndDate);
-  };
-
   const handleZoom = (newScale: 'day' | 'week' | 'month') => {
-    setScale(newScale);
+    // TODO: Implémenter le zoom
   };
 
   const handleScroll = (direction: 'left' | 'right') => {

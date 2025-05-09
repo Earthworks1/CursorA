@@ -3,14 +3,6 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL!);
 
-// Configuration par défaut
-const defaultConfig = {
-  theme: 'system',
-  language: 'fr',
-  timezone: 'Europe/Paris',
-  notifications: true,
-};
-
 export async function GET() {
   try {
     const [config] = await sql`SELECT * FROM configuration LIMIT 1`;
