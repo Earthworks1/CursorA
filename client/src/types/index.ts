@@ -57,4 +57,7 @@ export interface Tag {
   nom: string;
   couleur?: string;
   description?: string;
-} 
+}
+
+export * from './workload';
+export * from './schema'; 
