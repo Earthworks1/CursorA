@@ -8,7 +8,8 @@ export async function GET() {
   try {
     const planning = await sql`SELECT * FROM planning ORDER BY date DESC, id DESC`;
     return NextResponse.json(planning);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la récupération du planning:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération du planning' }, { status: 500 });
   }
 }
@@ -40,7 +41,8 @@ export async function POST(request: Request) {
       RETURNING *;
     `;
     return NextResponse.json(item, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de l\'ajout au planning:', error);
     return NextResponse.json({ error: 'Erreur lors de l\'ajout au planning' }, { status: 500 });
   }
 }
@@ -53,20 +55,22 @@ export async function PUT(request: Request) {
     if (!id) {
       return NextResponse.json({ error: 'ID requis' }, { status: 400 });
     }
-    
+
     // Construction de la requête dynamique
     const setClause = Object.entries(fields)
       .map(([key]) => `${key} = ${key}`)
       .join(', ');
-    
+
+    // Utilisation de la syntaxe de template string avec des paramètres nommés
     const [item] = await sql`
       UPDATE planning 
-      SET ${sql.raw(setClause)}
+      SET ${sql(setClause)}
       WHERE id = ${id}
       RETURNING *;
     `;
     return NextResponse.json(item);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la mise à jour du planning:', error);
     return NextResponse.json({ error: 'Erreur lors de la mise à jour du planning' }, { status: 500 });
   }
 }
@@ -80,7 +84,8 @@ export async function DELETE(request: Request) {
     }
     await sql`DELETE FROM planning WHERE id = ${id}`;
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la suppression du planning:', error);
     return NextResponse.json({ error: 'Erreur lors de la suppression du planning' }, { status: 500 });
   }
 } 
