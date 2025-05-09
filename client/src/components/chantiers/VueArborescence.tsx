@@ -3,26 +3,38 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronRight, 
   ChevronDown, 
+  FolderTree, 
   Folder, 
   FolderOpen, 
-  FileText, 
-  Briefcase, 
-  Wrench, 
-  Hammer 
+  File, 
+  Plus, 
+  MoreHorizontal 
 } from 'lucide-react';
 import { Link } from 'wouter';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { TypeLot } from '@/types/schema';
-import { 
+import { Skeleton } from '../../components/ui/skeleton';
+import { Badge } from '../../components/ui/badge';
+import { TypeLot } from '../../types/schema';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
+import { Button } from '../../components/ui/button';
+import { useToast } from '../../hooks/use-toast';
+import { apiRequest } from '../../lib/queryClient';
+import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+} from "../../components/ui/select";
+import { Input } from "../../components/ui/input";
 
 // Types pour représenter l'arborescence
 interface TreeChantier {
@@ -64,10 +76,10 @@ interface TreeTache {
 const getLotIcon = (type: string) => {
   switch (type) {
     case TypeLot.VOIRIE:
-      return <Wrench className="h-4 w-4 mr-1" />;
+      return <MoreHorizontal className="h-4 w-4 mr-1" />;
     case TypeLot.RESEAUX_SECS:
     case TypeLot.RESEAUX_HUMIDES:
-      return <Hammer className="h-4 w-4 mr-1" />;
+      return <Plus className="h-4 w-4 mr-1" />;
     default:
       return <Folder className="h-4 w-4 mr-1" />;
   }
@@ -111,7 +123,7 @@ const TacheItem = ({ tache }: { tache: TreeTache }) => {
     <Link to={`/taches/${tache.id}`}>
       <div className="flex items-center ml-12 p-1 hover:bg-gray-100 rounded cursor-pointer">
         <div className="ml-2 flex items-center">
-          <FileText className="h-4 w-4 mr-1" />
+          <File className="h-4 w-4 mr-1" />
           <span className="ml-1">{tache.titre}</span>
           <span className="ml-2">
             <TaskStatusBadge statut={tache.statut} />
@@ -196,7 +208,7 @@ const ChantierItem = ({
           <ChevronRight className="h-5 w-5" />
         )}
         <div className="ml-1 flex items-center">
-          <Briefcase className="h-5 w-5 mr-1" />
+          <FolderTree className="h-5 w-5 mr-1" />
           <span className="ml-1 font-medium">{chantier.nom}</span>
           <Badge variant="outline" className="ml-2">
             {chantier.lots.length} lots

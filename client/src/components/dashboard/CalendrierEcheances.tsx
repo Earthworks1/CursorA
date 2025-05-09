@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fr } from 'date-fns/locale';
 import { format, isSameDay, isAfter, isBefore, addMonths } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar } from '../../components/ui/calendar';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
 import { useLocation } from 'wouter';
 import { ChevronLeft, ChevronRight, CalendarIcon, AlertTriangle } from 'lucide-react';
+import { apiRequest } from '../../lib/queryClient';
 
 // Styles personnalisés pour les éléments du calendrier
 const priorityColors = {

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Gantt from '../components/Gantt';
-import Heatmap from '../components/Heatmap';
-import { Task } from '../types';
+import Gantt from '@/components/Gantt';
+import Heatmap from '@/components/Heatmap';
+import { Task } from '@/types';
 
 export default function PlanningPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
