@@ -5,7 +5,7 @@ import { Task } from '../types';
 
 interface GanttProps {
   tasks: Task[];
-  onTaskMove: (taskId: string, newStartDate: Date, newEndDate: Date) => void;
+  onTaskMove?: (taskId: string, newStartDate: Date, newEndDate: Date) => void;
 }
 
 interface TaskItemProps {
@@ -53,7 +53,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
   );
 };
 
-export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
+export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [startDate] = useState<Date>(new Date());
   const [endDate] = useState<Date>(() => {
@@ -67,7 +67,7 @@ export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
     setSelectedTask(task);
   };
 
-  const handleZoom = (newScale: 'day' | 'week' | 'month') => {
+  const handleZoom = () => {
     // TODO: Implémenter le zoom
   };
 
@@ -83,9 +83,9 @@ export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
       <div className="gantt-container" ref={containerRef}>
         <div className="gantt-header">
           <div className="scale-controls">
-            <button onClick={() => handleZoom('day')}>Jour</button>
-            <button onClick={() => handleZoom('week')}>Semaine</button>
-            <button onClick={() => handleZoom('month')}>Mois</button>
+            <button onClick={() => handleZoom()}>Jour</button>
+            <button onClick={() => handleZoom()}>Semaine</button>
+            <button onClick={() => handleZoom()}>Mois</button>
           </div>
           <div className="scroll-controls">
             <button onClick={() => handleScroll('left')}>←</button>

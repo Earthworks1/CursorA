@@ -53,15 +53,18 @@ export async function PUT(request: Request) {
     if (!id) {
       return NextResponse.json({ error: 'ID requis' }, { status: 400 });
     }
-    // Construction dynamique du SET
-    const updates = Object.entries(fields)
-      .map(([key, value]) => `${key} = $${key}`)
+    
+    // Construction de la requête dynamique
+    const setClause = Object.entries(fields)
+      .map(([key]) => `${key} = ${key}`)
       .join(', ');
-    const values = Object.entries(fields).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-    const [item] = await sql.unsafe(
-      `UPDATE planning SET ${updates} WHERE id = $id RETURNING *`,
-      { ...values, id }
-    );
+    
+    const [item] = await sql`
+      UPDATE planning 
+      SET ${sql.raw(setClause)}
+      WHERE id = ${id}
+      RETURNING *;
+    `;
     return NextResponse.json(item);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la mise à jour du planning' }, { status: 500 });

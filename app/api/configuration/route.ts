@@ -10,7 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Configuration non trouvée' }, { status: 404 });
     }
     return NextResponse.json(config);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la lecture de la configuration:', error);
     return NextResponse.json({ error: 'Erreur lors de la lecture de la configuration' }, { status: 500 });
   }
 }
@@ -36,7 +37,8 @@ export async function PUT(request: Request) {
       RETURNING *;
     `;
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la mise à jour de la configuration:', error);
     return NextResponse.json({ error: 'Erreur lors de la mise à jour de la configuration' }, { status: 500 });
   }
 } 

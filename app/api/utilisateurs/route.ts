@@ -6,9 +6,10 @@ const sql = neon(process.env.DATABASE_URL!);
 // GET: Liste tous les utilisateurs
 export async function GET() {
   try {
-    const utilisateurs = await sql`SELECT id, nom, email, role, created_at FROM utilisateurs ORDER BY created_at DESC`;
+    const utilisateurs = await sql`SELECT * FROM utilisateurs ORDER BY nom`;
     return NextResponse.json(utilisateurs);
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la récupération des utilisateurs:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération des utilisateurs' }, { status: 500 });
   }
 }
@@ -17,22 +18,27 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { nom, email, mot_de_passe, role } = body;
-    if (!nom || !email || !mot_de_passe) {
-      return NextResponse.json({ error: 'Le nom, l\'email et le mot de passe sont requis' }, { status: 400 });
+    const { nom, prenom, email, role, equipe_id, competences, disponibilite, notes } = body;
+    if (!nom || !prenom || !email) {
+      return NextResponse.json({ error: 'Le nom, le prénom et l\'email sont requis' }, { status: 400 });
     }
     const [utilisateur] = await sql`
-      INSERT INTO utilisateurs (nom, email, mot_de_passe, role)
+      INSERT INTO utilisateurs (nom, prenom, email, role, equipe_id, competences, disponibilite, notes)
       VALUES (
         ${nom},
+        ${prenom},
         ${email},
-        ${mot_de_passe},
-        ${role || 'utilisateur'}
+        ${role || 'utilisateur'},
+        ${equipe_id},
+        ${competences ?? []},
+        ${disponibilite ?? true},
+        ${notes}
       )
-      RETURNING id, nom, email, role, created_at;
+      RETURNING *;
     `;
     return NextResponse.json(utilisateur, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Erreur lors de la création de l\'utilisateur:', error);
     return NextResponse.json({ error: 'Erreur lors de la création de l\'utilisateur' }, { status: 500 });
   }
 } 
