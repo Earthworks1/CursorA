@@ -57,9 +57,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StatutTache } from '@/types/schema';
 
-const TacheDetail: React.FC = () => {
-  const [, params] = useParams();
-  const id = params?.id || '';
+interface TacheDetailProps {
+  id: string;
+}
+
+const TacheDetail: React.FC<TacheDetailProps> = ({ id }) => {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
