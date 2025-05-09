@@ -148,7 +148,7 @@ function Router() {
   
   return (
     <HashRouter>
-      <Route path="/" exact>
+      <Route path="/">
         {() => {
           console.log("Rendering dashboard route");
           return (
@@ -158,7 +158,7 @@ function Router() {
           );
         }}
       </Route>
-      <Route path="/chantiers" exact>
+      <Route path="/chantiers">
         {() => {
           console.log("Rendering /chantiers route");
           return (
