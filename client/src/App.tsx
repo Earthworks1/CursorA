@@ -111,7 +111,7 @@ function useHashLocation(): [string, (to: string) => void] {
 }
 
 // Créer un composant wrapper pour utiliser notre hook personnalisé
-function HashRouter({ children }: { children: React.ReactNode }) {
+function HashRouter({ children }: { children: JSX.Element | JSX.Element[] }) {
   const [location] = useHashLocation();
   return <Switch>{children}</Switch>;
 }
@@ -172,7 +172,10 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/new").then(mod => mod.default)}
+              {async () => {
+                const mod = await import("./pages/chantiers/new");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -181,7 +184,10 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/arborescence").then(mod => mod.default)}
+              {async () => {
+                const mod = await import("../src/pages/chantiers/arborescence");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -190,7 +196,10 @@ function Router() {
         {(params: any) => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/[id]").then(mod => mod.default)}
+              {async () => {
+                const mod = await import("../src/pages/chantiers/[id]");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -199,12 +208,16 @@ function Router() {
         {(params: any) => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/chantiers/[id]/edit").then(mod => <mod.default id={params.id} />)}
+              {async () => {
+                const mod = await import("../src/pages/chantiers/[id]/edit");
+                const Component = mod.default;
+                return { default: () => <Component id={params.id} /> };
+              }}
             </Dynamic>
           </Layout>
         )}
       </Route>
-      <Route path="/taches" exact>
+      <Route path="/taches">
         {() => (
           <Layout>
             <Taches />
@@ -215,15 +228,18 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/taches/new").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/taches/new");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
       </Route>
       <Route path="/taches/:id">
-        {(params: any) => (
+        {() => (
           <Layout>
-            <TacheDetails id={params.id} />
+            <TacheDetails />
           </Layout>
         )}
       </Route>
@@ -231,12 +247,16 @@ function Router() {
         {(params: any) => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/taches/[id]/edit").then(mod => <mod.default id={params.id} />)}
+              {async () => {
+                const mod = await import("../src/pages/taches/[id]/edit");
+                const Component = mod.default;
+                return { default: () => <Component id={params.id} /> };
+              }}
             </Dynamic>
           </Layout>
         )}
       </Route>
-      <Route path="/equipes" exact>
+      <Route path="/equipes">
         {() => (
           <Layout>
             <Equipes />
@@ -244,9 +264,9 @@ function Router() {
         )}
       </Route>
       <Route path="/equipes/:id">
-        {(params: any) => (
+        {() => (
           <Layout>
-            <EquipeDetails id={params.id} />
+            <EquipeDetails />
           </Layout>
         )}
       </Route>
@@ -254,7 +274,10 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/plans/index").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/plans/index");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -270,7 +293,10 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/mon-compte/index").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/mon-compte/index");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -286,12 +312,15 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/configuration/interface").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/configuration/interface");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
       </Route>
-      <Route path="/ressources" exact>
+      <Route path="/ressources">
         {() => (
           <Layout>
             <Ressources />
@@ -302,15 +331,18 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/ressources/new").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/ressources/new");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
       </Route>
       <Route path="/ressources/:id">
-        {(params: any) => (
+        {() => (
           <Layout>
-            <RessourceDetails id={params.id} />
+            <RessourceDetails />
           </Layout>
         )}
       </Route>
@@ -318,7 +350,11 @@ function Router() {
         {(params: any) => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/ressources/[id]/edit").then(mod => <mod.default id={params.id} />)}
+              {async () => {
+                const mod = await import("../src/pages/ressources/[id]/edit");
+                const Component = mod.default;
+                return { default: () => <Component id={params.id} /> };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -328,7 +364,10 @@ function Router() {
         {() => (
           <Layout>
             <Dynamic>
-              {() => import("@/pages/admin/index").then(mod => <mod.default />)}
+              {async () => {
+                const mod = await import("../src/pages/admin/index");
+                return { default: mod.default };
+              }}
             </Dynamic>
           </Layout>
         )}
@@ -337,7 +376,12 @@ function Router() {
       <Route path="/planning">
         {() => (
           <Layout>
-            <Planning />
+            <Dynamic>
+              {async () => {
+                const mod = await import("../src/pages/planning");
+                return { default: mod.default };
+              }}
+            </Dynamic>
           </Layout>
         )}
       </Route>
@@ -345,7 +389,12 @@ function Router() {
       <Route path="/workload">
         {() => (
           <Layout>
-            <WorkloadPage />
+            <Dynamic>
+              {async () => {
+                const mod = await import("../src/pages/WorkloadPage");
+                return { default: mod.default };
+              }}
+            </Dynamic>
           </Layout>
         )}
       </Route>
