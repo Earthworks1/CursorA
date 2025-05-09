@@ -237,9 +237,9 @@ function Router() {
         )}
       </Route>
       <Route path="/taches/:id">
-        {() => (
+        {(params: any) => (
           <Layout>
-            <TacheDetails />
+            <TacheDetails id={params.id} />
           </Layout>
         )}
       </Route>
