@@ -11,9 +11,6 @@ const defaultConfig = {
   notifications: true,
 };
 
-// Stockage temporaire de la configuration (à remplacer par une base de données)
-let config = { ...defaultConfig };
-
 export async function GET() {
   try {
     const [config] = await sql`SELECT * FROM configuration LIMIT 1`;

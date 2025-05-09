@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Task } from '../types';
 
 interface HeatmapProps {
@@ -17,11 +17,7 @@ export const Heatmap: React.FC<HeatmapProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [heatmapData, setHeatmapData] = useState<Map<string, number>>(new Map());
 
-  useEffect(() => {
-    calculateHeatmapData();
-  }, [tasks, startDate, endDate]);
-
-  const calculateHeatmapData = () => {
+  const calculateHeatmapData = useCallback(() => {
     const data = new Map<string, number>();
     const currentDate = new Date(startDate);
 
@@ -38,7 +34,11 @@ export const Heatmap: React.FC<HeatmapProps> = ({
     }
 
     setHeatmapData(data);
-  };
+  }, [tasks, startDate, endDate]);
+
+  useEffect(() => {
+    calculateHeatmapData();
+  }, [calculateHeatmapData]);
 
   const getHeatmapColor = (value: number): string => {
     if (value === 0) return 'bg-gray-100';

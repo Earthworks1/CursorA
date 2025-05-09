@@ -1,24 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import React, { useState, useRef } from 'react';
+import { DndProvider, useDrag } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Task } from '../types';
 
 interface GanttProps {
   tasks: Task[];
-  onTaskUpdate: (task: Task) => void;
   onTaskMove: (taskId: string, newStartDate: Date, newEndDate: Date) => void;
 }
 
 interface TaskItemProps {
   task: Task;
-  onDrag: (taskId: string, newStartDate: Date) => void;
   onClick: (task: Task) => void;
-  scale: 'day' | 'week' | 'month';
   startDate: Date;
   endDate: Date;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onDrag, onClick, scale, startDate, endDate }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'TASK',
     item: { id: task.id },
@@ -27,8 +24,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDrag, onClick, scale, start
     }),
   }));
 
-  const position = calculateTaskPosition(task.startDate, startDate, endDate, scale);
-  const width = calculateTaskWidth(task.startDate, task.endDate, scale);
+  const position = calculateTaskPosition(task.startDate, startDate, endDate);
+  const width = calculateTaskWidth(task.startDate, task.endDate);
 
   return (
     <div
@@ -56,11 +53,11 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDrag, onClick, scale, start
   );
 };
 
-export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskUpdate, onTaskMove }) => {
+export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskMove }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [scale, setScale] = useState<'day' | 'week' | 'month'>('week');
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(() => {
+  const [startDate] = useState<Date>(new Date());
+  const [endDate] = useState<Date>(() => {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
     return date;
@@ -111,9 +108,7 @@ export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskUpdate, onTaskMove })
             <TaskItem
               key={task.id}
               task={task}
-              onDrag={handleTaskDrag}
               onClick={handleTaskClick}
-              scale={scale}
               startDate={startDate}
               endDate={endDate}
             />
@@ -140,8 +135,7 @@ export const Gantt: React.FC<GanttProps> = ({ tasks, onTaskUpdate, onTaskMove })
 const calculateTaskPosition = (
   taskStart: Date,
   viewStart: Date,
-  viewEnd: Date,
-  scale: 'day' | 'week' | 'month'
+  viewEnd: Date
 ): number => {
   const totalDuration = viewEnd.getTime() - viewStart.getTime();
   const taskOffset = taskStart.getTime() - viewStart.getTime();
@@ -150,12 +144,10 @@ const calculateTaskPosition = (
 
 const calculateTaskWidth = (
   startDate: Date,
-  endDate: Date,
-  scale: 'day' | 'week' | 'month'
+  endDate: Date
 ): number => {
   const duration = endDate.getTime() - startDate.getTime();
-  const scaleFactor = scale === 'day' ? 1 : scale === 'week' ? 7 : 30;
-  const baseWidth = (duration / (24 * 60 * 60 * 1000)) * scaleFactor;
+  const baseWidth = (duration / (24 * 60 * 60 * 1000));
   return Math.max(baseWidth, 5); // Minimum width of 5%
 };
 
