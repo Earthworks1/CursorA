@@ -13,6 +13,7 @@ const nextConfig = {
       '@/components': path.resolve(__dirname, './components'),
       '@/lib': path.resolve(__dirname, './client/src/lib'),
       '@/utils': path.resolve(__dirname, './client/src/utils'),
+      '@/types': path.resolve(__dirname, './client/src/types'),
     };
     return config;
   },
