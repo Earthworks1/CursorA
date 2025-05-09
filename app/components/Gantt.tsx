@@ -6,6 +6,7 @@ import { Task } from '../types';
 interface GanttProps {
   tasks: Task[];
   onTaskMove?: (taskId: string, newStartDate: Date, newEndDate: Date) => void;
+  onTaskUpdate?: (task: Task) => void;
 }
 
 interface TaskItemProps {
