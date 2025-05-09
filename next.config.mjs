@@ -10,7 +10,7 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, './client/src'),
-      '@/components': path.resolve(__dirname, './client/src/components'),
+      '@/components': path.resolve(__dirname, './components'),
       '@/lib': path.resolve(__dirname, './client/src/lib'),
       '@/utils': path.resolve(__dirname, './client/src/utils'),
     };
