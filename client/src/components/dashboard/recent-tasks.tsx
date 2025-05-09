@@ -1,13 +1,15 @@
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
 import { Link } from 'wouter';
-import StatusBadge from '@/components/ui/status-badge';
-import ProgressWithText from '@/components/ui/progress-with-text';
-import { formatDate, isDatePassed } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '../../lib/queryClient';
+import StatusBadge from '../../components/ui/status-badge';
+import ProgressWithText from '../../components/ui/progress-with-text';
+import { formatDate, isDatePassed } from '../../lib/utils';
 import { Clock } from 'lucide-react';
 
 type Task = {
@@ -132,4 +134,4 @@ const RecentTasks = () => {
   );
 };
 
-export default RecentTasks;
+export default RecentTasks; 
