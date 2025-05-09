@@ -29,7 +29,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
 
   return (
     <div
-      ref={drag as React.RefObject<HTMLDivElement>}
+      ref={drag as unknown as React.RefObject<HTMLDivElement>}
       className={`gantt-task ${isDragging ? 'opacity-50' : ''}`}
       style={{
         left: `${position}%`,
