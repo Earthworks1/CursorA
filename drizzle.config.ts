@@ -3,11 +3,11 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default {
-  schema: './shared/schema.ts',
+  schema: './app/lib/schema.ts',
   out: './drizzle',
   driver: 'pg',
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL! as string,
   },
   verbose: true,
   strict: true,

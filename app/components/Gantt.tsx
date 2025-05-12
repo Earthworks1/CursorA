@@ -5,18 +5,18 @@ import { Task } from '../types';
 
 interface GanttProps {
   tasks: Task[];
-  onTaskMove?: (taskId: string, newStartDate: Date, newEndDate: Date) => void;
+  onTaskMove?: (taskId: string, newStartTime: Date, newEndTime: Date) => void;
   onTaskUpdate?: (task: Task) => void;
 }
 
 interface TaskItemProps {
   task: Task;
   onClick: (task: Task) => void;
-  startDate: Date;
-  endDate: Date;
+  startTime: Date;
+  endTime: Date;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startTime, endTime }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'TASK',
     item: { id: task.id },
@@ -25,8 +25,10 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
     }),
   }));
 
-  const position = calculateTaskPosition(task.startDate, startDate, endDate);
-  const width = calculateTaskWidth(task.startDate, task.endDate);
+  const safeStart = task.startTime ? new Date(task.startTime) : startTime;
+  const safeEnd = task.endTime ? new Date(task.endTime) : safeStart;
+  const position = calculateTaskPosition(safeStart, startTime, endTime);
+  const width = calculateTaskWidth(safeStart, safeEnd);
 
   return (
     <div
@@ -35,17 +37,17 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
       style={{
         left: `${position}%`,
         width: `${width}%`,
-        backgroundColor: getTaskColor(task.status, task.priority),
+        backgroundColor: getTaskColor(task.status, (task as any).priority ?? 'medium'),
       }}
       onClick={() => onClick(task)}
     >
       <div className="task-content">
-        <span className="task-title">{task.title}</span>
-        {task.progress !== undefined && (
+        <span className="task-title">{(task as any).title ?? task.description ?? 'Tâche'}</span>
+        {(task as any).progress !== undefined && (
           <div className="task-progress">
             <div
               className="task-progress-bar"
-              style={{ width: `${task.progress}%` }}
+              style={{ width: `${(task as any).progress}%` }}
             />
           </div>
         )}
@@ -56,8 +58,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, startDate, endDate }
 
 export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [startDate] = useState<Date>(new Date());
-  const [endDate] = useState<Date>(() => {
+  const [startTime] = useState<Date>(new Date());
+  const [endTime] = useState<Date>(() => {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
     return date;
@@ -99,20 +101,20 @@ export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
               key={task.id}
               task={task}
               onClick={handleTaskClick}
-              startDate={startDate}
-              endDate={endDate}
+              startTime={startTime}
+              endTime={endTime}
             />
           ))}
         </div>
         {selectedTask && (
           <div className="task-details">
-            <h3>{selectedTask.title}</h3>
+            <h3>{(selectedTask as any).title ?? selectedTask.description ?? 'Tâche'}</h3>
             <p>{selectedTask.description}</p>
             <div className="task-meta">
               <span>Statut: {selectedTask.status}</span>
-              <span>Priorité: {selectedTask.priority}</span>
-              {selectedTask.progress !== undefined && (
-                <span>Progression: {selectedTask.progress}%</span>
+              <span>Priorité: {(selectedTask as any).priority ?? 'medium'}</span>
+              {(selectedTask as any).progress !== undefined && (
+                <span>Progression: {(selectedTask as any).progress}%</span>
               )}
             </div>
           </div>
@@ -133,15 +135,15 @@ const calculateTaskPosition = (
 };
 
 const calculateTaskWidth = (
-  startDate: Date,
-  endDate: Date
+  startTime: Date,
+  endTime: Date
 ): number => {
-  const duration = endDate.getTime() - startDate.getTime();
+  const duration = endTime.getTime() - startTime.getTime();
   const baseWidth = (duration / (24 * 60 * 60 * 1000));
   return Math.max(baseWidth, 5); // Minimum width of 5%
 };
 
-const getTaskColor = (status: Task['status'], priority: Task['priority']): string => {
+const getTaskColor = (status: Task['status'], priority: string): string => {
   const statusColors = {
     todo: '#94a3b8',
     in_progress: '#3b82f6',
@@ -154,7 +156,23 @@ const getTaskColor = (status: Task['status'], priority: Task['priority']): strin
     high: '#ef4444',
   };
 
-  return status === 'done' ? statusColors.done : priorityColors[priority];
+  // Mapping des statuts français vers anglais
+  const statusMap: Record<string, 'todo' | 'in_progress' | 'done'> = {
+    'a_faire': 'todo',
+    'en_cours': 'in_progress',
+    'en_validation': 'in_progress',
+    'en_retard': 'in_progress',
+    'en_revision': 'in_progress',
+    'termine': 'done',
+    'pending': 'todo',
+    'in-progress': 'in_progress',
+    'completed': 'done',
+  };
+
+  const mappedStatus = statusMap[status as string] || 'todo';
+  if (mappedStatus === 'done') return statusColors.done;
+  if (mappedStatus === 'in_progress') return statusColors.in_progress;
+  return statusColors.todo;
 };
 
 export default Gantt; 

@@ -24,8 +24,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
     while (currentDate <= endDate) {
       const dateKey = currentDate.toISOString().split('T')[0];
       const tasksOnDate = tasks.filter(task => {
-        const taskStart = new Date(task.startDate);
-        const taskEnd = new Date(task.endDate);
+        const taskStart = new Date((task as any).startTime);
+        const taskEnd = new Date((task as any).endTime ?? (task as any).startTime);
         return currentDate >= taskStart && currentDate <= taskEnd;
       });
 
@@ -50,8 +50,8 @@ export const Heatmap: React.FC<HeatmapProps> = ({
 
   const handleCellClick = (date: Date) => {
     const tasksOnDate = tasks.filter(task => {
-      const taskStart = new Date(task.startDate);
-      const taskEnd = new Date(task.endDate);
+      const taskStart = new Date((task as any).startTime);
+      const taskEnd = new Date((task as any).endTime ?? (task as any).startTime);
       return date >= taskStart && date <= taskEnd;
     });
 
@@ -79,12 +79,12 @@ export const Heatmap: React.FC<HeatmapProps> = ({
           <ul>
             {tasks
               .filter(task => {
-                const taskStart = new Date(task.startDate);
-                const taskEnd = new Date(task.endDate);
+                const taskStart = new Date((task as any).startTime);
+                const taskEnd = new Date((task as any).endTime ?? (task as any).startTime);
                 return selectedDate >= taskStart && selectedDate <= taskEnd;
               })
               .map(task => (
-                <li key={task.id}>{task.title}</li>
+                <li key={task.id}>{task.description}</li>
               ))}
           </ul>
         </div>

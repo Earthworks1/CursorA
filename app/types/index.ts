@@ -1,65 +1,62 @@
-export interface Task {
-  id: string;
-  title: string;
+export interface Chantier {
+  id: number;
+  nom: string;
   description?: string;
-  startDate: Date;
-  endDate: Date;
-  status: 'todo' | 'in_progress' | 'done';
-  priority: 'low' | 'medium' | 'high';
-  assignedTo?: string;
-  tags?: string[];
-  dependencies?: string[];
-  progress?: number;
-  estimatedHours?: number;
-  actualHours?: number;
+  adresse?: string;
+  statut: 'actif' | 'termine' | 'en_pause';
+  dateDebut: string;
+  dateFin?: string;
+  budget?: number;
+  clientId?: number;
+  responsableId?: number;
+}
+
+export interface Tache {
+  id: number;
+  titre: string;
+  description?: string;
+  statut: 'a_faire' | 'en_cours' | 'termine' | 'en_retard';
+  priorite: 'basse' | 'moyenne' | 'haute';
+  dateDebut: string;
+  dateFin?: string;
+  chantierId: number;
+  lotId?: number;
+  piloteId?: number;
+  intervenantId?: number;
+  charge?: number;
+}
+
+export interface Equipe {
+  id: number;
+  nom: string;
+  description?: string;
+  responsableId?: number;
+  membres?: number[];
+}
+
+export interface Ressource {
+  id: number;
+  nom: string;
+  type: 'humain' | 'materiel';
+  disponibilite: 'disponible' | 'occupe' | 'indisponible';
+  competences?: string[];
+  equipeId?: number;
 }
 
 export interface User {
-  id: string;
-  name: string;
+  id: number;
+  username: string;
+  nom: string;
+  prenom: string;
   email: string;
-  role: 'admin' | 'manager' | 'user';
-  team?: string;
-  skills?: string[];
-  availability?: {
-    startDate: Date;
-    endDate: Date;
-    hoursPerDay: number;
-  };
+  role: 'admin' | 'manager' | 'utilisateur';
 }
 
-export interface Team {
-  id: string;
-  name: string;
-  members: string[];
-  leader?: string;
+export interface Tag {
+  id: number;
+  nom: string;
+  couleur?: string;
   description?: string;
-  skills?: string[];
 }
 
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  startDate: Date;
-  endDate: Date;
-  status: 'planning' | 'active' | 'completed' | 'on_hold';
-  tasks: string[];
-  team?: string;
-  budget?: number;
-  client?: string;
-}
-
-export interface Resource {
-  id: string;
-  name: string;
-  type: 'human' | 'material' | 'equipment';
-  availability: {
-    startDate: Date;
-    endDate: Date;
-    quantity: number;
-  };
-  cost?: number;
-  skills?: string[];
-  assignedTo?: string[];
-} 
+export * from './schema'; 

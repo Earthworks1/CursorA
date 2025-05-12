@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../shared/lib/db';
-import { tasks } from '../../../shared/lib/schema';
+import { db } from '@/lib/db';
+import { tasks } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 export async function GET() {
   try {
@@ -21,7 +22,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, description, startDate, endDate, status, priority, assignedTo, tags, dependencies, progress, estimatedHours, actualHours } = body;
 
-    const newTask = await db.insert(tasks).values({
+    const result = await db.insert(tasks).values({
+      id: randomUUID(),
       title,
       description,
       startDate: new Date(startDate),
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
       actualHours,
     }).returning();
 
-    return NextResponse.json(newTask[0]);
+    return NextResponse.json(result[0]);
   } catch (error) {
     console.error('Error creating task:', error);
     return NextResponse.json(
