@@ -133,10 +133,10 @@ importers:
         version: 16.5.0
       drizzle-orm:
         specifier: ^0.43.1
-        version: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3))
+        version: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.15.1)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3))
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3)
+        version: 0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.15.1)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3)
       embla-carousel-react:
         specifier: ^8.3.0
         version: 8.6.0(react@18.3.1)
@@ -225,6 +225,9 @@ importers:
       '@types/node':
         specifier: 20.16.11
         version: 20.16.11
+      '@types/pg':
+        specifier: ^8.15.1
+        version: 8.15.1
       '@types/react':
         specifier: ^18.3.0
         version: 18.3.20
@@ -2098,6 +2101,9 @@ packages:
 
   '@types/pg@8.11.6':
     resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
+
+  '@types/pg@8.15.1':
+    resolution: {integrity: sha512-YKHrkGWBX5+ivzvOQ66I0fdqsQTsvxqM0AGP2i0XrVZ9DP5VA/deEbTf7VuLPGpY7fJB9uGbkZ6KjVhuHcrTkQ==}
 
   '@types/prop-types@15.7.14':
     resolution: {integrity: sha512-gNMvNH49DJ7OJYv+KAKn0Xp45p8PLl6zo2YnvDIbTd4J6MER2BmWN49TG7n9LvkyihINxeKW8+3bfS2yDC9dzQ==}
@@ -6526,6 +6532,12 @@ snapshots:
       pg-protocol: 1.9.5
       pg-types: 4.0.2
 
+  '@types/pg@8.15.1':
+    dependencies:
+      '@types/node': 20.16.11
+      pg-protocol: 1.9.5
+      pg-types: 4.0.2
+
   '@types/prop-types@15.7.14': {}
 
   '@types/react-big-calendar@1.16.1':
@@ -7252,17 +7264,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)):
+  drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.15.1)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)):
     optionalDependencies:
       '@neondatabase/serverless': 0.10.4
       '@prisma/client': 6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3)
-      '@types/pg': 8.11.6
+      '@types/pg': 8.15.1
       pg: 8.15.6
       prisma: 6.7.0(typescript@5.6.3)
 
-  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3):
+  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.15.1)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3)))(zod@3.24.3):
     dependencies:
-      drizzle-orm: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.11.6)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3))
+      drizzle-orm: 0.43.1(@neondatabase/serverless@0.10.4)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.6.3))(typescript@5.6.3))(@types/pg@8.15.1)(pg@8.15.6)(prisma@6.7.0(typescript@5.6.3))
       zod: 3.24.3
 
   dunder-proto@1.0.1:

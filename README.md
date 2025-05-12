@@ -27,6 +27,30 @@ Application de planification et de gestion de projet pour Spiess SA.
 - pnpm
 - Compte Neon Database
 
+## Dépendances critiques
+
+Certaines dépendances sont indispensables au bon fonctionnement du projet, notamment pour la connexion à la base de données PostgreSQL :
+
+- **pg** : Client PostgreSQL pour Node.js (requis par Drizzle ORM et les scripts de migration)
+
+Si vous voyez une erreur du type `Cannot find module 'pg'`, installez la dépendance avec :
+```bash
+pnpm add pg
+```
+
+### Vérification automatique
+
+Avant chaque build ou déploiement, assurez-vous que toutes les dépendances critiques sont bien installées :
+```bash
+pnpm install
+```
+
+Vous pouvez aussi lancer :
+```bash
+pnpm run check-deploy
+```
+pour vérifier la présence des fichiers et variables d'environnement nécessaires.
+
 ## Installation
 
 1. Cloner le dépôt :
