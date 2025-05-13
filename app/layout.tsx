@@ -1,3 +1,4 @@
+import './globals.css'
 import './styles/components.css'
 // Trigger Vercel redeploy - test synchro
 import { Inter } from 'next/font/google'
