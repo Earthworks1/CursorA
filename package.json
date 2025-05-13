@@ -11,7 +11,9 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "prepare": "husky install",
+    "check-deploy": "node scripts/check-deploy.js"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.8.0",
@@ -100,6 +102,7 @@
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.1.0",
     "eslint-config-prettier": "^10.1.2",
+    "husky": "^8.0.0",
     "postcss": "^8.4.47",
     "prisma": "6.7.0",
     "tailwindcss": "^3.4.14",

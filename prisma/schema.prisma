@@ -7,13 +7,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model PlanningTask {
-  id            String   @id @default(uuid())
-  chantier      String
-  intervenantId String
-  date          DateTime
-  type          String
-  etat          String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-} 
+model activites {
+  id          Int       @id @default(autoincrement())
+  type        String
+  description String
+  user_id     Int?
+  target_id   Int?
+  target_type String?
+  metadata    Json?     @db.Json
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model chantiers {
+  id          Int       @id @default(autoincrement())
+  nom         String
+  description String?
+  adresse     String?
+  statut      String    @default("actif")
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model equipe_membres {
+  id         Int       @id @default(autoincrement())
+  equipe_id  Int
+  user_id    Int
+  role       String?   @default("membre")
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model equipes {
+  id             Int       @id @default(autoincrement())
+  nom            String
+  description    String?
+  responsable_id Int?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model lot_pilotes {
+  id      Int @id @default(autoincrement())
+  lot_id  Int
+  user_id Int
+}
+
+model lots {
+  id          Int       @id @default(autoincrement())
+  nom         String
+  type        String    @default("structure")
+  description String?
+  chantier_id Int
+  code        String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model notifications {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  message     String
+  lue         Boolean?  @default(false)
+  target_id   Int?
+  target_type String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model parametres {
+  id          Int       @id @default(autoincrement())
+  cle         String    @unique(map: "parametres_cle_unique")
+  valeur      String
+  description String?
+  categorie   String
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_by  Int?
+}
+
+model pieces_jointes {
+  id          Int       @id @default(autoincrement())
+  nom         String
+  type        String
+  url         String
+  tache_id    Int
+  uploader_id Int
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model ressource_affectations {
+  id            Int       @id @default(autoincrement())
+  ressource_id  Int
+  tache_id      Int
+  periode_debut DateTime  @db.Timestamp(6)
+  periode_fin   DateTime  @db.Timestamp(6)
+  quantite      Int?      @default(1)
+  commentaire   String?
+  created_by    Int?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model ressource_disponibilites {
+  id           Int       @id @default(autoincrement())
+  ressource_id Int
+  date_debut   DateTime  @db.Timestamp(6)
+  date_fin     DateTime  @db.Timestamp(6)
+  statut       String
+  commentaire  String?
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model ressources {
+  id               Int       @id @default(autoincrement())
+  nom              String
+  type             String
+  description      String?
+  statut           String    @default("disponible")
+  cout_horaire     Int?
+  caracteristiques Json?     @db.Json
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model revisions {
+  id              Int       @id @default(autoincrement())
+  piece_jointe_id Int
+  indice          String
+  description     String
+  user_id         Int
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model tache_intervenants {
+  id       Int @id @default(autoincrement())
+  tache_id Int
+  user_id  Int
+}
+
+model taches {
+  id               Int       @id @default(autoincrement())
+  titre            String
+  description      String?
+  lot_id           Int
+  chantier_id      Int
+  type             String
+  statut           String    @default("a_faire")
+  progression      Int?      @default(0)
+  priorite         String?   @default("normale")
+  date_demande     DateTime? @db.Timestamp(6)
+  date_realisation DateTime? @db.Timestamp(6)
+  date_limite      DateTime? @db.Timestamp(6)
+  pilote_id        Int?
+  intervenant_id   Int?
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_by       Int?
+}
+
+model users {
+  id       Int     @id @default(autoincrement())
+  username String  @unique(map: "users_username_unique")
+  password String
+  nom      String
+  prenom   String
+  role     String
+  avatar   String?
+  email    String
+}
