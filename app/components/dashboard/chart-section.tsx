@@ -20,50 +20,30 @@ import { apiRequest } from '../../lib/queryClient';
 // Type de période pour le graphique des progressions
 type ChartPeriod = 'week' | 'month' | 'year';
 
-// Données de progression des chantiers (exemple)
-const progressionData = {
-  week: [
-    { name: 'Lun', progression: 70 },
-    { name: 'Mar', progression: 45 },
-    { name: 'Mer', progression: 80 },
-    { name: 'Jeu', progression: 65 },
-    { name: 'Ven', progression: 75 },
-    { name: 'Sam', progression: 40 },
-    { name: 'Dim', progression: 20 },
-  ],
-  month: [
-    { name: 'S1', progression: 60 },
-    { name: 'S2', progression: 70 },
-    { name: 'S3', progression: 55 },
-    { name: 'S4', progression: 80 },
-  ],
-  year: [
-    { name: 'Jan', progression: 30 },
-    { name: 'Fév', progression: 45 },
-    { name: 'Mar', progression: 60 },
-    { name: 'Avr', progression: 70 },
-    { name: 'Mai', progression: 80 },
-    { name: 'Juin', progression: 65 },
-    { name: 'Juil', progression: 50 },
-    { name: 'Aoû', progression: 60 },
-    { name: 'Sep', progression: 75 },
-    { name: 'Oct', progression: 85 },
-    { name: 'Nov', progression: 90 },
-    { name: 'Déc', progression: 78 },
-  ],
-};
+interface ProgressionData {
+  name: string;
+  progression: number;
+}
 
-// Données pour le graphique de répartition des tâches
-const taskDistributionData = [
-  { name: 'En cours', value: 14, color: '#3B82F6' }, // primary-500
-  { name: 'En attente', value: 8, color: '#F97316' }, // secondary-500
-  { name: 'Terminées', value: 6, color: '#059669' }, // success
-  { name: 'En retard', value: 8, color: '#DC2626' }, // danger
-];
+interface TaskDistribution {
+  name: string;
+  value: number;
+  color: string;
+}
 
 export const ChartSection = () => {
   const [period, setPeriod] = useState<ChartPeriod>('week');
   
+  // Récupération des données de progression
+  const { data: progressionData = { week: [], month: [], year: [] } } = useQuery<Record<ChartPeriod, ProgressionData[]>>({
+    queryKey: ['/api/statistiques/progression', period],
+  });
+
+  // Récupération des données de répartition des tâches
+  const { data: taskDistributionData = [] } = useQuery<TaskDistribution[]>({
+    queryKey: ['/api/statistiques/repartition-taches'],
+  });
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       {/* Progression des chantiers */}

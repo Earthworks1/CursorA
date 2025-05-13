@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -57,7 +58,7 @@ const AdminAccessHelper = () => {
       {showHelp && (
         <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded">
           <p>Pour accéder au panneau d'administration, ajoutez <strong>?admin_access=Spiess2025!</strong> à l'URL.</p>
-          <p className="mt-1">Par exemple: <code>{window.location.origin}/?admin_access=Spiess2025!</code></p>
+          <p className="mt-1">Par exemple: <code>{typeof window !== 'undefined' ? window.location.origin : ''}/?admin_access=Spiess2025!</code></p>
         </div>
       )}
     </div>
@@ -65,7 +66,7 @@ const AdminAccessHelper = () => {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
-  const [location] = useLocation();
+  const pathname = usePathname();
   
   // État pour stocker les infos utilisateur avec admin par défaut sur false
   const [userInfo, setUserInfo] = useState({
@@ -133,8 +134,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
         <nav className="flex-1 py-4 overflow-y-auto">
           <ul className="space-y-1">
             {finalNavItems.map((item) => {
-              const isActive = location === item.href || 
-                              (item.href !== '/' && location.startsWith(item.href));
+              const isActive = pathname === item.href || 
+                              (item.href !== '/' && pathname.startsWith(item.href));
               
               return (
                 <li key={item.href}>

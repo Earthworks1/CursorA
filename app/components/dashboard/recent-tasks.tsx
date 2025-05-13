@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Badge } from '../../components/ui/badge';
-import { Link } from 'wouter';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/queryClient';
 import StatusBadge from '../../components/ui/status-badge';

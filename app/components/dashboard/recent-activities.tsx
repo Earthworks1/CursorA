@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Link } from 'wouter';
+import Link from 'next/link';
 import { apiRequest } from '../../lib/queryClient';
 
 type Activity = {

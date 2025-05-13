@@ -13,7 +13,7 @@ import {
 } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { useLocation } from 'wouter';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, CalendarIcon, AlertTriangle } from 'lucide-react';
 import { apiRequest } from '../../lib/queryClient';
 
@@ -48,7 +48,7 @@ interface Tache {
 }
 
 const CalendrierEcheances: React.FC = () => {
-  const [, navigate] = useLocation();
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   
@@ -168,7 +168,7 @@ const CalendrierEcheances: React.FC = () => {
                   return (
                     <div 
                       key={tache.id}
-                      onClick={() => navigate(`/taches/${tache.id}`)}
+                      onClick={() => router.push(`/taches/${tache.id}`)}
                       className={`p-2 border rounded-md cursor-pointer transition-colors hover:bg-gray-50 ${
                         priorityColors[tache.priorite as keyof typeof priorityColors] || 'bg-gray-100 border-gray-300'
                       }`}
