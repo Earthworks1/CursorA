@@ -135,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
           <ul className="space-y-1">
             {finalNavItems.map((item) => {
               const isActive = pathname === item.href || 
-                              (item.href !== '/' && pathname.startsWith(item.href));
+                              (item.href !== '/' && pathname?.startsWith(item.href));
               
               return (
                 <li key={item.href}>
