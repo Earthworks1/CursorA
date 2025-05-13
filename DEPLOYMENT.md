@@ -37,6 +37,8 @@ COOKIE_SECRET="your-cookie-secret"
 
 # Environnement
 NODE_ENV="production"
+
+DATABASE_URL_UNPOOLED=postgres://postgres:postgres@localhost:5432/spiess_planning?schema=public
 ```
 
 ## Étapes de Déploiement
