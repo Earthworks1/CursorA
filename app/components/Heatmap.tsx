@@ -86,11 +86,11 @@ export const Heatmap: React.FC<HeatmapProps> = ({
               .map(task => (
                 <li key={task.id}>
                   {task.description}
-                  {task.chantier && (
-                    <span> | Chantier: {task.chantier.nom}</span>
+                  {(task as any)?.chantier && (
+                    <span> | Chantier: {(task as any).chantier.nom}</span>
                   )}
-                  {task.pilote && (
-                    <span> | Pilote: {task.pilote.prenom} {task.pilote.nom}</span>
+                  {(task as any)?.pilote && (
+                    <span> | Pilote: {(task as any).pilote.prenom} {(task as any).pilote.nom}</span>
                   )}
                 </li>
               ))}
