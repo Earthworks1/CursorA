@@ -3,26 +3,42 @@
 import React, { useState, useEffect } from 'react';
 import Gantt from '@/components/Gantt';
 import Heatmap from '@/components/Heatmap';
-import { Task } from '@/types';
+import { Task, Chantier, User } from '@/types';
 import PlanningHebdoPage from './hebdo/page';
 import { Calendar } from '@/components/ui/calendar';
 
 export default function PlanningPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [chantiers, setChantiers] = useState<Chantier[]>([]);
+  const [utilisateurs, setUtilisateurs] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'hebdo' | 'mois' | 'gantt' | 'heatmap'>('hebdo');
 
   useEffect(() => {
-    fetchTasks();
+    fetchAll();
   }, []);
 
-  const fetchTasks = async () => {
+  const fetchAll = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/planning/tasks');
-      if (!response.ok) throw new Error('Erreur lors du chargement des tâches');
-      const data = await response.json();
-      setTasks(data);
+      const [tasksRes, chantiersRes, usersRes] = await Promise.all([
+        fetch('/api/planning/tasks'),
+        fetch('/api/chantiers'),
+        fetch('/api/utilisateurs'),
+      ]);
+      if (!tasksRes.ok || !chantiersRes.ok || !usersRes.ok) throw new Error('Erreur lors du chargement des données');
+      const tasksData = await tasksRes.json();
+      const chantiersData = await chantiersRes.json();
+      const usersData = await usersRes.json();
+      setChantiers(chantiersData);
+      setUtilisateurs(usersData);
+      // Mapping enrichi
+      setTasks(tasksData.map((t: any) => ({
+        ...t,
+        chantier: chantiersData.find((c: any) => c.id === (t.chantierId || t.chantier_id)),
+        pilote: usersData.find((u: any) => u.id === (t.piloteId || t.pilote_id)),
+      })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
@@ -38,7 +54,7 @@ export default function PlanningPage() {
         body: JSON.stringify(task),
       });
       if (!response.ok) throw new Error('Erreur lors de la mise à jour');
-      await fetchTasks();
+      await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
