@@ -84,7 +84,15 @@ export const Heatmap: React.FC<HeatmapProps> = ({
                 return selectedDate >= taskStart && selectedDate <= taskEnd;
               })
               .map(task => (
-                <li key={task.id}>{task.description}</li>
+                <li key={task.id}>
+                  {task.description}
+                  {task.chantier && (
+                    <span> | Chantier: {task.chantier.nom}</span>
+                  )}
+                  {task.pilote && (
+                    <span> | Pilote: {task.pilote.prenom} {task.pilote.nom}</span>
+                  )}
+                </li>
               ))}
           </ul>
         </div>

@@ -28,6 +28,17 @@ interface Tache {
   heureFin: number; // ex: 10 pour 10h
 }
 
+interface Chantier {
+  id: number;
+  nom: string;
+}
+
+interface Pilote {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
 const joursSemaine = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 const heures = Array.from({ length: 12 }, (_, i) => 7 + i); // 7h à 18h
 
@@ -45,11 +56,13 @@ function getWeekDates(startDate: Date) {
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (task: Partial<Tache>) => void;
+  onSubmit: (task: Partial<Tache> & { chantierId?: string; piloteId?: string }) => void;
   defaultDate: string;
   defaultHeure: number;
   defaultIntervenant?: number;
   intervenants: Intervenant[];
+  chantiers: Chantier[];
+  pilotes: Pilote[];
 }
 
 const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
@@ -60,12 +73,16 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   defaultHeure,
   defaultIntervenant,
   intervenants,
+  chantiers,
+  pilotes,
 }) => {
   const [titre, setTitre] = useState('');
   const [description, setDescription] = useState('');
   const [intervenantId, setIntervenantId] = useState<string>(defaultIntervenant?.toString() || '');
   const [heureDebut, setHeureDebut] = useState(defaultHeure);
   const [heureFin, setHeureFin] = useState(defaultHeure + 1);
+  const [chantierId, setChantierId] = useState('');
+  const [piloteId, setPiloteId] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +94,8 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       heureDebut,
       heureFin,
       statut: 'a_planifier',
+      chantierId,
+      piloteId,
     });
     onClose();
   };
@@ -116,6 +135,32 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                   <SelectItem key={i.id} value={i.id.toString()}>
                     {i.prenom} {i.nom}
                   </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="chantier">Chantier</Label>
+            <Select value={chantierId} onValueChange={setChantierId} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un chantier" />
+              </SelectTrigger>
+              <SelectContent>
+                {chantiers.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.nom}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="pilote">Pilote</Label>
+            <Select value={piloteId} onValueChange={setPiloteId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un pilote" />
+              </SelectTrigger>
+              <SelectContent>
+                {pilotes.map((p) => (
+                  <SelectItem key={p.id} value={p.id.toString()}>{p.prenom} {p.nom}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -176,6 +221,8 @@ export default function PlanningHebdoPage() {
     date: string;
     heure: number;
   } | null>(null);
+  const [chantiers, setChantiers] = useState<Chantier[]>([]);
+  const [pilotes, setPilotes] = useState<Pilote[]>([]);
 
   useEffect(() => {
     // Récupérer les intervenants
@@ -199,6 +246,12 @@ export default function PlanningHebdoPage() {
           }))
         );
       });
+    fetch('/api/chantiers')
+      .then(res => res.json())
+      .then(data => setChantiers(data));
+    fetch('/api/utilisateurs')
+      .then(res => res.json())
+      .then(data => setPilotes(data.filter((u: any) => u.role === 'pilote')));
   }, []);
 
   // Tâches à planifier (To-do)
@@ -310,7 +363,25 @@ export default function PlanningHebdoPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleCreateTask = async (taskData: Partial<Tache>) => {
+  async function checkTaskConsistency(taskId: string) {
+    try {
+      const res = await fetch(`/api/planning/tasks/${taskId}`);
+      if (!res.ok) {
+        throw new Error("Erreur lors de la vérification de la tâche");
+      }
+      const data = await res.json();
+      const { chantier, pilote, assignedTo, startDate, endDate } = data;
+      if (!chantier || !pilote || !assignedTo || !startDate || !endDate) {
+        toast({ title: "Attention", description: "La tâche a été créée mais certains champs (chantier, pilote, intervenant, dates) ne sont pas cohérents.", variant: "destructive" });
+      } else {
+        toast({ title: "Cohérence OK", description: "La tâche a été créée et est bien liée au chantier, au pilote et à l'intervenant.", variant: "default" });
+      }
+    } catch (e) {
+      toast({ title: "Erreur de cohérence", description: "Impossible de vérifier la cohérence de la tâche.", variant: "destructive" });
+    }
+  }
+
+  const handleCreateTask = async (taskData: Partial<Tache> & { chantierId?: string; piloteId?: string }) => {
     setLoading(true);
     try {
       const response = await fetch('/api/planning/tasks', {
@@ -320,6 +391,8 @@ export default function PlanningHebdoPage() {
           title: taskData.titre,
           description: taskData.description,
           assignedTo: taskData.assignedTo,
+          chantierId: taskData.chantierId ? Number(taskData.chantierId) : undefined,
+          piloteId: taskData.piloteId ? Number(taskData.piloteId) : undefined,
           startDate: `${taskData.date}T${taskData.heureDebut?.toString().padStart(2, '0')}:00:00`,
           endDate: `${taskData.date}T${taskData.heureFin?.toString().padStart(2, '0')}:00:00`,
           status: 'a_planifier',
@@ -339,6 +412,9 @@ export default function PlanningHebdoPage() {
         heureDebut: new Date(newTask.startDate).getHours(),
         heureFin: new Date(newTask.endDate).getHours(),
       }]);
+
+      // Vérifier la cohérence de la tâche créée
+      await checkTaskConsistency(newTask.id.toString());
 
       toast({
         title: 'Tâche créée',
@@ -371,6 +447,8 @@ export default function PlanningHebdoPage() {
         defaultHeure={selectedCell?.heure || 8}
         defaultIntervenant={selectedCell?.intervenantId}
         intervenants={intervenants}
+        chantiers={chantiers}
+        pilotes={pilotes}
       />
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex min-h-screen w-full bg-gray-50 relative flex-col md:flex-row">
