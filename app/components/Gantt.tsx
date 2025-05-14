@@ -116,11 +116,11 @@ export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
               {(selectedTask as any).progress !== undefined && (
                 <span>Progression: {(selectedTask as any).progress}%</span>
               )}
-              {selectedTask.chantier && (
-                <span>Chantier: {selectedTask.chantier.nom}</span>
+              {selectedTask && (selectedTask as any)?.chantier && (
+                <span>Chantier: {(selectedTask as any).chantier.nom}</span>
               )}
-              {selectedTask.pilote && (
-                <span>Pilote: {selectedTask.pilote.prenom} {selectedTask.pilote.nom}</span>
+              {selectedTask && (selectedTask as any)?.pilote && (
+                <span>Pilote: {(selectedTask as any).pilote.prenom} {(selectedTask as any).pilote.nom}</span>
               )}
             </div>
           </div>
