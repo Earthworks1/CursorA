@@ -95,8 +95,8 @@ export default function PlanningPage() {
       </div>
       {tab === 'hebdo' && <PlanningHebdoPage />}
       {tab === 'mois' && <div className="bg-white rounded-lg shadow p-4"><Calendar /></div>}
-      {tab === 'gantt' && <div className="bg-white rounded-lg shadow p-4"><Gantt /></div>}
-      {tab === 'heatmap' && <div className="bg-white rounded-lg shadow p-4"><Heatmap /></div>}
+      {tab === 'gantt' && <div className="bg-white rounded-lg shadow p-4"><Gantt tasks={tasks} /></div>}
+      {tab === 'heatmap' && <div className="bg-white rounded-lg shadow p-4"><Heatmap tasks={tasks} startDate={new Date()} endDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)} onCellClick={() => {}} /></div>}
     </div>
   );
 } 
