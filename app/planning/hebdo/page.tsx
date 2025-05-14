@@ -4,6 +4,11 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Types de base
 interface Intervenant {
@@ -37,12 +42,140 @@ function getWeekDates(startDate: Date) {
   });
 }
 
+interface CreateTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (task: Partial<Tache>) => void;
+  defaultDate: string;
+  defaultHeure: number;
+  defaultIntervenant?: number;
+  intervenants: Intervenant[];
+}
+
+const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  defaultDate,
+  defaultHeure,
+  defaultIntervenant,
+  intervenants,
+}) => {
+  const [titre, setTitre] = useState('');
+  const [description, setDescription] = useState('');
+  const [intervenantId, setIntervenantId] = useState<string>(defaultIntervenant?.toString() || '');
+  const [heureDebut, setHeureDebut] = useState(defaultHeure);
+  const [heureFin, setHeureFin] = useState(defaultHeure + 1);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      titre,
+      description,
+      assignedTo: Number(intervenantId),
+      date: defaultDate,
+      heureDebut,
+      heureFin,
+      statut: 'a_planifier',
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Nouvelle tâche</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="titre">Titre</Label>
+            <Input
+              id="titre"
+              value={titre}
+              onChange={(e) => setTitre(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="intervenant">Intervenant</Label>
+            <Select value={intervenantId} onValueChange={setIntervenantId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un intervenant" />
+              </SelectTrigger>
+              <SelectContent>
+                {intervenants.map((i) => (
+                  <SelectItem key={i.id} value={i.id.toString()}>
+                    {i.prenom} {i.nom}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="heureDebut">Heure de début</Label>
+              <Select value={heureDebut.toString()} onValueChange={(v) => setHeureDebut(Number(v))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {heures.map((h) => (
+                    <SelectItem key={h} value={h.toString()}>
+                      {h}h
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="heureFin">Heure de fin</Label>
+              <Select value={heureFin.toString()} onValueChange={(v) => setHeureFin(Number(v))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {heures.filter(h => h > heureDebut).map((h) => (
+                    <SelectItem key={h} value={h.toString()}>
+                      {h}h
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button type="submit">Créer</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function PlanningHebdoPage() {
   const [intervenants, setIntervenants] = useState<Intervenant[]>([]);
   const [taches, setTaches] = useState<Tache[]>([]);
   const [weekDates, setWeekDates] = useState<string[]>(getWeekDates(new Date()));
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{
+    intervenantId: number;
+    date: string;
+    heure: number;
+  } | null>(null);
 
   useEffect(() => {
     // Récupérer les intervenants
@@ -172,11 +305,73 @@ export default function PlanningHebdoPage() {
     }
   };
 
+  const handleCellClick = (intervenantId: number, date: string, heure: number) => {
+    setSelectedCell({ intervenantId, date, heure });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateTask = async (taskData: Partial<Tache>) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/planning/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: taskData.titre,
+          description: taskData.description,
+          assignedTo: taskData.assignedTo,
+          startDate: `${taskData.date}T${taskData.heureDebut?.toString().padStart(2, '0')}:00:00`,
+          endDate: `${taskData.date}T${taskData.heureFin?.toString().padStart(2, '0')}:00:00`,
+          status: 'a_planifier',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la création de la tâche');
+      
+      const newTask = await response.json();
+      setTaches(prev => [...prev, {
+        id: newTask.id.toString(),
+        titre: newTask.title,
+        description: newTask.description,
+        statut: newTask.status,
+        assignedTo: newTask.assignedTo,
+        date: newTask.startDate.slice(0, 10),
+        heureDebut: new Date(newTask.startDate).getHours(),
+        heureFin: new Date(newTask.endDate).getHours(),
+      }]);
+
+      toast({
+        title: 'Tâche créée',
+        description: 'La tâche a été créée avec succès.',
+      });
+    } catch (e) {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la création de la tâche',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <TooltipProvider>
       <div className="flex items-center justify-between mb-4 p-4">
         <h1 className="text-2xl font-bold">Planning hebdomadaire</h1>
       </div>
+      <CreateTaskModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setSelectedCell(null);
+        }}
+        onSubmit={handleCreateTask}
+        defaultDate={selectedCell?.date || ''}
+        defaultHeure={selectedCell?.heure || 8}
+        defaultIntervenant={selectedCell?.intervenantId}
+        intervenants={intervenants}
+      />
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex min-h-screen w-full bg-gray-50 relative flex-col md:flex-row">
           {loading && (
@@ -269,7 +464,8 @@ export default function PlanningHebdoPage() {
                                   <td
                                     ref={provided.innerRef}
                                     {...provided.droppableProps}
-                                    className={`border min-w-[100px] h-10 align-top ${snapshot.isDraggingOver ? 'bg-green-50' : ''}`}
+                                    className={`border min-w-[100px] h-10 align-top cursor-pointer hover:bg-gray-50 ${snapshot.isDraggingOver ? 'bg-green-50' : ''}`}
+                                    onClick={() => handleCellClick(intervenant.id, date, heure)}
                                   >
                                     {tache ? (
                                       <Draggable draggableId={tache.id} index={0} key={tache.id}>
