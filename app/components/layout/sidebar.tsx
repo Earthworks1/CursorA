@@ -26,6 +26,7 @@ interface SidebarProps {
 const standardNavItems = [
   { label: 'Tableau de bord', href: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
   { label: 'Planning', href: '/planning', icon: <Calendar className="h-5 w-5" /> },
+  { label: 'Planning hebdo', href: '/planning/hebdo', icon: <Calendar className="h-5 w-5" /> },
   { label: 'Chantiers', href: '/chantiers', icon: <Building2 className="h-5 w-5" /> },
   { label: 'Arborescence', href: '/chantiers/arborescence', icon: <FolderTree className="h-5 w-5" /> },
   { label: 'Tâches', href: '/taches', icon: <ClipboardList className="h-5 w-5" /> },

@@ -174,6 +174,10 @@ export default function PlanningHebdoPage() {
 
   return (
     <TooltipProvider>
+      <div className="flex items-center justify-between mb-4 p-4">
+        <h1 className="text-2xl font-bold">Planning hebdomadaire</h1>
+        <a href="/planning" className="btn btn-outline-primary px-4 py-2 rounded border border-blue-600 text-blue-600 hover:bg-blue-50 transition">Vue Gantt</a>
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex min-h-screen w-full bg-gray-50 relative flex-col md:flex-row">
           {loading && (
