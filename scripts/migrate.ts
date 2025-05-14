@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const runMigration = async () => {
-  const sql = neon(process.env.DATABASE_URL_UNPOOLED!);
+  const sql = neon(process.env.DATABASE_URL!);
   const db = drizzle(sql);
 
   console.log('Running migrations...');

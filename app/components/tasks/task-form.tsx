@@ -489,7 +489,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="description"
@@ -547,7 +547,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="type"
@@ -576,7 +576,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="statut"
@@ -605,7 +605,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="progression"
@@ -635,7 +635,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskId, isEditing = false }) => {
               
               {/* Section des responsables */}
               <ResponsibleSection control={form.control} users={users} />
-              
+
               <Separator className="sm:col-span-2 my-4" />
               
               {/* Pièces jointes */}
