@@ -60,12 +60,6 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
-
-  // Configuration Analytics
-  analytics: {
-    enabled: true,
-    debug: false,
-  },
 };
 
 export default nextConfig;
