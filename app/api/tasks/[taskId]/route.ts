@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import { tasks } from '../../../../lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs';
+import { getAuth } from '@clerk/nextjs';
 
 export async function PATCH(
   req: Request,
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth();
     if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function DELETE(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth();
     if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }

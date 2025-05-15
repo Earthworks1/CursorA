@@ -15,7 +15,6 @@ const nextConfig = {
 
   // Configurations expérimentales
   experimental: {
-    serverActions: true,
     esmExternals: true,
   },
 
