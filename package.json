@@ -93,7 +93,7 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.15",
+    "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/axios": "^0.14.4",
@@ -116,4 +116,4 @@
     "vite": "^5.4.14",
     "vitest": "^3.1.2"
   }
-} 
+}
