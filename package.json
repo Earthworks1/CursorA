@@ -12,7 +12,7 @@
     "db:studio": "drizzle-kit studio",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepare": "husky install",
+    "prepare": "if [ \"$SKIP_HUSKY\" != \"1\" ]; then husky install; fi",
     "check-deploy": "node scripts/check-deploy.js"
   },
   "dependencies": {
