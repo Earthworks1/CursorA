@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import { tasks } from '../../../../lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { getAuth } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs';
 
 export async function PATCH(
   req: Request,
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = getAuth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function PATCH(
     const updatedTask = await db
       .update(tasks)
       .set({ completed })
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)))
       .returning();
 
     if (!updatedTask.length) {
@@ -39,8 +39,8 @@ export async function DELETE(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = getAuth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -48,7 +48,7 @@ export async function DELETE(
 
     const deletedTask = await db
       .delete(tasks)
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, user.id)))
       .returning();
 
     if (!deletedTask.length) {
