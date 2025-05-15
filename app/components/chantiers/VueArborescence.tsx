@@ -36,31 +36,30 @@ import {
 } from "../../components/ui/select";
 import { Input } from "../../components/ui/input";
 
-// Types pour représenter l'arborescence
-interface TreeChantier {
+interface Chantier {
   id: number;
   nom: string;
-  lots: TreeLot[];
-  expanded?: boolean;
+  description?: string;
+  dateDebut?: string;
+  dateFin?: string;
+  statut: string;
 }
 
-interface Pilote {
-  id: number;
-  userId: number;
-  lotId: number;
-  nom: string;
-  prenom: string;
-  role?: string;
-}
-
-interface TreeLot {
+interface Lot {
   id: number;
   nom: string;
-  type: string;
+  type: keyof typeof TypeLot;
   chantierId: number;
-  taches: TreeTache[];
-  pilotes: Pilote[];
-  expanded?: boolean;
+  pilotes: Array<{ id: number; nom: string; prenom: string }>;
+}
+
+interface Tache {
+  id: number;
+  titre: string;
+  type: string;
+  statut: string;
+  lotId: number;
+  chantierId: number;
 }
 
 interface TreeTache {
@@ -70,6 +69,27 @@ interface TreeTache {
   statut: string;
   lotId: number;
   chantierId: number;
+}
+
+interface TreeLot {
+  id: number;
+  nom: string;
+  type: keyof typeof TypeLot;
+  chantierId: number;
+  taches: TreeTache[];
+  pilotes: Array<{ id: number; nom: string; prenom: string }>;
+  expanded: boolean;
+}
+
+interface TreeChantier {
+  id: number;
+  nom: string;
+  description?: string;
+  dateDebut?: string;
+  dateFin?: string;
+  statut: string;
+  lots: TreeLot[];
+  expanded: boolean;
 }
 
 // Obtenir l'icône du type de lot
@@ -233,17 +253,17 @@ const VueArborescence = () => {
   const [expandedLots, setExpandedLots] = useState<number[]>([]);
   
   // Requête pour récupérer tous les chantiers
-  const { data: chantiers = [], isLoading: isLoadingChantiers } = useQuery<any[]>({
+  const { data: chantiers = [], isLoading: isLoadingChantiers } = useQuery<Chantier[]>({
     queryKey: ['/api/chantiers'],
   });
   
   // Requête pour récupérer tous les lots
-  const { data: lots = [], isLoading: isLoadingLots } = useQuery<any[]>({
+  const { data: lots = [], isLoading: isLoadingLots } = useQuery<Lot[]>({
     queryKey: ['/api/lots'],
   });
   
   // Requête pour récupérer toutes les tâches
-  const { data: taches = [], isLoading: isLoadingTaches } = useQuery<any[]>({
+  const { data: taches = [], isLoading: isLoadingTaches } = useQuery<Tache[]>({
     queryKey: ['/api/taches'],
   });
   
@@ -271,27 +291,22 @@ const VueArborescence = () => {
     if (!Array.isArray(lots)) return [];
     if (!Array.isArray(taches)) return [];
     
-    const tree: TreeChantier[] = chantiers.map((chantier: any) => {
-      // Filtrer les lots qui appartiennent à ce chantier
+    const tree: TreeChantier[] = chantiers.map((chantier) => {
       const chantierLots = lots
-        .filter((lot: any) => lot?.chantierId === chantier.id)
-        .filter((lot: any) => typeLotFilter === 'all' || !typeLotFilter || lot?.type === typeLotFilter);
+        .filter((lot) => lot?.chantierId === chantier.id)
+        .filter((lot) => typeLotFilter === 'all' || !typeLotFilter || lot?.type === typeLotFilter);
         
-      // Créer les objets TreeLot pour ce chantier
-      const treeLots: TreeLot[] = chantierLots.map((lot: any) => {
-        // Filtrer les tâches qui appartiennent à ce lot
+      const treeLots: TreeLot[] = chantierLots.map((lot) => {
         const lotTaches = taches
-          .filter((tache: any) => tache?.lotId === lot.id)
-          .filter((tache: any) => {
-            // Appliquer le filtre de recherche sur le titre de la tâche
+          .filter((tache) => tache?.lotId === lot.id)
+          .filter((tache) => {
             if (searchTerm && tache?.titre) {
               return tache.titre.toLowerCase().includes(searchTerm.toLowerCase());
             }
             return true;
           });
           
-        // Créer les objets TreeTache pour ce lot
-        const treeTaches: TreeTache[] = lotTaches.map((tache: any) => ({
+        const treeTaches: TreeTache[] = lotTaches.map((tache) => ({
           id: tache.id || 0,
           titre: tache.titre || "Tâche sans titre",
           type: tache.type || "vrd",
@@ -300,30 +315,25 @@ const VueArborescence = () => {
           chantierId: tache.chantierId || 0
         }));
         
-        // Récupérer les pilotes du lot
-        const pilotes = lot.pilotes || [];
-        
         return {
           id: lot.id || 0,
           nom: lot.nom || "Lot sans nom",
           type: lot.type || "vrd",
           chantierId: lot.chantierId || 0,
           taches: treeTaches || [],
-          pilotes: pilotes,
+          pilotes: lot.pilotes || [],
           expanded: expandedLots.includes(lot.id || 0)
         };
       });
       
       return {
-        id: chantier.id || 0,
-        nom: chantier.nom || "Chantier sans nom",
-        lots: treeLots || [],
-        expanded: expandedChantiers.includes(chantier.id || 0)
+        ...chantier,
+        lots: treeLots,
+        expanded: expandedChantiers.includes(chantier.id)
       };
     });
     
-    // Filtrer les chantiers qui n'ont pas de lots après les filtres
-    return tree.filter(chantier => chantier.lots.length > 0);
+    return tree;
   };
   
   // Squelette de chargement

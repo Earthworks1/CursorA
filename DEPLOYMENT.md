@@ -2,6 +2,9 @@
 
 Ce document décrit les étapes et les considérations importantes pour déployer l'application sur Vercel.
 
+## Important : Base de données Neon
+⚠️ L'intégration entre Vercel et Neon est automatique. Il n'est pas nécessaire de configurer manuellement les variables d'environnement de la base de données, Vercel s'en charge automatiquement lors du déploiement.
+
 ## Prérequis
 
 - Compte Vercel

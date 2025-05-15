@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 // Schémas Zod pour la validation
 export const TaskTypeSchema = z.enum([
+  'etude',
   'leve',
   'implantation',
   'recolement',
-  'etude',
   'dao',
   'autre'
 ]);
@@ -52,7 +52,7 @@ export const UserSchema = z.object({
 });
 
 // Types TypeScript inférés des schémas Zod
-export type TaskType = 'leve' | 'implantation' | 'recolement' | 'etude' | 'dao' | 'autre';
+export type TaskType = z.infer<typeof TaskTypeSchema>;
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type Site = z.infer<typeof SiteSchema>;
@@ -63,7 +63,7 @@ export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
 export type TaskUpdate = Partial<TaskInput>;
 
 // Constantes
-export const TaskTypes: TaskType[] = ['leve', 'implantation', 'recolement', 'etude', 'dao', 'autre'];
+export const TaskTypes: TaskType[] = ['etude', 'leve', 'implantation', 'recolement', 'dao', 'autre'];
 export const TaskStatuses: TaskStatus[] = ['a_planifier', 'planifie', 'en_cours', 'termine', 'annule'];
 
 export interface TaskFormData {

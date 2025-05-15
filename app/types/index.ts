@@ -1,29 +1,31 @@
 export interface Chantier {
-  id: number;
+  id: string;
   nom: string;
   description?: string;
-  adresse?: string;
-  statut: 'actif' | 'termine' | 'en_pause';
-  dateDebut: string;
-  dateFin?: string;
-  budget?: number;
-  clientId?: number;
-  responsableId?: number;
+  dateDebut: Date;
+  dateFin?: Date;
+  statut: 'EN_COURS' | 'TERMINE' | 'ANNULE';
+  piloteId: string;
+  pilote?: User;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface Tache {
-  id: number;
-  titre: string;
-  description?: string;
-  statut: 'a_faire' | 'en_cours' | 'termine' | 'en_retard';
-  priorite: 'basse' | 'moyenne' | 'haute';
-  dateDebut: string;
-  dateFin?: string;
-  chantierId: number;
-  lotId?: number;
-  piloteId?: number;
-  intervenantId?: number;
-  charge?: number;
+export interface Task {
+  id: string;
+  type: 'etude' | 'leve' | 'implantation' | 'recolement' | 'dao' | 'autre';
+  description: string;
+  startTime: Date;
+  endTime: Date;
+  status: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
+  chantierId?: string;
+  chantier?: Chantier;
+  piloteId?: string;
+  pilote?: User;
+  assignedTo?: string;
+  assignedUser?: User;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Equipe {
@@ -44,12 +46,13 @@ export interface Ressource {
 }
 
 export interface User {
-  id: number;
-  username: string;
+  id: string;
   nom: string;
   prenom: string;
   email: string;
-  role: 'admin' | 'manager' | 'utilisateur';
+  role: 'ADMIN' | 'USER';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Tag {
@@ -59,4 +62,8 @@ export interface Tag {
   description?: string;
 }
 
-export * from './schema'; 
+export * from './schema';
+
+// Types pour les filtres de tâches
+export type TaskType = 'etude' | 'leve' | 'implantation' | 'recolement' | 'dao' | 'autre';
+export type TaskStatus = 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE'; 

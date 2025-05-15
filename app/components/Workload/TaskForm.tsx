@@ -23,12 +23,13 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateForInput } from './dateHelpers';
+import { Chantier, User } from '@/types';
 
 interface TaskFormProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  taskToEdit: Partial<Task> | null;
-  onSave: (formData: TaskInput) => void;
+  taskToEdit?: Partial<Task> | null;
+  onSave: (task: Partial<Task>) => void;
 }
 
 // Schéma de validation du formulaire
@@ -40,19 +41,33 @@ const TaskFormSchema = TaskSchema.omit({
 
 type TaskFormData = z.infer<typeof TaskFormSchema>;
 
+const DEFAULT_TYPE = 'etude';
+
 const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit, onSave }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<Partial<Task>>({
+    type: DEFAULT_TYPE,
+    description: '',
+    startTime: new Date(),
+    endTime: new Date(),
+    status: 'planifie',
+  });
+
+  const [chantiers, setChantiers] = useState<Chantier[]>([]);
+  const [utilisateurs, setUtilisateurs] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<TaskFormData>({
     resolver: zodResolver(TaskFormSchema),
     defaultValues: {
       description: '',
-      type: 'leve' as TaskType,
+      type: 'etude',
       siteId: null,
       assignedUserId: null,
       startTime: null,
       endTime: null,
-      status: 'a_planifier' as TaskStatus,
+      status: 'planifie',
       notes: null,
     },
   });
@@ -74,19 +89,49 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
   useEffect(() => {
     if (taskToEdit) {
       form.reset(taskToEdit);
+      setFormData(taskToEdit);
     } else {
       form.reset({
         description: '',
-        type: 'leve',
+        type: DEFAULT_TYPE,
         siteId: null,
         assignedUserId: null,
         startTime: null,
         endTime: null,
-        status: 'a_planifier',
+        status: 'planifie',
         notes: null,
+      });
+      setFormData({
+        type: DEFAULT_TYPE,
+        description: '',
+        startTime: new Date(),
+        endTime: new Date(),
+        status: 'planifie',
       });
     }
   }, [taskToEdit, isOpen, form]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [chantiersRes, usersRes] = await Promise.all([
+          fetch('/api/chantiers'),
+          fetch('/api/utilisateurs'),
+        ]);
+        if (!chantiersRes.ok || !usersRes.ok) throw new Error('Erreur lors du chargement des données');
+        const chantiersData = await chantiersRes.json();
+        const usersData = await usersRes.json();
+        setChantiers(chantiersData);
+        setUtilisateurs(usersData);
+      } catch (err) {
+        console.error('Erreur:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const onSubmit = form.handleSubmit(async (data) => {
     // Validation supplémentaire des dates
@@ -128,6 +173,16 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
     }
   }, [startTime, form]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  if (loading) return <div>Chargement...</div>;
+
   return (
     <Dialog open={isOpen} onOpenChange={onRequestClose}>
       <DialogContent className="sm:max-w-[600px]">
@@ -151,6 +206,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
                             id="description"
                             placeholder="Description de la tâche"
                             className={form.formState.errors.description ? "border-red-500" : ""}
+                            value={formData.description}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              handleChange(e);
+                            }}
                           />
                         </FormControl>
                         {form.formState.errors.description && (
@@ -288,7 +348,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
                             id="startTime"
                             type="datetime-local"
                             value={value ? formatDateForInput(value) : ''}
-                            onChange={(e) => onChange(e.target.value ? parseISO(e.target.value) : null)}
+                            onChange={(e) => {
+                              onChange(e.target.value ? parseISO(e.target.value) : null);
+                              handleChange(e);
+                            }}
                             className={form.formState.errors.startTime ? "border-red-500" : ""}
                           />
                         </FormControl>
@@ -315,7 +378,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
                             id="endTime"
                             type="datetime-local"
                             value={value ? formatDateForInput(value) : ''}
-                            onChange={(e) => onChange(e.target.value ? parseISO(e.target.value) : null)}
+                            onChange={(e) => {
+                              onChange(e.target.value ? parseISO(e.target.value) : null);
+                              handleChange(e);
+                            }}
                             className={form.formState.errors.endTime ? "border-red-500" : ""}
                           />
                         </FormControl>
@@ -376,7 +442,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ isOpen, onRequestClose, taskToEdit,
                           <Textarea
                             {...field}
                             value={value || ''}
-                            onChange={(e) => onChange(e.target.value || null)}
+                            onChange={(e) => {
+                              onChange(e.target.value || null);
+                              handleChange(e);
+                            }}
                             placeholder="Notes optionnelles"
                           />
                         </FormControl>
