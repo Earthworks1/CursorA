@@ -2,16 +2,16 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
 import { tasks } from '../../../lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { currentUser } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET() {
   try {
-    const user = await currentUser();
-    if (!user?.id) {
+    const { userId } = auth();
+    if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const userTasks = await db.select().from(tasks).where(eq(tasks.userId, user.id));
+    const userTasks = await db.select().from(tasks).where(eq(tasks.userId, userId));
     return NextResponse.json({ tasks: userTasks });
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -21,8 +21,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const user = await currentUser();
-    if (!user?.id) {
+    const { userId } = auth();
+    if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     const newTask = await db.insert(tasks).values({
       title,
-      userId: user.id,
+      userId,
       completed: false,
     }).returning();
 
