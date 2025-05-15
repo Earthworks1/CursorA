@@ -31,10 +31,10 @@ const nextConfig = {
     // Aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(__dirname, './app'),
+      '@': path.resolve(__dirname, '.'),
       '@/components': path.resolve(__dirname, './app/components'),
-      '@/lib': path.resolve(__dirname, './app/lib'),
-      '@/types': path.resolve(__dirname, './app/types'),
+      '@/lib': path.resolve(__dirname, './lib'),
+      '@/types': path.resolve(__dirname, './lib/types'),
     };
 
     // Optimisations
