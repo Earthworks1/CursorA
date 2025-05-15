@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL_UNPOOLED!);
+const sql = neon(process.env.DATABASE_URL!);
 
 // GET: Liste tous les chantiers
 export async function GET() {
