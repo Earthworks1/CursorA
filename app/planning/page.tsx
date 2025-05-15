@@ -14,6 +14,7 @@ interface Task {
   resourceId?: string;
   type: string;
   status: string;
+  assignedTo?: string;
 }
 interface Resource {
   id: string;
@@ -24,25 +25,29 @@ interface Resource {
 const PlanningPage: React.FC = () => {
   // États pour les données (à remplacer par des hooks/API réels)
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]); // Intervenants
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Exemple de chargement de données (à remplacer par fetch/API)
     setLoading(true);
     Promise.all([
       fetch('/api/planning/tasks').then(res => res.json()),
-      fetch('/api/planning/ressources').then(res => res.json()),
-    ]).then(([tasksData, resourcesData]) => {
+      fetch('/api/users').then(res => res.json()),
+    ]).then(([tasksData, usersData]) => {
       setTasks(tasksData.map((t: any) => ({
-        ...t,
-        start: t.startTime ? new Date(t.startTime) : new Date(),
-        end: t.endTime ? new Date(t.endTime) : new Date(),
+        id: t.id?.toString() ?? '',
+        title: t.title || t.titre || '',
+        start: t.startDate ? new Date(t.startDate) : new Date(),
+        end: t.endDate ? new Date(t.endDate) : new Date(),
+        resourceId: t.assignedTo || undefined,
+        type: t.type || 'CHANTIER',
+        status: t.status || 'PLANIFIE',
+        assignedTo: t.assignedTo || undefined,
       })));
-      setResources(resourcesData.map((r: any) => ({
-        id: r.id?.toString() ?? '',
-        title: r.nom || r.title || '',
-        type: r.type || '',
+      setResources(usersData.map((u: any) => ({
+        id: u.id?.toString() ?? '',
+        title: u.name || u.nom || '',
+        type: u.role || 'user',
       })));
       setLoading(false);
     });
