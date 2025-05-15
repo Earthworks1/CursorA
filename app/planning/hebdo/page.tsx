@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar, Clock, List } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import TaskList from '@/components/planning/TaskList';
 
 // Types de base
 interface Intervenant {
@@ -432,10 +433,120 @@ export default function PlanningHebdoPage() {
   };
 
   return (
-    <TooltipProvider>
-      <div className="flex items-center justify-between mb-4 p-4">
-        <h1 className="text-2xl font-bold">Planning hebdomadaire</h1>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar avec la liste des tâches */}
+        <div className="w-80 border-r bg-gray-50 p-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Tâches à planifier</h2>
+            <Button size="sm" onClick={handleAddTask}>
+              <Plus className="w-4 h-4 mr-1" />
+              Ajouter
+            </Button>
+          </div>
+          <TaskList
+            tasks={tachesAPlanifier}
+            title="À planifier"
+            droppableId="todo-list"
+          />
+        </div>
+
+        {/* Zone principale */}
+        <div className="flex-1 overflow-auto p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">Planning hebdomadaire</h1>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Calendar className="w-4 h-4 mr-1" />
+                  Vue calendrier
+                </Button>
+                <Button variant="outline" size="sm">
+                  <List className="w-4 h-4 mr-1" />
+                  Vue liste
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Clock className="w-4 h-4 mr-1" />
+                  Vue horaire
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Grille du planning */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="grid grid-cols-[auto,repeat(5,1fr)] gap-px bg-gray-200">
+              {/* En-tête avec les jours */}
+              <div className="bg-gray-50 p-2 font-medium">Intervenants</div>
+              {weekDates.map((date, index) => (
+                <div key={date} className="bg-gray-50 p-2 font-medium">
+                  {joursSemaine[index]}
+                  <div className="text-sm text-gray-500">
+                    {new Date(date).toLocaleDateString('fr-FR')}
+                  </div>
+                </div>
+              ))}
+
+              {/* Corps de la grille */}
+              {intervenants.map((intervenant) => (
+                <React.Fragment key={intervenant.id}>
+                  <div className="bg-white p-2 border-t">
+                    {intervenant.prenom} {intervenant.nom}
+                  </div>
+                  {weekDates.map((date) => (
+                    <div key={`${intervenant.id}-${date}`} className="bg-white p-2 border-t">
+                      {heures.map((heure) => {
+                        const cellId = `cell-${intervenant.id}-${date}-${heure}`;
+                        const tasksInCell = tachesPlanifiees.filter(
+                          (t) =>
+                            t.assignedTo === intervenant.id &&
+                            t.date === date &&
+                            t.heureDebut <= heure &&
+                            t.heureFin > heure
+                        );
+
+                        return (
+                          <Droppable key={cellId} droppableId={cellId}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.droppableProps}
+                                className={`h-8 border-b border-gray-100 ${
+                                  snapshot.isDraggingOver ? 'bg-blue-50' : ''
+                                }`}
+                                onClick={() => handleCellClick(intervenant.id, date, heure)}
+                              >
+                                {tasksInCell.map((task, index) => (
+                                  <Draggable key={task.id} draggableId={task.id} index={index}>
+                                    {(provided, snapshot) => (
+                                      <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className={`p-1 text-sm rounded ${
+                                          snapshot.isDragging ? 'shadow-lg' : ''
+                                        }`}
+                                      >
+                                        {task.titre}
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                ))}
+                                {provided.placeholder}
+                              </div>
+                            )}
+                          </Droppable>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => {
@@ -450,138 +561,6 @@ export default function PlanningHebdoPage() {
         chantiers={chantiers}
         pilotes={pilotes}
       />
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex min-h-screen w-full bg-gray-50 relative flex-col md:flex-row">
-          {loading && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
-            </div>
-          )}
-          {/* Colonne To-do list */}
-          <aside className="w-full md:w-1/4 p-4 border-r bg-white min-w-[220px]">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">À planifier</h2>
-              <button
-                className="flex items-center gap-1 px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-xs shadow"
-                onClick={handleAddTask}
-                title="Ajouter une tâche"
-              >
-                <Plus className="w-4 h-4" /> Ajouter
-              </button>
-            </div>
-            <Droppable droppableId="todo-list">
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2 min-h-[100px]">
-                  {tachesAPlanifier.length === 0 && <div className="text-gray-400">Aucune tâche à planifier</div>}
-                  {tachesAPlanifier.map((tache, index) => (
-                    <Draggable key={tache.id} draggableId={tache.id} index={index}>
-                      {(provided, snapshot) => (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`bg-blue-100 border border-blue-300 rounded p-2 shadow-sm truncate ${snapshot.isDragging ? 'opacity-70' : ''}`}
-                              style={{ maxWidth: '100%' }}
-                            >
-                              {tache.titre}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{tache.titre}</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </aside>
-          {/* Colonne Planning hebdo */}
-          <main className="flex-1 p-4 overflow-x-auto">
-            <h1 className="text-2xl font-bold mb-4">Planning hebdomadaire</h1>
-            <div className="bg-white rounded shadow p-4 min-h-[500px] overflow-x-auto">
-              <table className="w-full border-collapse text-xs">
-                <thead>
-                  <tr>
-                    <th className="border p-2 bg-gray-100"></th>
-                    <th className="border p-2 bg-gray-100 text-center" colSpan={joursSemaine.length}>
-                      Semaine du {weekDates[0]} au {weekDates[weekDates.length - 1]}
-                    </th>
-                  </tr>
-                  <tr>
-                    <th className="border p-2 bg-gray-100">Intervenant / Heure</th>
-                    {joursSemaine.map((jour, idx) => (
-                      <th key={jour} className="border p-2 bg-gray-100 text-center">
-                        {jour}<br />
-                        <span className="text-xs text-gray-400">{weekDates[idx]}</span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {intervenants.map(intervenant => (
-                    <React.Fragment key={intervenant.id}>
-                      {heures.map(heure => (
-                        <tr key={heure}>
-                          {heure === 7 && (
-                            <td className="border p-2 font-semibold bg-gray-50 w-40" rowSpan={heures.length} style={{ verticalAlign: 'top' }}>
-                              {intervenant.prenom} {intervenant.nom}
-                            </td>
-                          )}
-                          {weekDates.map((date, idx) => {
-                            const droppableId = `cell-${intervenant.id}-${date}-${heure}`;
-                            // Afficher la tâche si elle commence à cette heure/date/intervenant
-                            const tache = tachesPlanifiees.find(
-                              t => t.assignedTo === intervenant.id && t.date === date && t.heureDebut === heure
-                            );
-                            return (
-                              <Droppable key={droppableId} droppableId={droppableId}>
-                                {(provided, snapshot) => (
-                                  <td
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                    className={`border min-w-[100px] h-10 align-top cursor-pointer hover:bg-gray-50 ${snapshot.isDraggingOver ? 'bg-green-50' : ''}`}
-                                    onClick={() => handleCellClick(intervenant.id, date, heure)}
-                                  >
-                                    {tache ? (
-                                      <Draggable draggableId={tache.id} index={0} key={tache.id}>
-                                        {(provided, snapshot) => (
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <div
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                                className={`bg-green-200 border border-green-400 rounded p-1 mb-1 shadow text-xs h-full flex flex-col justify-center truncate ${snapshot.isDragging ? 'opacity-70' : ''}`}
-                                                style={{ minHeight: `${(tache.heureFin - tache.heureDebut) * 40}px`, maxWidth: '100%' }}
-                                              >
-                                                <div className="font-bold truncate">{tache.titre}</div>
-                                                <div>{tache.heureDebut}h - {tache.heureFin}h</div>
-                                              </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>{tache.titre}</TooltipContent>
-                                          </Tooltip>
-                                        )}
-                                      </Draggable>
-                                    ) : null}
-                                    {provided.placeholder}
-                                  </td>
-                                )}
-                              </Droppable>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </main>
-        </div>
-      </DragDropContext>
-    </TooltipProvider>
+    </DragDropContext>
   );
 } 

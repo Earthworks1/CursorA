@@ -1,0 +1,17 @@
+{
+  "buildCommand": "pnpm run build",
+  "devCommand": "pnpm run dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "env": {
+    "SKIP_HUSKY": "1",
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "SKIP_HUSKY": "1",
+      "NODE_ENV": "production"
+    }
+  }
+} 
