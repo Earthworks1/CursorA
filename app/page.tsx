@@ -1,7 +1,11 @@
-export const dynamic = 'force-dynamic';
-import { redirect } from 'next/navigation';
+import { TodoList } from '@/components/Todo/TodoList';
 
 export default function Home() {
-  redirect('/dashboard');
-  return null;
+  return (
+    <main className="min-h-screen p-8">
+      <div className="container mx-auto">
+        <TodoList />
+      </div>
+    </main>
+  );
 } 
