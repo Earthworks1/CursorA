@@ -268,9 +268,6 @@ export default function PlanningHebdoPage() {
     setLoading(true);
     // Si on drop sur la To-do list, on "déplanifie" la tâche
     if (destination.droppableId === 'todo-list') {
-      setTaches(prev => prev.map(t =>
-        t.id === draggableId ? { ...t, assignedTo: undefined, date: '', heureDebut: 8, heureFin: 17 } : t
-      ));
       try {
         await fetch(`/api/planning/tasks`, {
           method: 'PUT',
@@ -281,6 +278,8 @@ export default function PlanningHebdoPage() {
           title: 'Tâche déplanifiée',
           description: 'La tâche a été retirée du planning.',
         });
+        // Rafraîchir la liste des tâches
+        await refreshTasks();
       } catch (e) {
         toast({
           title: 'Erreur',
@@ -294,7 +293,6 @@ export default function PlanningHebdoPage() {
     }
 
     // Sinon, on drop sur une cellule de la grille
-    // droppableId = cell-<intervenantId>-<date>-<heure>
     const match = destination.droppableId.match(/^cell-(\d+)-(\d{4}-\d{2}-\d{2})-(\d{1,2})$/);
     if (!match) {
       setLoading(false);
@@ -304,20 +302,13 @@ export default function PlanningHebdoPage() {
     const heureDebut = parseInt(heure, 10);
     const heureFin = heureDebut + 1;
 
-    setTaches(prev => prev.map(t =>
-      t.id === draggableId
-        ? { ...t, assignedTo: Number(intervenantId), date, heureDebut, heureFin }
-        : t
-    ));
-
-    // Appel API pour mettre à jour la tâche
     try {
       await fetch(`/api/planning/tasks`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: draggableId,
-          assignedTo: Number(intervenantId),
+          assignedTo: intervenantId.toString(),
           startDate: `${date}T${heureDebut.toString().padStart(2, '0')}:00:00`,
           endDate: `${date}T${heureFin.toString().padStart(2, '0')}:00:00`
         })
@@ -326,6 +317,8 @@ export default function PlanningHebdoPage() {
         title: 'Tâche planifiée',
         description: `La tâche a été planifiée pour le ${date} à ${heureDebut}h.`,
       });
+      // Rafraîchir la liste des tâches
+      await refreshTasks();
     } catch (e) {
       toast({
         title: 'Erreur',
@@ -337,25 +330,53 @@ export default function PlanningHebdoPage() {
     }
   };
 
+  // Fonction pour rafraîchir la liste des tâches
+  const refreshTasks = async () => {
+    const res = await fetch('/api/planning/tasks');
+    const data = await res.json();
+    setTaches(
+      data.map((t: any) => ({
+        id: t.id?.toString() ?? '',
+        titre: t.title || t.titre || '',
+        statut: t.status || t.statut || '',
+        assignedTo: t.assignedTo?.toString() || t.intervenant_id?.toString(),
+        date: t.startDate ? t.startDate.slice(0, 10) : '',
+        heureDebut: t.startDate ? new Date(t.startDate).getHours() : 8,
+        heureFin: t.endDate ? new Date(t.endDate).getHours() : 17,
+      }))
+    );
+  };
+
   // Ajout rapide d'une tâche (mock, à relier à l'API si besoin)
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     const titre = prompt('Titre de la nouvelle tâche :');
     if (titre && titre.trim().length > 0) {
-      setTaches(prev => [
-        ...prev,
-        {
-          id: Math.random().toString(36).slice(2),
-          titre,
-          statut: 'a_planifier',
-          date: '',
-          heureDebut: 8,
-          heureFin: 9,
-        },
-      ]);
-      toast({
-        title: 'Tâche ajoutée',
-        description: 'La tâche a été ajoutée à la To-do list.',
-      });
+      setLoading(true);
+      try {
+        await fetch('/api/planning/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: titre,
+            status: 'a_planifier',
+            startDate: null,
+            endDate: null,
+          })
+        });
+        toast({
+          title: 'Tâche ajoutée',
+          description: 'La tâche a été ajoutée à la To-do list.',
+        });
+        await refreshTasks();
+      } catch (e) {
+        toast({
+          title: 'Erreur',
+          description: 'Erreur lors de la création de la tâche',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

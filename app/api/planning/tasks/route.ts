@@ -26,11 +26,11 @@ export async function POST(request: Request) {
       id: randomUUID(),
       title,
       description,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
       status,
       priority,
-      assignedTo,
+      assignedTo: assignedTo !== undefined && assignedTo !== null ? String(assignedTo) : null,
       tags,
       dependencies,
       progress,
@@ -38,7 +38,13 @@ export async function POST(request: Request) {
       actualHours,
     }).returning();
 
-    return NextResponse.json(result[0]);
+    const task = result[0];
+    return NextResponse.json({
+      ...task,
+      assignedTo: task.assignedTo ?? null,
+      startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
+      endDate: task.endDate ? new Date(task.endDate).toISOString() : null,
+    });
   } catch (error) {
     console.error('Error creating task:', error);
     return NextResponse.json(
@@ -57,13 +63,20 @@ export async function PUT(request: Request) {
       .update(tasks)
       .set({
         ...updates,
+        assignedTo: updates.assignedTo !== undefined && updates.assignedTo !== null ? String(updates.assignedTo) : null,
         startDate: updates.startDate ? new Date(updates.startDate) : undefined,
         endDate: updates.endDate ? new Date(updates.endDate) : undefined,
       })
       .where(eq(tasks.id, id))
       .returning();
 
-    return NextResponse.json(updatedTask[0]);
+    const task = updatedTask[0];
+    return NextResponse.json({
+      ...task,
+      assignedTo: task.assignedTo ?? null,
+      startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
+      endDate: task.endDate ? new Date(task.endDate).toISOString() : null,
+    });
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json(
