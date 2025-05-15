@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL_UNPOOLED!);
 // GET: Liste tous les chantiers
 export async function GET() {
   try {
-    const chantiers = await sql`SELECT * FROM chantiers ORDER BY date_creation DESC`;
+    const chantiers = await sql`SELECT * FROM chantiers ORDER BY created_at DESC`;
     return NextResponse.json(chantiers);
   } catch (error: unknown) {
     console.error('Erreur lors de la récupération des chantiers:', error);

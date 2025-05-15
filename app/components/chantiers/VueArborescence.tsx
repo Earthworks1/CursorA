@@ -287,7 +287,7 @@ const VueArborescence = () => {
   
   // Construction de l'arborescence
   const buildTree = () => {
-    if (!chantiers || !Array.isArray(chantiers)) return [];
+    if (!Array.isArray(chantiers)) return [];
     if (!Array.isArray(lots)) return [];
     if (!Array.isArray(taches)) return [];
     
@@ -336,7 +336,16 @@ const VueArborescence = () => {
     return tree;
   };
   
-  // Squelette de chargement
+  // Gestion des erreurs de chargement ou de format
+  if (!Array.isArray(chantiers)) {
+    return (
+      <div className="text-center p-8 border rounded-md text-red-600">
+        Erreur lors du chargement des chantiers : le serveur n'a pas retourné de liste valide.<br />
+        Merci de réessayer plus tard ou de contacter l'administrateur.<br />
+        <span className="text-xs text-gray-400">(Vérifiez la configuration de la base de données et les logs serveur)</span>
+      </div>
+    );
+  }
   if (isLoadingChantiers || isLoadingLots || isLoadingTaches) {
     return (
       <div className="space-y-2">
