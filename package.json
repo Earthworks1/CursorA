@@ -12,7 +12,6 @@
     "db:studio": "drizzle-kit studio",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepare": "if not defined SKIP_HUSKY (husky install)",
     "check-deploy": "node scripts/check-deploy.js"
   },
   "dependencies": {
