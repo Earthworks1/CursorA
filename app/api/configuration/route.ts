@@ -11,6 +11,10 @@ export async function GET() {
     }
     return NextResponse.json(config);
   } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json({});
+    }
     console.error('Erreur lors de la lecture de la configuration:', error);
     return NextResponse.json({ error: 'Erreur lors de la lecture de la configuration' }, { status: 500 });
   }

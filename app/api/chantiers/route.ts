@@ -9,6 +9,10 @@ export async function GET() {
     const chantiers = await sql`SELECT * FROM chantiers ORDER BY created_at DESC`;
     return NextResponse.json(chantiers);
   } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json([]);
+    }
     console.error('Erreur lors de la récupération des chantiers:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération des chantiers' }, { status: 500 });
   }

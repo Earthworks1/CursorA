@@ -48,8 +48,8 @@ interface CalendarEvent {
 
 export default function WorkloadCalendar({
   tasks,
-  onSelectEvent,
-  onSelectSlot,
+  onSelectEvent, 
+  onSelectSlot, 
   onTaskSelect,
   className,
 }: WorkloadCalendarProps) {
@@ -252,9 +252,9 @@ export default function WorkloadCalendar({
       />
 
       <div className="flex-1 min-h-[500px] md:min-h-[calc(100vh-300px)]">
-        <Calendar
-          localizer={localizer}
-          events={events}
+      <Calendar
+        localizer={localizer}
+        events={events}
           resources={resources}
           resourceIdAccessor="id"
           resourceTitleAccessor="title"
@@ -263,9 +263,9 @@ export default function WorkloadCalendar({
           view={view}
           onView={setView}
           onNavigate={handleNavigate}
-          onSelectEvent={onSelectEvent}
-          onSelectSlot={onSelectSlot}
-          selectable
+        onSelectEvent={onSelectEvent}
+        onSelectSlot={onSelectSlot}
+        selectable
           popup
           eventPropGetter={eventStyleGetter}
           messages={{
@@ -282,11 +282,11 @@ export default function WorkloadCalendar({
             noEventsInRange: "Aucun événement sur cette période",
             showMore: (total: number) => `+ ${total} événements`,
           }}
-          components={{
+        components={{
             toolbar: CustomToolbar,
-          }}
+        }}
           className="h-full"
-        />
+      />
       </div>
     </div>
   );

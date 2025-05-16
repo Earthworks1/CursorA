@@ -9,6 +9,10 @@ export async function GET() {
     const ressources = await sql`SELECT * FROM ressources ORDER BY nom`;
     return NextResponse.json(ressources);
   } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json([]);
+    }
     console.error('Erreur lors de la récupération des ressources:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération des ressources' }, { status: 500 });
   }

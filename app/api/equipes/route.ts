@@ -9,6 +9,10 @@ export async function GET() {
     const equipes = await sql`SELECT * FROM equipes ORDER BY nom`;
     return NextResponse.json(equipes);
   } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json([]);
+    }
     console.error('Erreur lors de la récupération des équipes:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération des équipes' }, { status: 500 });
   }

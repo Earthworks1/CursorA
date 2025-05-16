@@ -11,6 +11,10 @@ export async function GET() {
     }
     return NextResponse.json({ status: 'error', db: false }, { status: 500 });
   } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json({ status: 'ok', db: false });
+    }
     return NextResponse.json({ status: 'error', db: false, error: String(error) }, { status: 500 });
   }
 } 

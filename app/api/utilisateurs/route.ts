@@ -9,6 +9,10 @@ export async function GET() {
     const utilisateurs = await sql`SELECT * FROM utilisateurs ORDER BY nom`;
     return NextResponse.json(utilisateurs);
   } catch (error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      // En dev/local, on tolère l'absence de base et on retourne un mock
+      return NextResponse.json([]);
+    }
     console.error('Erreur lors de la récupération des utilisateurs:', error);
     return NextResponse.json({ error: 'Erreur lors de la récupération des utilisateurs' }, { status: 500 });
   }
