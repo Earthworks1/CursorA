@@ -1,13 +1,13 @@
-import type { Config } from 'drizzle-kit';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+import type { Config } from "drizzle-kit";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 export default {
-  schema: './lib/db/schema.ts',
-  out: './drizzle',
-  driver: 'pg',
+  schema: "./app/lib/schema.ts",
+  out: "./drizzle/migrations",
+  driver: "pglite",
+  dialect: "postgresql",
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL!,
   },
-  dialect: 'postgresql',
 } satisfies Config;

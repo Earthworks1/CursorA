@@ -1,25 +1,21 @@
-import { pgTable, text, timestamp, integer, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, jsonb, varchar } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const tasks = pgTable('tasks', {
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
-  status: text('status', { enum: ['todo', 'in_progress', 'done'] }).notNull().default('todo'),
-  priority: text('priority', { enum: ['low', 'medium', 'high'] }).notNull().default('medium'),
-  assignedTo: text('assigned_to'),
-  tags: jsonb('tags').$type<string[]>(),
-  dependencies: jsonb('dependencies').$type<string[]>(),
-  progress: integer('progress'),
-  estimatedHours: integer('estimated_hours'),
-  actualHours: integer('actual_hours'),
+  start: timestamp('start').notNull(),
+  end: timestamp('end').notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
+  status: varchar('status', { length: 50 }).notNull(),
+  resourceId: text('resource_id').references(() => resources.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const users = pgTable('users', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name').notNull(),
   email: text('email').notNull(),
   role: text('role', { enum: ['admin', 'user', 'manager'] }).notNull().default('user'),
@@ -28,7 +24,7 @@ export const users = pgTable('users', {
 });
 
 export const teams = pgTable('teams', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name').notNull(),
   members: jsonb('members').$type<string[]>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -36,7 +32,7 @@ export const teams = pgTable('teams', {
 });
 
 export const projects = pgTable('projects', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name').notNull(),
   description: text('description'),
   startDate: timestamp('start_date').notNull(),
@@ -47,9 +43,9 @@ export const projects = pgTable('projects', {
 });
 
 export const resources = pgTable('resources', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  type: text('type').notNull(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar('title', { length: 255 }).notNull(),
+  type: varchar('type', { length: 50 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }); 

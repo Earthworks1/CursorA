@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 // GET: Liste toutes les tâches
 export async function GET() {
   try {
-    const taches = await sql`SELECT * FROM taches ORDER BY date_creation DESC`;
+    const taches = await sql`SELECT * FROM taches ORDER BY created_at DESC`;
     return NextResponse.json(taches);
   } catch (error: unknown) {
     console.error('Erreur lors de la récupération des tâches:', error);

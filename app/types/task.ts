@@ -35,4 +35,17 @@ export type Task = z.infer<typeof TaskSchema>;
 
 // Constantes pour faciliter l'utilisation
 export const TASK_TYPES: TaskType[] = ['etude', 'leve', 'implantation', 'recolement', 'dao'];
-export const TASK_STATUSES: TaskStatus[] = ['PLANIFIE', 'EN_COURS', 'TERMINE', 'ANNULE']; 
+export const TASK_STATUSES: TaskStatus[] = ['PLANIFIE', 'EN_COURS', 'TERMINE', 'ANNULE'];
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  start: Date;
+  end: Date;
+  type: 'CHANTIER' | 'FORMATION' | 'REUNION' | 'AUTRE';
+  status: 'PLANIFIE' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
+  resourceId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+} 
