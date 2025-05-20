@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tasks } from '@/lib/schema';
+import { tasks } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
@@ -20,30 +20,23 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, startDate, endDate, status, priority, assignedTo, tags, dependencies, progress, estimatedHours, actualHours } = body;
+    const { title, description, startDate, endDate, type, status, resourceId } = body;
 
     const result = await db.insert(tasks).values({
-      id: randomUUID(),
       title,
       description,
-      startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null,
+      start: new Date(startDate),
+      end: new Date(endDate),
+      type,
       status,
-      priority,
-      assignedTo: assignedTo !== undefined && assignedTo !== null ? String(assignedTo) : null,
-      tags,
-      dependencies,
-      progress,
-      estimatedHours,
-      actualHours,
+      resourceId: resourceId || null,
     }).returning();
 
     const task = result[0];
     return NextResponse.json({
       ...task,
-      assignedTo: task.assignedTo ?? null,
-      startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
-      endDate: task.endDate ? new Date(task.endDate).toISOString() : null,
+      start: task.start.toISOString(),
+      end: task.end.toISOString(),
     });
   } catch (error) {
     console.error('Error creating task:', error);
@@ -63,9 +56,8 @@ export async function PUT(request: Request) {
       .update(tasks)
       .set({
         ...updates,
-        assignedTo: updates.assignedTo !== undefined && updates.assignedTo !== null ? String(updates.assignedTo) : null,
-        startDate: updates.startDate ? new Date(updates.startDate) : undefined,
-        endDate: updates.endDate ? new Date(updates.endDate) : undefined,
+        start: updates.startDate ? new Date(updates.startDate) : undefined,
+        end: updates.endDate ? new Date(updates.endDate) : undefined,
       })
       .where(eq(tasks.id, id))
       .returning();
@@ -73,9 +65,8 @@ export async function PUT(request: Request) {
     const task = updatedTask[0];
     return NextResponse.json({
       ...task,
-      assignedTo: task.assignedTo ?? null,
-      startDate: task.startDate ? new Date(task.startDate).toISOString() : null,
-      endDate: task.endDate ? new Date(task.endDate).toISOString() : null,
+      start: task.start.toISOString(),
+      end: task.end.toISOString(),
     });
   } catch (error) {
     console.error('Error updating task:', error);
