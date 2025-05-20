@@ -9,6 +9,35 @@
   - Correction de la configuration des credentials (utilisation de `url` au lieu de `connectionString`)
   - Mise à jour du schéma de la base de données pour utiliser `gen_random_uuid()` pour les IDs
 
+### Mise à jour des composants client
+- Ajout de la directive "use client" aux composants suivants :
+  - `Gantt.tsx` - Utilise useState et useRef
+  - `Heatmap.tsx` - Utilise useState, useEffect et useCallback
+  - `hover-card.tsx` - Utilise des composants Radix UI
+  - `toggle.tsx` - Utilise des composants Radix UI
+  - `table.tsx` - Utilise des refs React
+# Changelog
+
+## [Non publié]
+
+### Configuration de la base de données
+- Configuration initiale de Drizzle ORM avec PostgreSQL
+- Correction des problèmes de configuration :
+  - Modification du driver de "pg" à "pglite"
+  - Correction de la configuration des credentials (utilisation de `url` au lieu de `connectionString`)
+  - Mise à jour du schéma de la base de données pour utiliser `gen_random_uuid()` pour les IDs
+
+### Mise à jour des composants client
+- Ajout de la directive "use client" aux composants suivants :
+  - `Gantt.tsx` - Utilise useState et useRef
+  - `Heatmap.tsx` - Utilise useState, useEffect et useCallback
+  - `hover-card.tsx` - Utilise des composants Radix UI
+  - `toggle.tsx` - Utilise des composants Radix UI
+  - `table.tsx` - Utilise des refs React
+  - `toggle-group.tsx` - Utilise des composants Radix UI
+- Vérification complète de tous les composants utilisant des hooks React ou des APIs navigateur
+- Résolution des problèmes de build liés aux composants serveur
+
 ### Schéma de la base de données
 - Création des tables principales :
   - `tasks` : Gestion des tâches avec champs pour le titre, description, dates, type et statut

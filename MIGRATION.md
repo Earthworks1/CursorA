@@ -24,6 +24,8 @@
 - Configuration Vercel mise à jour
 - Nettoyage des fichiers obsolètes
 - Structure de base de données établie
+- Ajout de la directive "use client" à tous les composants nécessaires
+- Résolution des problèmes de build liés aux composants serveur
 
 #### ⏳ En Cours
 - Déploiement automatique via GitHub

@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense, lazy, ComponentType } from "react";
 
 interface DynamicProps {

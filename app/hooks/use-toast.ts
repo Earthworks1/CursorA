@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback } from 'react';
 
 // Simple hook toast (remplace une vraie lib comme sonner ou react-hot-toast)
