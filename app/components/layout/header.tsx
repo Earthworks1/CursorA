@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Bell, Mail, Search, Menu, X, UserCircle2, Calendar, Settings, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
