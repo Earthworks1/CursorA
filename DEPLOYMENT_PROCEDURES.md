@@ -33,52 +33,64 @@ npm run check-deploy
   - Assets statiques mis en cache automatiquement
   - Headers Cache-Control configurés
   - Images optimisées via next/image
+  - Mise en cache des requêtes API avec React Query
 
 - **Sécurité** :
   - Headers de sécurité configurés
   - CORS correctement paramétré
   - Protection XSS activée
+  - Variables d'environnement sécurisées
 
 - **Performance** :
   - Code splitting automatique
   - Tree shaking activé
   - Compression des assets
+  - Optimisation des images
+  - Mise en cache des données
 
 ### 4. Variables d'Environnement
-- Configurer dans l'interface Vercel :
+- Gérées automatiquement par Vercel :
   - NEXTAUTH_URL
   - NEXTAUTH_SECRET
   - Autres variables selon .env.example
+  - Intégration Neon automatique
 
 ### 5. Base de Données
 - L'intégration Neon est automatique
 - Pas besoin de configuration manuelle
 - Les migrations sont appliquées automatiquement
+- Les connexions sont optimisées
 
 ### 6. Surveillance
 - Vérifier les logs Vercel après déploiement
 - Surveiller les métriques de performance
 - Configurer les alertes si nécessaire
+- Suivre les erreurs en temps réel
 
 ### 7. Résolution des Problèmes
 1. **Erreurs de Build** :
    - Vérifier les logs Vercel
    - Exécuter `npm run check-deploy` localement
    - S'assurer que tous les tests passent
+   - Vérifier la configuration Next.js
 
 2. **Problèmes de Base de Données** :
    - Vérifier l'intégration Neon dans Vercel
    - Vérifier les migrations
+   - Contrôler les connexions
+   - Surveiller les performances
 
 3. **Problèmes de Performance** :
    - Utiliser l'outil Analytics de Vercel
    - Vérifier les métriques Web Vitals
    - Optimiser selon les recommandations
+   - Mettre en cache les données fréquentes
 
 ### 8. Maintenance
 - Mettre à jour les dépendances régulièrement
 - Vérifier les vulnérabilités avec `npm audit`
 - Maintenir la documentation à jour
+- Optimiser les performances
 
 ### 9. Hooks Husky
 Le projet utilise Husky pour vérifier la qualité du code avant chaque push :
@@ -110,13 +122,16 @@ Le projet utilise Husky pour vérifier la qualité du code avant chaque push :
    - Tester localement
    - Vérifier les changements avec `git status`
    - S'assurer que les tests passent
+   - Vérifier la configuration Next.js
 
 2. **Messages de commit** :
    - Utiliser des messages clairs et descriptifs
    - Suivre les conventions de commit
    - Inclure le numéro de ticket si applicable
+   - Documenter les changements importants
 
 3. **En cas d'erreur** :
    - Vérifier les logs Vercel
    - Consulter le build status sur GitHub
-   - Corriger les erreurs avant de re-pusher 
+   - Corriger les erreurs avant de re-pusher
+   - Mettre à jour la documentation 

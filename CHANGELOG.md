@@ -81,4 +81,32 @@
 
 ### Procédure
 - Redémarrage du serveur de développement pour valider la correction.
-- Prêt pour déploiement via GitHub (Vercel gère l'intégration Neon automatiquement). 
+- Prêt pour déploiement via GitHub (Vercel gère l'intégration Neon automatiquement).
+
+## [Correction 2025-04-24]
+
+### Optimisation de la configuration Next.js
+- Suppression du fichier `next.config.js` redondant
+- Utilisation exclusive de `next.config.mjs` avec configuration optimisée :
+  - Configuration des images avec support des formats avancés
+  - Optimisation du webpack avec aliases correctement configurés
+  - Support des packages nécessitant une transpilation
+  - Configuration du cache en développement
+
+### Correction des erreurs de build
+- Résolution des problèmes d'import du schéma de base de données
+- Correction des chemins d'alias pour les imports
+- Optimisation de la configuration webpack pour une meilleure résolution des modules
+
+### Déploiement
+- Push des modifications vers GitHub
+- Déclenchement automatique du déploiement sur Vercel
+- Intégration automatique avec Neon Database maintenue 
+
+## [Correction 2025-05-21]
+
+### Alignement schéma Drizzle/Neon
+- Correction du schéma Drizzle pour utiliser les colonnes `start_time` et `end_time` au lieu de `start` et `end` dans la table `tasks`.
+- Migration automatique appliquée à la base Neon via Drizzle Kit (`npx drizzle-kit push:pg`).
+- Correction du bug 500 sur `/api/tasks` en production (Vercel) dû à la colonne manquante.
+- Déploiement automatique déclenché sur Vercel après push GitHub. 
