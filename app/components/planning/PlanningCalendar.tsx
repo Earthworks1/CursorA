@@ -93,7 +93,8 @@ const PlanningCalendar: React.FC<PlanningCalendarProps> = ({
   onSelectSlot,
 }) => {
   return (
-    <div className="h-[calc(100vh-12rem)]">
+    // Adjusted height for better mobile responsiveness
+    <div className="h-[70vh] sm:h-[calc(100vh-12rem)]"> 
       <Calendar
         localizer={localizer}
         events={events}
