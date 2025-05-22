@@ -47,44 +47,11 @@ const PlanCharge: React.FC = () => {
   const { data: charges, isLoading } = useQuery<Charge[]>({
     queryKey: ['charges', format(currentDate, 'yyyy-MM')],
     queryFn: async () => {
-      // Utilisez des données de test au lieu d'appeler l'API
-      // const response = await fetch(`/api/charges?month=${format(currentDate, 'yyyy-MM')}`);
-      // if (!response.ok) {
-      //   throw new Error('Erreur lors de la récupération des charges');
-      // }
-      // return response.json();
-      
-      // Données de test
-      return [
-        {
-          id: 1,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          ressourceId: 1,
-          ressource: { id: 1, nom: 'Excavatrice CAT 330', type: 'equipement' },
-          tacheId: 1,
-          tache: { id: 1, titre: 'Terrassement', statut: 'en_cours' },
-          heures: 6,
-          commentaire: 'Travaux sur le secteur nord',
-        },
-        {
-          id: 2,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          ressourceId: 2,
-          ressource: { id: 2, nom: 'Jean Dupont', type: 'personnel' },
-          tacheId: 1,
-          tache: { id: 1, titre: 'Terrassement', statut: 'en_cours' },
-          heures: 8,
-        },
-        {
-          id: 3,
-          date: format(addMonths(new Date(), 0), 'yyyy-MM-dd'),
-          ressourceId: 1,
-          ressource: { id: 1, nom: 'Excavatrice CAT 330', type: 'equipement' },
-          tacheId: 2,
-          tache: { id: 2, titre: 'Installation de tuyaux', statut: 'a_faire' },
-          heures: 4,
-        }
-      ];
+      const response = await fetch(`/api/charges?month=${format(currentDate, 'yyyy-MM')}`);
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des charges');
+      }
+      return response.json();
     },
   });
 
@@ -92,19 +59,11 @@ const PlanCharge: React.FC = () => {
   const { data: ressources } = useQuery<{ id: number; nom: string; type: string }[]>({
     queryKey: ['ressources'],
     queryFn: async () => {
-      // Utilisez des données de test au lieu d'appeler l'API
-      // const response = await fetch('/api/ressources');
-      // if (!response.ok) {
-      //   throw new Error('Erreur lors de la récupération des ressources');
-      // }
-      // return response.json();
-      
-      // Données de test
-      return [
-        { id: 1, nom: 'Excavatrice CAT 330', type: 'equipement' },
-        { id: 2, nom: 'Jean Dupont', type: 'personnel' },
-        { id: 3, nom: 'Camion benne MAN', type: 'vehicule' },
-      ];
+      const response = await fetch('/api/ressources');
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des ressources');
+      }
+      return response.json();
     },
   });
 

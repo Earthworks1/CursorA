@@ -13,8 +13,8 @@ interface Task {
   id: string;
   title: string;
   description?: string;
-  startTime: string;
-  endTime: string;
+  startTime: Date;
+  endTime: Date;
   status: string;
   priority?: string;
   assignedTo?: string;
@@ -37,9 +37,17 @@ interface User {
   role: string;
 }
 
+// Interface pour les ressources du calendrier, compatible avec PlanningCalendar
+interface Resource {
+  id: string;
+  title: string;
+  type: 'EMPLOYE' | 'MATERIEL' | 'VEHICULE';
+}
+
 const PlanningPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]); // Garder pour d'autres usages potentiels
+  const [calendarResources, setCalendarResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [startDate] = useState<Date>(() => {
@@ -72,8 +80,21 @@ const PlanningPage = () => {
           usersRes.json()
         ]);
 
-        setTasks(tasksData);
-        setUsers(usersData);
+        const transformedTasks = tasksData.map((task: Task) => ({
+          ...task,
+          startTime: new Date(task.startTime),
+          endTime: new Date(task.endTime),
+        }));
+        setTasks(transformedTasks);
+        setUsers(usersData); // Conserver l'état original des utilisateurs si nécessaire ailleurs
+
+        // Transformer usersData en calendarResources
+        const resources: Resource[] = usersData.map((user: User) => ({
+          id: user.id,
+          title: `${user.prenom} ${user.nom}`,
+          type: 'EMPLOYE' as 'EMPLOYE', // Type par défaut
+        }));
+        setCalendarResources(resources);
       } catch (error) {
         toast({
           title: 'Erreur',
@@ -138,7 +159,7 @@ const PlanningPage = () => {
         </TabsList>
 
         <TabsContent value="hebdo">
-          <PlanningCalendar tasks={tasks} users={users} />
+          <PlanningCalendar tasks={tasks} resources={calendarResources} />
         </TabsContent>
 
         <TabsContent value="gantt">
