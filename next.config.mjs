@@ -20,7 +20,7 @@ const nextConfig = {
 
   // Gestion des erreurs TypeScript et ESLint
   typescript: {
-    ignoreBuildErrors: true, // Géré dans le CI
+    ignoreBuildErrors: false, // Géré dans le CI
   },
   eslint: {
     ignoreDuringBuilds: true, // Géré dans le CI

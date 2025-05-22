@@ -1,25 +1,27 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic'; // Importation pour le chargement dynamique
-import { useDrop } from 'react-dnd'; // useDrop est toujours utilisé ici
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import PlanningCalendar from '@/components/planning/PlanningCalendar';
+import dynamic from 'next/dynamic';
+// useDrop n'est plus utilisé directement ici, il est dans PlanningInteractiveArea
 import UnplannedTaskList from '@/components/planning/UnplannedTaskList';
-import Gantt from '@/components/Gantt';
-import Heatmap from '@/components/Heatmap';
-import PlanCharge from '@/components/planning/PlanCharge';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Import Dialog components
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CreateTaskForm from '@/components/planning/CreateTaskForm';
+import PlanningInteractiveArea from '@/components/planning/PlanningInteractiveArea'; // Importation du nouveau composant
 
 // Charger dynamiquement le DndProvider côté client uniquement
 const PlanningClientDndProvider = dynamic(() => import('@/components/planning/PlanningClientDndProvider'), {
   ssr: false,
 });
 
+// Les imports de Tabs, PlanningCalendar, Gantt, Heatmap, PlanCharge sont maintenant gérés
+// à l'intérieur de PlanningInteractiveArea si ce dernier les utilise directement,
+// ou ils restent ici si PlanningInteractiveArea les reçoit en tant que children (ce qui n'est pas le cas ici).
+// Pour ce refactoring, PlanningInteractiveArea rend ces composants, donc ils n'ont plus besoin d'être importés ici.
+// Cependant, les types Task, User, Resource sont toujours nécessaires.
+
 // Types pour la gestion multi-utilisateur
-interface Task {
+export interface Task { // Ajout de export
   id: string;
   title: string;
   description?: string;
@@ -40,7 +42,7 @@ interface Task {
   };
 }
 
-interface User {
+export interface User { // Ajout de export
   id: string;
   nom: string;
   prenom: string;
@@ -48,7 +50,7 @@ interface User {
 }
 
 // Interface pour les ressources du calendrier, compatible avec PlanningCalendar
-interface Resource {
+export interface Resource { // Ajout de export
   id: string;
   title: string;
   type: 'EMPLOYE' | 'MATERIEL' | 'VEHICULE';
@@ -229,21 +231,8 @@ const PlanningPage = () => {
     console.log('Tâches du', date, ':', tasksOnDate);
   };
 
-  // Logique de drop pour les tâches non planifiées sur le calendrier
-  const [{ isOver }, dropRef] = useDrop(() => ({
-    accept: 'UNPLANNED_TASK',
-    drop: (item: { task: Task }, monitor) => {
-      // L'item.task est la tâche de UnplannedTaskList
-      // Le drop direct ici ne donne pas la date/heure du calendrier.
-      // On va stocker l'item et attendre onSelectSlot.
-      console.log('Dropped item on calendar area:', item.task);
-      setDraggedUnplannedItem(item.task);
-      // Idéalement, onSelectSlot se déclenche juste après si le drop est sur un slot.
-    },
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(), // Pour feedback visuel si besoin (ex: changer le bg)
-    }),
-  }));
+  // La logique de useDrop a été déplacée dans PlanningInteractiveArea.
+  // L'état isOver n'est plus nécessaire ici.
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date; resourceId?: string }) => {
     if (draggedUnplannedItem) {
@@ -351,53 +340,27 @@ const PlanningPage = () => {
   }
 
   return (
-    <PlanningClientDndProvider> {/* Utilisation du wrapper dynamique */}
+    <PlanningClientDndProvider>
       <div className="container mx-auto p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="lg:w-1/3 xl:w-1/4 p-2 border rounded-lg shadow-sm bg-white dark:bg-gray-800">
             <UnplannedTaskList tasks={unplannedTasks} />
           </div>
-          <div className="flex-1" ref={dropRef} style={{ backgroundColor: isOver ? 'rgba(0,255,0,0.1)' : 'transparent' }}>
-            <Tabs defaultValue="hebdo" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-8"> {/* Responsive TabsList & gap */}
-                <TabsTrigger value="hebdo">Vue Hebdomadaire</TabsTrigger>
-                <TabsTrigger value="gantt">Vue Gantt</TabsTrigger>
-                <TabsTrigger value="heatmap">Vue Heatmap</TabsTrigger>
-                <TabsTrigger value="charge">Plan de charge</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="hebdo">
-                <PlanningCalendar 
-                  tasks={tasks} 
-                  resources={calendarResources} 
-                  onEventDrop={handleCalendarEventMove} // Modifié pour la nouvelle fonction de déplacement interne
-                  onEventResize={handleCalendarEventResize} // Ajout du handler pour le redimensionnement
-                  onSelectSlot={handleSelectSlot} 
-                />
-              </TabsContent>
-
-              <TabsContent value="gantt">
-                <Gantt
-                  tasks={tasks} // tasks est déjà un tableau de Task[]
-                  onTaskMove={handleTaskMove} // Conserver pour le Gantt
-                />
-              </TabsContent>
-
-              <TabsContent value="heatmap">
-                <Heatmap
-                  tasks={tasks}
-                  startDate={startDate}
-                  endDate={endDate}
-                  onCellClick={handleCellClick} 
-                  // Si Heatmap doit aussi être une zone de drop, etc.
-                />
-              </TabsContent>
-
-              <TabsContent value="charge">
-                <PlanCharge tasks={tasks} users={users} />
-              </TabsContent>
-            </Tabs>
-          </div>
+          {/* PlanningInteractiveArea remplace l'ancienne div avec dropRef et Tabs */}
+          <PlanningInteractiveArea
+            tasks={tasks}
+            calendarResources={calendarResources}
+            users={users} // Pour PlanCharge à l'intérieur de PlanningInteractiveArea
+            startDate={startDate} // Pour Heatmap
+            endDate={endDate} // Pour Heatmap
+            setDraggedUnplannedItem={setDraggedUnplannedItem} // Nécessaire pour la logique de drop externe
+            // Callbacks
+            handleCalendarEventMove={handleCalendarEventMove}
+            handleCalendarEventResize={handleCalendarEventResize}
+            handleSelectSlot={handleSelectSlot}
+            handleTaskMove={handleTaskMove} // Pour Gantt
+            handleCellClick={handleCellClick} // Pour Heatmap
+          />
         </div>
       </div>
 
