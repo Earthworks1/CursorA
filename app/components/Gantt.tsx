@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { DndProvider, useDrag } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDrag } from 'react-dnd'; // DndProvider and HTML5Backend removed
 import { Task } from '../types';
 
 interface GanttProps {
@@ -84,10 +83,10 @@ export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="gantt-container" ref={containerRef}>
-        <div className="gantt-header">
-          <div className="scale-controls">
+    // DndProvider wrapper removed here
+    <div className="gantt-container" ref={containerRef}>
+      <div className="gantt-header">
+        <div className="scale-controls">
             <button onClick={() => handleZoom()}>Jour</button>
             <button onClick={() => handleZoom()}>Semaine</button>
             <button onClick={() => handleZoom()}>Mois</button>
@@ -128,7 +127,7 @@ export const Gantt: React.FC<GanttProps> = ({ tasks }) => {
           </div>
         )}
       </div>
-    </DndProvider>
+    // DndProvider wrapper removed here
   );
 };
 

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { DndProvider, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import dynamic from 'next/dynamic'; // Importation pour le chargement dynamique
+import { useDrop } from 'react-dnd'; // useDrop est toujours utilisé ici
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import PlanningCalendar from '@/components/planning/PlanningCalendar';
 import UnplannedTaskList from '@/components/planning/UnplannedTaskList';
@@ -11,7 +11,12 @@ import Heatmap from '@/components/Heatmap';
 import PlanCharge from '@/components/planning/PlanCharge';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'; // Import Dialog components
-import CreateTaskForm from '@/components/planning/CreateTaskForm'; // Import CreateTaskForm
+import CreateTaskForm from '@/components/planning/CreateTaskForm';
+
+// Charger dynamiquement le DndProvider côté client uniquement
+const PlanningClientDndProvider = dynamic(() => import('@/components/planning/PlanningClientDndProvider'), {
+  ssr: false,
+});
 
 // Types pour la gestion multi-utilisateur
 interface Task {
@@ -346,7 +351,7 @@ const PlanningPage = () => {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <PlanningClientDndProvider> {/* Utilisation du wrapper dynamique */}
       <div className="container mx-auto p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="lg:w-1/3 xl:w-1/4 p-2 border rounded-lg shadow-sm bg-white dark:bg-gray-800">
@@ -414,7 +419,7 @@ const PlanningPage = () => {
           </DialogContent>
         </Dialog>
       )}
-    </DndProvider>
+    </PlanningClientDndProvider>
   );
 };
 
