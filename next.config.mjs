@@ -20,10 +20,10 @@ const nextConfig = {
 
   // Gestion des erreurs TypeScript et ESLint
   typescript: {
-    ignoreBuildErrors: true, // Géré dans le CI
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true, // Géré dans le CI
+    ignoreDuringBuilds: false,
   },
 
   // Configuration webpack avec aliases et optimisations
@@ -33,8 +33,8 @@ const nextConfig = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, '.'),
       '@/components': path.resolve(__dirname, './app/components'),
-      '@/lib': path.resolve(__dirname, './lib'),
-      '@/types': path.resolve(__dirname, './lib/types'),
+      '@/lib': path.resolve(__dirname, './app/lib'),
+      '@/types': path.resolve(__dirname, './app/types'),
     };
 
     // Optimisations

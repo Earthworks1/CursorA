@@ -1,6 +1,6 @@
 'use client';
 
-import { Task } from '@/lib/types';
+import { Task } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -16,15 +16,15 @@ export function TodoItem({ task, onToggleComplete, onDelete }: TodoItemProps) {
     <div className="flex items-center justify-between p-4 border-b">
       <div className="flex items-center space-x-3">
         <Checkbox
-          checked={task.completed}
+          checked={task.status === 'TERMINE'}
           onCheckedChange={() => onToggleComplete(task.id)}
           id={`task-${task.id}`}
         />
         <label
           htmlFor={`task-${task.id}`}
-          className={`text-sm ${task.completed ? 'line-through text-gray-500' : ''}`}
+          className={`text-sm ${task.status === 'TERMINE' ? 'line-through text-gray-500' : ''}`}
         >
-          {task.title}
+          {task.description}
         </label>
       </div>
       <Button

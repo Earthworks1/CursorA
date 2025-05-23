@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { tasks } from '@/lib/db/schema';
+import { tasks } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 

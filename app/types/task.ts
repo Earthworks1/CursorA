@@ -37,7 +37,7 @@ export type Task = z.infer<typeof TaskSchema>;
 export const TASK_TYPES: TaskType[] = ['etude', 'leve', 'implantation', 'recolement', 'dao'];
 export const TASK_STATUSES: TaskStatus[] = ['PLANIFIE', 'EN_COURS', 'TERMINE', 'ANNULE'];
 
-export interface Task {
+export interface CalendarTaskEvent {
   id: string;
   title: string;
   description?: string;

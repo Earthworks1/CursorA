@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Task } from '@/lib/types';
+import { Task } from '@/types';
 import { TodoItem } from './TodoItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 
 export function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDescription, setNewTaskDescription] = useState('');
 
   useEffect(() => {
     // Charger les tâches depuis l'API
@@ -28,19 +28,19 @@ export function TodoList() {
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim()) return;
+    if (!newTaskDescription.trim()) return;
 
     try {
       const response = await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTaskTitle }),
+        body: JSON.stringify({ description: newTaskDescription, status: 'PLANIFIE' }), // Assuming new tasks are 'PLANIFIE'
       });
 
       if (response.ok) {
         const newTask = await response.json();
         setTasks([...tasks, newTask]);
-        setNewTaskTitle('');
+        setNewTaskDescription('');
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout de la tâche:', error);
@@ -52,15 +52,20 @@ export function TodoList() {
       const task = tasks.find(t => t.id === taskId);
       if (!task) return;
 
+      // Determine the new status: if it's 'TERMINE', change to 'PLANIFIE', otherwise 'TERMINE'
+      // This assumes 'PLANIFIE' is the default non-completed active state.
+      // Adjust if other statuses like 'EN_COURS' should be the default.
+      const newStatus = task.status === 'TERMINE' ? 'PLANIFIE' : 'TERMINE';
+
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !task.completed }),
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
         setTasks(tasks.map(t =>
-          t.id === taskId ? { ...t, completed: !t.completed } : t
+          t.id === taskId ? { ...t, status: newStatus } : t
         ));
       }
     } catch (error) {
@@ -89,8 +94,8 @@ export function TodoList() {
         <form onSubmit={handleAddTask} className="flex space-x-2 mb-4">
           <Input
             type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
+            value={newTaskDescription}
+            onChange={(e) => setNewTaskDescription(e.target.value)}
             placeholder="Nouvelle tâche..."
             className="flex-1"
           />
