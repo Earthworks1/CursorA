@@ -25,7 +25,10 @@
       "@/components/*": [
         "app/components/*"
       ],
-      "@/lib/*": [
+      "@/lib/utils": [ // Ajout de l'alias spécifique
+        "app/lib/utils.ts"
+      ],
+      "@/lib/*": [ // S'assurer que cet alias général est correct
         "lib/*"
       ],
       "@/types/*": [
