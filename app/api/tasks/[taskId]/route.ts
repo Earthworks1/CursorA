@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth(); // Removed duplicate line
     if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function DELETE(
   { params }: { params: { taskId: string } }
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth(); // Added await
     if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
